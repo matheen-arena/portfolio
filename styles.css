@@ -554,3 +554,7 @@ body.is-ready .hero-title .split { transform: none; }
 .scr-body { grid-template-rows: minmax(0, 1fr); overflow: hidden; }
 .hood .scr-body #radar { min-height: 0; max-height: 100%; justify-self: center; }
 .scr-list, .scr-bars { min-height: 0; overflow: hidden; }
+
+.brand-text { display: flex; flex-direction: column; line-height: 1.15; }
+.brand-region { display: flex; align-items: center; gap: 5px; font-size: 9.5px; font-weight: 400; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+.brand-region i { width: 5px; height: 5px; border-radius: 50%; background: var(--accent-2); box-shadow: 0 0 6px var(--accent-2); animation: blink 2s infinite; }
