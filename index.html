@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Anton&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=0281130" />
 </head>
 <body>
 
@@ -24,7 +24,7 @@
   <header class="nav">
     <a href="#top" class="brand" data-sfx>
       <span class="brand-mark"></span>
-      <span>matheen<span class="muted">.cloud</span></span>
+      <span class="brand-text"><span>matheen<span class="muted">.cloud</span></span><span class="brand-region"><i></i>region · ap-south-2</span></span>
     </a>
     <nav class="nav-links" aria-label="Sections">
       <a href="#about" data-sfx>about</a>
@@ -117,7 +117,7 @@
             <h2 class="stage-title stage-q">Need modern <s class="strike">DevOps</s> <span class="hl">AIOps / Platform Engineering</span> for your team?</h2>
             <div class="hero-cta">
               <a href="mailto:matheenroy@gmail.com" class="btn btn-primary" data-sfx>Let's talk <span aria-hidden="true">↗</span></a>
-              <a href="#about" class="btn btn-ghost" data-sfx>Explore the site ↓</a>
+              <a href="#about" class="btn btn-ghost" data-sfx>Want to know more? ↓</a>
             </div>
           </div>
         </div>
@@ -125,20 +125,26 @@
         <div class="dash" aria-hidden="true">
           <div class="deck">
             <div class="console">
-              <div class="pod pod-l"><div class="pod-screen"><svg class="pilot" viewBox="0 0 40 40"><path d="M20 6c-6 0-10 4.5-10 10.5 0 3.5 1.6 6.4 4 8.2V27h12v-2.3c2.4-1.8 4-4.7 4-8.2C30 10.5 26 6 20 6z"/><path d="M13 16h14v5H13z" class="visor"/><path d="M8 38c1.5-6 6-9 12-9s10.5 3 12 9z"/></svg><span>PILOT</span></div></div>
+              <div class="pod pod-l"><div class="pod-screen"><svg class="pilot" viewBox="0 0 40 40"><path d="M20 6c-6 0-10 4.5-10 10.5 0 3.5 1.6 6.4 4 8.2V27h12v-2.3c2.4-1.8 4-4.7 4-8.2C30 10.5 26 6 20 6z"/><path d="M13 16h14v5H13z" class="visor"/><path d="M8 38c1.5-6 6-9 12-9s10.5 3 12 9z"/></svg><span>PILOT</span><svg class="ecg" viewBox="0 0 100 20" preserveAspectRatio="none"><polyline points="0,10 18,10 22,10 25,4 28,16 31,2 34,13 37,10 55,10 60,10 63,6 66,14 69,10 100,10" /></svg><em class="pod-read">link ok</em></div></div>
               <div class="hood hood-l">
                 <div class="bezel">
                   <div class="glow-bar"></div>
                   <div class="dash-screen dash-left">
-                    <div class="dash-title"><span>scan // stack</span><span>07</span></div>
-                    <canvas id="radar"></canvas>
+                    <div class="dash-title"><span>scan // stack</span><span>07 contacts</span></div>
+                    <div class="scr-body">
+                      <ul class="scr-list"><li><span>AWS</span><i style="--d:0.00s"></i></li><li><span>OBSERV</span><i style="--d:-0.37s"></i></li><li><span>CI/CD</span><i style="--d:-0.74s"></i></li><li><span>DATA</span><i style="--d:-1.11s"></i></li><li><span>IAC</span><i style="--d:-1.48s"></i></li><li><span>AI</span><i style="--d:-1.85s"></i></li></ul>
+                      <canvas id="radar"></canvas>
+                      <div class="scr-bars"><i style="--d:0.00s"></i><i style="--d:-0.23s"></i><i style="--d:-0.46s"></i><i style="--d:-0.69s"></i><i style="--d:-0.92s"></i><i style="--d:-1.15s"></i></div>
+                    </div>
+                    <div class="scr-foot"><span>sweep 360°</span><span class="tick">range 4 km</span><span>● track</span></div>
                   </div>
                 </div>
               </div>
               <a href="#about" class="dash-center" aria-label="Scroll down" data-sfx>
-                <span class="dc-slots"><i></i><i></i></span>
-                <span class="dc-bracket"><i></i><i></i></span>
-                <span class="dc-mark"><svg viewBox="0 0 60 40"><path d="M4 30 22 8h14L18 30z" /><path d="M24 34 42 12h14L38 34z" /></svg><span class="mouse"><i></i></span></span>
+                <span class="dc-scope"><canvas id="dc-scope"></canvas><em>sig</em></span>
+                <span class="dc-meter" id="dc-meter"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                <span class="dc-bracket"><i></i><i></i><b class="bl b1"></b><b class="bl b2"></b><b class="bl b3"></b></span>
+                <span class="dc-mark"><span class="dc-ring"></span><svg class="dc-chev" viewBox="0 0 60 40"><path d="M4 30 22 8h14L18 30z" /><path d="M24 34 42 12h14L38 34z" /></svg><span class="dc-mouse"><svg viewBox="0 0 24 36"><rect x="2" y="2" width="20" height="32" rx="10" class="m-body" /><path d="M12 9v18M8 13l4-4 4 4M8 23l4 4 4-4" class="m-arrow" /></svg></span></span>
                 <span class="dash-label" id="dash-label">scroll down</span>
                 <span class="stage-dots"><i class="is-on"></i><i></i><i></i></span>
               </a>
@@ -146,12 +152,16 @@
                 <div class="bezel">
                   <div class="glow-bar"></div>
                   <div class="dash-screen dash-right">
-                    <div class="dash-title"><span>telemetry // log</span><span>live</span></div>
-                    <div class="dash-log" id="dash-log"></div>
+                    <div class="dash-title"><span>telemetry // log</span><span><i class="live-rec"></i>live</span></div>
+                    <div class="scr-body scr-body-log">
+                      <div class="dash-log" id="dash-log"></div>
+                      <canvas id="log-chart"></canvas>
+                    </div>
+                    <div class="scr-foot"><span>uplink</span><span class="seg"><i></i><i></i><i></i><i></i><i></i></span><span>ok<b class="cur">_</b></span></div>
                   </div>
                 </div>
               </div>
-              <div class="pod pod-r"><div class="pod-screen"><svg class="pilot" viewBox="0 0 40 40"><path d="M20 6c-6 0-10 4.5-10 10.5 0 3.5 1.6 6.4 4 8.2V27h12v-2.3c2.4-1.8 4-4.7 4-8.2C30 10.5 26 6 20 6z"/><path d="M13 16h14v5H13z" class="visor"/><path d="M8 38c1.5-6 6-9 12-9s10.5 3 12 9z"/></svg><span>CO-PILOT</span></div></div>
+              <div class="pod pod-r"><div class="pod-screen"><svg class="pilot" viewBox="0 0 40 40"><path d="M20 6c-6 0-10 4.5-10 10.5 0 3.5 1.6 6.4 4 8.2V27h12v-2.3c2.4-1.8 4-4.7 4-8.2C30 10.5 26 6 20 6z"/><path d="M13 16h14v5H13z" class="visor"/><path d="M8 38c1.5-6 6-9 12-9s10.5 3 12 9z"/></svg><span>CO-PILOT</span><svg class="ecg" viewBox="0 0 100 20" preserveAspectRatio="none"><polyline points="0,10 18,10 22,10 25,4 28,16 31,2 34,13 37,10 55,10 60,10 63,6 66,14 69,10 100,10" /></svg><em class="pod-read">link ok</em></div></div>
             </div>
           </div>
         </div>
@@ -366,8 +376,8 @@
     <a href="#top" data-sfx>back to top ↑</a>
   </footer>
 
-  <script src="js/audio.js"></script>
-  <script src="js/main.js"></script>
-  <script type="module" src="js/flight.js"></script>
+  <script src="js/audio.js?v=0281130"></script>
+  <script src="js/main.js?v=0281130"></script>
+  <script type="module" src="js/flight.js?v=0281130"></script>
 </body>
 </html>
