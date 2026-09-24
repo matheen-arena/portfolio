@@ -289,26 +289,23 @@
     const svg = $("#pipe-svg");
     const info = $("#pipe-info");
     const NS = "http://www.w3.org/2000/svg";
-    const TYPE = { log: C.green, metric: C.amber, trace: C.blue, git: C.purple };
+    const TYPE = { log: C.green, dash: C.orange, git: C.purple };
 
+    // Only what the resume states for the Logz.io → Grafana OSS migration at Avasoft.
     const NODES = [
-      { id: "lambda", col: 0, t: "Lambda", s: "1,200+ fns", c: C.orange, d: "1,200+ AWS Lambda functions, all sending logs to one central pipeline." },
-      { id: "ecs", col: 0, t: "ECS", s: "containers", c: C.orange, d: "Container services on Amazon ECS, part of the 50+ ECS and Batch workloads I onboarded." },
-      { id: "batch", col: 0, t: "AWS Batch", s: "jobs", c: C.orange, d: "Short-lived, bursty AWS Batch jobs whose logs are now in the same place as everything else." },
-      { id: "kinesis", col: 1, t: "Kinesis", s: "stream", c: C.amber, d: "Amazon Kinesis buffers the telemetry stream so traffic spikes don't drop data." },
-      { id: "alloy", col: 2, t: "Alloy", s: "collector", c: C.green, d: "Grafana Alloy collects each signal, relabels it and routes it to the right backend." },
-      { id: "loki", col: 3, t: "Loki", s: "logs", c: C.green, d: "Loki indexes only labels, which makes log storage much cheaper than a SaaS vendor." },
-      { id: "mimir", col: 3, t: "Mimir", s: "metrics", c: C.amber, d: "Mimir stores Prometheus metrics long-term and scales horizontally." },
-      { id: "tempo", col: 3, t: "Tempo", s: "traces", c: C.blue, d: "Tempo stores distributed traces, so you can follow one request across services." },
-      { id: "grafana", col: 4, t: "Grafana", s: "dashboards", c: C.orange, d: "Grafana OSS on EKS: 150+ dashboards and 300+ alerts, migrated by a custom Kiro AI agent." },
-      { id: "git", col: 4, t: "Git Sync", s: "as code", c: C.purple, d: "Git Sync keeps production dashboards version-controlled in one central repository." }
+      { id: "lambda", col: 0, t: "AWS Lambda", s: "1,200+ functions", c: C.orange, d: "Centralized log ingestion for 1,200+ AWS Lambda functions." },
+      { id: "batchecs", col: 0, t: "Batch & ECS", s: "50+ workloads", c: C.orange, d: "Centralized log ingestion for 50+ AWS Batch and Amazon ECS workloads." },
+      { id: "logz", col: 0, t: "Logz.io", s: "migrated from", c: C.muted, d: "The previous platform: 150+ dashboards and 300+ alerts to move to Grafana." },
+      { id: "kinesis", col: 1, t: "Kinesis", s: "log ingestion", c: C.amber, d: "Amazon Kinesis centralized the log ingestion, enabling the migration from Logz.io to Grafana OSS." },
+      { id: "kiro", col: 1, t: "Kiro AI agent", s: "migration", c: C.pink, d: "A custom Kiro AI agent automated the migration of 150+ dashboards and 300+ alerts, significantly reducing manual recreation efforts." },
+      { id: "grafana", col: 2, t: "Grafana OSS", s: "self-hosted on EKS", c: C.green, d: "Self-hosted open-source Grafana observability platform on Amazon EKS, reducing observability costs by approximately $250K annually." },
+      { id: "git", col: 3, t: "Git repository", s: "GitSync", c: C.purple, d: "GitOps-based GitSync keeps production Grafana dashboards version-controlled in a centralized Git repository for multiple domain services." }
     ];
     const EDGES = [
-      ["lambda", "kinesis"], ["ecs", "kinesis"], ["batch", "kinesis"], ["kinesis", "alloy"],
-      ["alloy", "loki"], ["alloy", "mimir"], ["alloy", "tempo"],
-      ["loki", "grafana"], ["mimir", "grafana"], ["tempo", "grafana"], ["git", "grafana"]
+      ["lambda", "kinesis"], ["batchecs", "kinesis"], ["kinesis", "grafana"],
+      ["logz", "kiro"], ["kiro", "grafana"], ["grafana", "git"]
     ];
-    const COLS = ["sources", "stream", "collect", "store", "visualise"];
+    const COLS = ["sources", "ingest / migrate", "platform", "version control"];
     const byId = Object.fromEntries(NODES.map(n => [n.id, n]));
     const edgeMap = {};
     let packets = [], pool = [], mode = "";
@@ -327,9 +324,10 @@
       if (m === mode) return;
       mode = m;
       svg.textContent = "";
+      svg.classList.toggle("is-vertical", vertical);
       packets = []; pool = [];
 
-      const W = vertical ? 420 : 1100, H = vertical ? 820 : 360;
+      const W = vertical ? 420 : 1100, H = vertical ? 30 + COLS.length * 160 - 70 : 360;
       svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
       const cols = COLS.map((_, c) => NODES.filter(n => n.col === c));
 
@@ -341,7 +339,7 @@
           list.forEach((n, i) => Object.assign(n, { w: nw, h: 58, x: (W - total) / 2 + i * (nw + gap), y: top }));
           el("text", { x: 10, y: top - 12, class: "col-label" }, svg).textContent = COLS[c];
         } else {
-          const nw = 168, nh = 60, gap = 26, left = 12 + c * 222;
+          const nw = 190, nh = 60, gap = 26, left = 12 + c * ((W - 24 - nw) / (COLS.length - 1));
           const total = nh * list.length + gap * (list.length - 1);
           list.forEach((n, i) => Object.assign(n, { w: nw, h: nh, x: left, y: (H - total) / 2 + 16 + i * (nh + gap) }));
           el("text", { x: left, y: 22, class: "col-label" }, svg).textContent = COLS[c];
@@ -408,9 +406,9 @@
 
     function nextHop(p) {
       const at = p.e.to;
-      if (at === "kinesis") return "kinesis>alloy";
-      if (at === "alloy") return { log: "alloy>loki", metric: "alloy>mimir", trace: "alloy>tempo" }[p.type];
-      if (at === "loki" || at === "mimir" || at === "tempo") return at + ">grafana";
+      if (at === "kinesis") return "kinesis>grafana";
+      if (at === "kiro") return "kiro>grafana";
+      if (at === "grafana" && p.type === "dash" && Math.random() < .5) return "grafana>git";
       return null;
     }
 
@@ -426,14 +424,14 @@
     addEventListener("resize", debounce(layout, 200));
 
     let spawnAcc = 0;
-    const SOURCES = ["lambda", "ecs", "batch"], TYPES = ["log", "log", "metric", "trace"];
+    const SOURCES = ["lambda", "batchecs"];
     whileVisible(svg, dt => {
       spawnAcc += dt;
       const every = reduceMotion ? 900 : 140;
       while (spawnAcc > every) {
         spawnAcc -= every;
-        if (Math.random() < .06) launch("git>grafana", "git");
-        else launch(SOURCES[(Math.random() * 3) | 0] + ">kinesis", TYPES[(Math.random() * 4) | 0]);
+        if (Math.random() < .15) launch("logz>kiro", "dash");
+        else launch(SOURCES[(Math.random() * 2) | 0] + ">kinesis", "log");
       }
       for (let i = packets.length - 1; i >= 0; i--) {
         const p = packets[i];
@@ -443,7 +441,7 @@
           const hop = nextHop(p);
           p.c.style.display = "none"; pool.push(p.c);
           packets.splice(i, 1);
-          if (hop) launch(hop, p.type);
+          if (hop) launch(hop, hop === "grafana>git" ? "git" : p.type);
           continue;
         }
         const pt = p.e.path.getPointAtLength(p.t * p.e.len);
@@ -457,14 +455,15 @@
     const canvas = $("#stack-canvas");
     const legend = $("#stack-legend");
     const list = $("#stack-list");
+    // Items are ordered so the longest labels sit at the ends of each fan (more room on phones).
     const GROUPS = [
-      { name: "AWS", c: C.orange, items: ["EKS", "ECS", "EC2", "Lambda", "S3", "Kinesis", "AWS Batch", "Networking"] },
-      { name: "Data", c: C.blue, items: ["RDS", "Aurora", "Elasticsearch", "MySQL"] },
-      { name: "Observability", c: C.green, items: ["Grafana", "Loki", "Mimir", "Tempo", "Alloy", "Logz.io"] },
-      { name: "CI/CD & GitOps", c: C.amber, items: ["GitHub Actions", "ARC Runners", "GitLab CI", "Argo CD", "Argo Workflows", "JFrog"] },
-      { name: "IaC & Platform", c: C.purple, items: ["Terraform", "Kubernetes", "Containers"] },
-      { name: "AI Agents", c: C.pink, items: ["Kiro", "Copilot Agent"] },
-      { name: "Scripting", c: C.bone, items: ["Python", "Shell", "Linux"] }
+      { name: "AWS", c: C.orange, items: ["AWS Batch", "Lambda", "EKS", "ECS", "EC2", "S3", "Kinesis", "AWS Network"] },
+      { name: "Databases & Search", c: C.blue, items: ["RDS", "Aurora", "Elasticsearch", "MySQL"] },
+      { name: "Observability", c: C.green, items: ["Grafana Metrics", "Grafana OSS", "Loki", "Mimir", "Alloy", "Logz.io", "Grafana Logs", "Grafana Tempo"] },
+      { name: "CI/CD & GitOps", c: C.amber, items: ["Argo Cron Workflow", "GitHub Actions", "GitLab", "JFrog", "GitHub", "Argo CD", "GitHub ARC"] },
+      { name: "Infrastructure as Code", c: C.purple, items: ["Terraform"] },
+      { name: "AI Agents", c: C.pink, items: ["Kiro AI Agent", "GitHub Copilot Agent"] },
+      { name: "Scripting", c: C.bone, items: ["Python", "Shell Scripting"] }
     ];
 
     let ctx, w, h, hubs = [], nodes = [], focus = -1, hover = null, stackSmall = false;
@@ -626,58 +625,57 @@
   <span class="t-ok">clear</span>         clear screen
 <span class="t-dim">also try: kubectl get pods, terraform plan, sudo hire-me
 tip: ↑/↓ for history, tab to autocomplete</span></pre>`,
-      whoami: () => `Abdul Matheen: AI-first Cloud &amp; Platform Engineer in Chennai, India.
-I build reliable cloud platforms and modern developer workflows, and use AI agents to automate engineering work.`,
+      whoami: () => `Abdul Matheen: AI-first Cloud and Platform Engineer, Chennai, India.
+Expertise in Cloud, DevOps, Observability and AI automation. Focused on building reliable cloud platforms,
+modern developer workflows, and integrating AI into modern engineering practices.`,
       about: () => CMDS.whoami(),
-      experience: () => `<pre><span class="t-ok">2026-05 → now</span>    Cloud &amp; Platform Engineer   <span class="t-acc">zeb</span>
-                 Argo Cron Workflows on EKS, AWS data-transfer cost optimisation
-<span class="t-ok">2025-05 → 2026-04</span> Cloud &amp; DevOps Engineer   <span class="t-acc">Avasoft</span>
-                 Logz.io → Grafana OSS (~$250K/yr saved), GitLab → GitHub (2,100 repos)
-<span class="t-ok">2024-08 → 2024-11</span> Python Developer Intern    <span class="t-acc">Stellar Innovations</span>
-                 ETL pipelines → S3, Python on EC2, MySQL data quality</pre>`,
+      experience: () => `<pre><span class="t-ok">May 2026 – Present</span>           Cloud and Platform Engineer, <span class="t-acc">zeb</span>, Chennai
+                             Retail · Unified Customer Data Portal
+<span class="t-ok">May 2025 – April 2026</span>        Cloud and DevOps Engineer, <span class="t-acc">Avasoft</span>, Chennai
+                             Retail · Logz to Grafana OSS Migration
+                             Retail · GitLab to GitHub Migration
+<span class="t-ok">August 2024 – November 2024</span>  Python Developer – Intern, <span class="t-acc">Stellar Innovations</span>, Bangalore
+                             Healthcare · ETL pipeline development</pre>`,
       work: () => CMDS.experience(),
-      skills: () => `<pre><span class="t-acc">aws</span>            EKS ECS EC2 Lambda S3 Kinesis Batch Networking
-<span class="t-blue">data</span>           RDS Aurora Elasticsearch MySQL
-<span class="t-ok">observability</span>  Grafana Loki Mimir Tempo Alloy Logz.io
-<span class="t-acc">ci/cd</span>          GitHub Actions ARC GitLab Argo CD Argo Workflows JFrog
-<span class="t-blue">iac</span>            Terraform Kubernetes
-<span class="t-ok">ai</span>             Kiro AI agent, GitHub Copilot agent
-<span class="t-acc">scripting</span>      Python Shell Linux</pre>`,
+      skills: () => `<pre><span class="t-acc">iac</span>            Terraform
+<span class="t-acc">aws</span>            EKS ECS S3 Lambda EC2 RDS Aurora Elasticsearch Kinesis Batch, AWS Network
+<span class="t-ok">observability</span>  Grafana OSS, Grafana Logs, Grafana Metrics, Grafana Tempo, Loki, Mimir, Alloy, Logz.io
+<span class="t-blue">tools</span>          Argo Cron Workflow, Argo CD
+<span class="t-acc">ci/cd</span>          GitLab, GitHub, GitHub Actions, Action Runner Controller, JFrog
+<span class="t-ok">ai agents</span>      GitHub Copilot Agent, Kiro AI Agent
+<span class="t-blue">scripting</span>      Shell Scripting, Python, MySQL</pre>`,
       stack: () => CMDS.skills(),
-      impact: () => `<pre><span class="t-ok">▲</span> ~$250K/yr   observability cost saved
-<span class="t-ok">▲</span> 1,200+      Lambda functions with centralised logs
-<span class="t-ok">▲</span> 2,100       repos migrated GitLab → GitHub
-<span class="t-ok">▼</span> 80%         CI runner cost
-<span class="t-ok">▲</span> 450+        dashboards &amp; alerts migrated by an AI agent</pre>`,
+      impact: () => `<pre><span class="t-ok">~$250K/yr</span>  observability costs reduced (self-hosted Grafana OSS on EKS)
+<span class="t-ok">1,200+</span>     Lambda functions with centralized log ingestion (+ 50+ Batch/ECS workloads)
+<span class="t-ok">2,100</span>      projects migrated from GitLab to GitHub
+<span class="t-ok">80%</span>        reduction in CI/CD runner costs (GitHub ARC runners on EKS)
+<span class="t-ok">150+ / 300+</span> dashboards / alerts migrated by a custom Kiro AI agent</pre>`,
       contact: () => `<pre>email     <a href="mailto:matheenroy@gmail.com">matheenroy@gmail.com</a>
 linkedin  <a href="https://linkedin.com/in/abumatheen" target="_blank" rel="noopener">linkedin.com/in/abumatheen</a>
 github    <a href="https://github.com/matheen-arena" target="_blank" rel="noopener">github.com/matheen-arena</a></pre>`,
       neofetch: () => `<pre><span class="t-acc">    ▄▄▄▄▄▄▄     </span> <span class="t-ok">matheen</span>@<span class="t-ok">platform</span>
 <span class="t-acc">  ▄█▀     ▀█▄   </span> ----------------
-<span class="t-acc"> █▀  ▄▄▄▄▄  ▀█  </span> <span class="t-acc">OS</span>       Amazon Linux on EKS
-<span class="t-acc"> █  █ ◉ ◉ █  █  </span> <span class="t-acc">Shell</span>    bash + python
-<span class="t-acc"> █▄  ▀▀▀▀▀  ▄█  </span> <span class="t-acc">IaC</span>      terraform
-<span class="t-acc">  ▀█▄     ▄█▀   </span> <span class="t-acc">GitOps</span>   argo cd
-<span class="t-acc">    ▀▀▀▀▀▀▀     </span> <span class="t-acc">Observe</span>  loki · mimir · tempo · alloy
-                  <span class="t-acc">AI</span>       kiro · copilot agents
-                  <span class="t-acc">Uptime</span>   since 2024, still learning</pre>`,
+<span class="t-acc"> █▀  ▄▄▄▄▄  ▀█  </span> <span class="t-acc">Role</span>      Cloud and Platform Engineer
+<span class="t-acc"> █  █ ◉ ◉ █  █  </span> <span class="t-acc">Location</span>  Chennai, India
+<span class="t-acc"> █▄  ▀▀▀▀▀  ▄█  </span> <span class="t-acc">Cloud</span>     AWS
+<span class="t-acc">  ▀█▄     ▄█▀   </span> <span class="t-acc">IaC</span>       Terraform
+<span class="t-acc">    ▀▀▀▀▀▀▀     </span> <span class="t-acc">GitOps</span>    Argo CD
+                  <span class="t-acc">Observe</span>   Grafana OSS
+                  <span class="t-acc">AI</span>        Kiro AI Agent, GitHub Copilot Agent
+                  <span class="t-acc">Study</span>     B.E. Electronics and Communication Engineering</pre>`,
       ls: () => `about/  experience/  skills/  impact/  contact/  <span class="t-ok">hire-me.sh</span>`,
       "./hire-me.sh": () => CMDS["sudo hire-me"](),
-      "kubectl get pods": () => `<pre><span class="t-dim">NAME                               READY   STATUS    RESTARTS   AGE</span>
-grafana-7c9f8d-x2k4p               1/1     Running   0          412d
-loki-write-0                       1/1     Running   0          412d
-mimir-ingester-0                   1/1     Running   0          412d
-tempo-distributor-5b8c-q9ztl       1/1     Running   0          412d
-alloy-daemonset-hk27m              1/1     Running   0          412d
-argo-workflows-server-6d4f-8kd2s   1/1     Running   0          140d
-arc-runner-set-ghx7p               1/1     Running   0          3m
-<span class="t-ok">career-growth-0                    1/1     Running   0          ∞</span></pre>`,
+      "kubectl get pods": () => `<pre><span class="t-dim">NAMESPACE: career</span>
+<span class="t-dim">NAME                                     STATUS      LOCATION    AGE</span>
+<span class="t-ok">zeb-cloud-platform-engineer              Running     Chennai     May 2026 – Present</span>
+avasoft-cloud-devops-engineer            Completed   Chennai     May 2025 – April 2026
+stellar-innovations-python-dev-intern    Completed   Bangalore   August 2024 – November 2024</pre>`,
       "terraform plan": () => `<pre>Terraform will perform the following actions:
 
   <span class="t-ok">+ resource "team_member" "abdul_matheen"</span> {
-      <span class="t-ok">+</span> role        = "Cloud / Platform / DevOps Engineer"
-      <span class="t-ok">+</span> cost_impact = "negative (saves you money)"
-      <span class="t-ok">+</span> on_call     = "calm and observable"
+      <span class="t-ok">+</span> role     = "Cloud and Platform Engineer"
+      <span class="t-ok">+</span> location = "Chennai, India"
+      <span class="t-ok">+</span> focus    = ["Cloud", "DevOps", "Observability", "AI automation"]
     }
 
 <span class="t-acc">Plan:</span> 1 to add, 0 to change, 0 to destroy.
