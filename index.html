@@ -125,36 +125,33 @@
         <div class="dash" aria-hidden="true">
           <div class="deck">
             <div class="console">
-              <span class="fin fin-l"><i></i><b class="lever"><em></em></b><u class="hazard"></u></span>
-            <div class="hood hood-l">
-              <div class="hood-strip"></div>
-              <span class="hood-leds"><i></i><i></i><i></i></span>
-              <span class="hood-vents"></span>
-              <div class="dash-screen dash-left">
-                <div class="dash-title"><span><i class="rec"></i>scan // stack</span><span>07 dom</span></div>
-                <canvas id="radar"></canvas>
+              <div class="pod pod-l"><div class="pod-screen"><svg class="pilot" viewBox="0 0 40 40"><path d="M20 6c-6 0-10 4.5-10 10.5 0 3.5 1.6 6.4 4 8.2V27h12v-2.3c2.4-1.8 4-4.7 4-8.2C30 10.5 26 6 20 6z"/><path d="M13 16h14v5H13z" class="visor"/><path d="M8 38c1.5-6 6-9 12-9s10.5 3 12 9z"/></svg><span>PILOT</span></div></div>
+              <div class="hood hood-l">
+                <div class="bezel">
+                  <div class="glow-bar"></div>
+                  <div class="dash-screen dash-left">
+                    <div class="dash-title"><span>scan // stack</span><span>07</span></div>
+                    <canvas id="radar"></canvas>
+                  </div>
+                </div>
               </div>
-            </div>
-            <a href="#about" class="dash-center" aria-label="Scroll down" data-sfx>
-              <span class="holo" aria-hidden="true">
-                <svg viewBox="0 0 160 110"><g class="holo-rings"><ellipse cx="80" cy="46" rx="44" ry="12" /><ellipse cx="80" cy="46" rx="30" ry="8" /><ellipse cx="80" cy="46" rx="16" ry="4" /></g>
-                  <g class="holo-core"><polygon points="80,14 98,46 80,78 62,46" /><line x1="80" y1="14" x2="80" y2="78" /><line x1="62" y1="46" x2="98" y2="46" /></g></svg>
-              </span>
-              <span class="dc-emblem"></span>
-              <span class="mouse"><i></i></span>
-              <span class="dash-label" id="dash-label">scroll down</span>
-              <span class="stage-dots"><i class="is-on"></i><i></i><i></i></span>
-            </a>
-            <div class="hood hood-r">
-              <div class="hood-strip"></div>
-              <span class="hood-leds"><i></i><i></i><i></i></span>
-              <span class="hood-vents"></span>
-              <div class="dash-screen dash-right">
-                <div class="dash-title"><span><i class="rec"></i>telemetry // log</span><span>live</span></div>
-                <div class="dash-log" id="dash-log"></div>
+              <a href="#about" class="dash-center" aria-label="Scroll down" data-sfx>
+                <span class="dc-slots"><i></i><i></i></span>
+                <span class="dc-bracket"><i></i><i></i></span>
+                <span class="dc-mark"><svg viewBox="0 0 60 40"><path d="M4 30 22 8h14L18 30z" /><path d="M24 34 42 12h14L38 34z" /></svg><span class="mouse"><i></i></span></span>
+                <span class="dash-label" id="dash-label">scroll down</span>
+                <span class="stage-dots"><i class="is-on"></i><i></i><i></i></span>
+              </a>
+              <div class="hood hood-r">
+                <div class="bezel">
+                  <div class="glow-bar"></div>
+                  <div class="dash-screen dash-right">
+                    <div class="dash-title"><span>telemetry // log</span><span>live</span></div>
+                    <div class="dash-log" id="dash-log"></div>
+                  </div>
+                </div>
               </div>
-            </div>
-              <span class="fin fin-r"><i></i><b class="lever"><em></em></b><u class="hazard"></u></span>
+              <div class="pod pod-r"><div class="pod-screen"><svg class="pilot" viewBox="0 0 40 40"><path d="M20 6c-6 0-10 4.5-10 10.5 0 3.5 1.6 6.4 4 8.2V27h12v-2.3c2.4-1.8 4-4.7 4-8.2C30 10.5 26 6 20 6z"/><path d="M13 16h14v5H13z" class="visor"/><path d="M8 38c1.5-6 6-9 12-9s10.5 3 12 9z"/></svg><span>CO-PILOT</span></div></div>
             </div>
           </div>
         </div>
