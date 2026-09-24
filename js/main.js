@@ -141,8 +141,11 @@
     };
     window.flightProgress = progress;
 
+    const meter = $$("#dc-meter i");
     function update() {
       const p = progress();
+      const lit = Math.round(p * meter.length);
+      meter.forEach((m, i) => m.classList.toggle("on", meter.length - 1 - i < lit));
       const next = p < .3 ? 0 : p < .66 ? 1 : 2;
       if (next === current) return;
       current = next;
@@ -169,7 +172,27 @@
     const fitRadar = () => { if (rc.offsetParent) radar = fitCanvas(rc); };
     fitRadar();
     addEventListener("resize", debounce(fitRadar, 200));
+    const sc = $("#dc-scope");
+    let scope = null;
+    const fitScope = () => { if (sc.offsetParent) scope = fitCanvas(sc); };
+    fitScope();
+    addEventListener("resize", debounce(fitScope, 200));
     whileVisible(section, (dt, t) => {
+      if (scope && sc.offsetParent) {
+        const { ctx: g, w: sw, h: sh } = scope, buf = SFX.playing ? SFX.wave() : null;
+        g.clearRect(0, 0, sw, sh);
+        g.strokeStyle = "rgba(255,80,90,.18)"; g.lineWidth = 1;
+        for (let x = 0; x <= sw; x += sw / 8) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, sh); g.stroke(); }
+        g.beginPath(); g.moveTo(0, sh / 2); g.lineTo(sw, sh / 2); g.stroke();
+        let peak = .02;
+        if (buf) for (let i = 0; i < buf.length; i++) peak = Math.max(peak, Math.abs(buf[i]));
+        g.beginPath();
+        for (let x = 0; x <= sw; x++) {
+          const v = buf ? buf[Math.floor(x / sw * (buf.length - 1))] / peak * .8 : Math.sin(x * .12 + t * .004) * .35 * Math.sin(x / sw * Math.PI);
+          x ? g.lineTo(x, sh / 2 - v * (sh / 2 - 2)) : g.moveTo(x, sh / 2 - v * (sh / 2 - 2));
+        }
+        g.strokeStyle = "#ff5a68"; g.lineWidth = 1.4; g.shadowColor = "#ff3b4e"; g.shadowBlur = 6; g.stroke(); g.shadowBlur = 0;
+      }
       if (!radar || !rc.offsetParent) return;
       const { ctx: r, w: rw, h: rh } = radar, c = rw / 2, cy = rh / 2, rr = Math.min(c, cy) - 3;
       const sweep = (t * .0018) % (Math.PI * 2);
