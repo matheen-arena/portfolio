@@ -621,3 +621,5 @@ body.is-ready .hero-title .split { transform: none; }
 .job.is-in .log li:nth-child(5) { transition-delay: .32s, .32s, 0s; }
 .job.is-in .log li:nth-child(6) { transition-delay: .4s, .4s, 0s; }
 .job.is-in .log li:nth-child(7) { transition-delay: .48s, .48s, 0s; }
+
+.log li[data-lvl="OBSERVABILITY"]::before { font-size: 9px; letter-spacing: .02em; }
