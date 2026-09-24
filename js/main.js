@@ -330,37 +330,60 @@
     update();
   })();
 
-  /* ================= HERO: COCKPIT ================= */
+  /* ================= HERO: COCKPIT + BLACK HOLE ================= */
   (function cockpit() {
-    const section = $(".cockpit"), canvas = $("#hero-canvas");
+    const section = $(".cockpit"), canvas = $("#hero-canvas"), slot = $(".bh-slot");
     const reticle = $(".reticle"), rlabel = $("#rlabel"), clock = $("#hud-clock");
     const radarCanvas = $("#radar"), radarRead = $("#radar-read"), tapeCanvas = $("#tape");
     const thrustBar = $("#thrust"), thrustVal = $("#thrust-val"), cursorEl = $(".cursor");
-    let ctx, w, h, radar, tape;
+    let ctx, w, h, radar, tape, bh = { x: 0, y: 0, R: 60 };
     const mouse = { nx: 0, ny: 0, tx: 0, ty: 0 };
-    let warp = 0, energy = 0, lastScroll = scrollY, scrollVel = 0;
+    let warp = 0, energy = 0, lastScroll = scrollY, scrollVel = 0, flare = 0;
 
-    /* --- scene data --- */
+    /* --- starfield --- */
     const newStar = any => ({ x: Math.random() * 2 - 1, y: Math.random() * 2 - 1, z: any ? Math.random() : 1,
-      c: Math.random() < .14 ? (Math.random() < .5 ? C.green : C.orange) : "#cfd6de" });
-    const stars = Array.from({ length: reduceMotion ? 220 : 720 }, () => newStar(true));
+      c: Math.random() < .12 ? (Math.random() < .5 ? C.green : C.blue) : "#cfd6de" });
+    const stars = Array.from({ length: reduceMotion ? 220 : 640 }, () => newStar(true));
 
-    const sph = (lat, lon) => { const a = lat * Math.PI / 180, b = lon * Math.PI / 180; return [Math.cos(a) * Math.cos(b), Math.sin(a), Math.cos(a) * Math.sin(b)]; };
-    const globe = [];
-    for (let lat = -75; lat <= 75; lat += 15) for (let lon = 0; lon < 360; lon += 5) globe.push(sph(lat, lon));
-    for (let lon = 0; lon < 360; lon += 30) for (let lat = -85; lat <= 85; lat += 5) globe.push(sph(lat, lon));
+    /* --- accretion disk: radii in units of the event-horizon radius --- */
+    const R_IN = 1.55, R_SPAN = 2.5;
+    const HEAT = ["#fff6e6", "#ffd08a", "#ff9a3c", "#ff5b2e"]; // hot inner edge → cooler outer edge
+    const disk = Array.from({ length: reduceMotion ? 700 : 2400 }, () => {
+      const r = R_IN + Math.pow(Math.random(), 1.7) * R_SPAN;
+      return { r, a: Math.random() * Math.PI * 2, y: (Math.random() - .5) * .05 * r, b: .45 + Math.random() * .55,
+        heat: Math.min(3, Math.floor((r - R_IN) / R_SPAN * 4.2)) };
+    });
+    const jets = Array.from({ length: reduceMotion ? 40 : 160 }, (_, i) => ({ dir: i % 2 ? 1 : -1, s: Math.random(), v: Math.random() * .006, off: (Math.random() - .5) * .22 }));
+    // Skills caught in orbit around the hole.
+    const PROBES = ["EKS", "TERRAFORM", "GRAFANA", "ARGO CD", "GITHUB ACTIONS", "KIRO AI"].map((label, i) => ({
+      label, r: 4.5 + (i % 2) * .6, a: i / 6 * Math.PI * 2, c: [C.orange, C.purple, C.green, C.amber, C.blue, C.pink][i]
+    }));
 
-    const ORBITS = [{ r: 1.42, tilt: .55, yaw: .3 }, { r: 1.72, tilt: -.4, yaw: 1.3 }, { r: 2.02, tilt: .18, yaw: 2.4 }];
-    const SATS = [
-      { label: "EKS", o: 0, v: .00032, p: 0, c: C.orange },
-      { label: "TERRAFORM", o: 0, v: .00032, p: Math.PI, c: C.purple },
-      { label: "GRAFANA", o: 1, v: -.00024, p: 1, c: C.green },
-      { label: "ARGO CD", o: 1, v: -.00024, p: 1 + Math.PI, c: C.amber },
-      { label: "GITHUB ACTIONS", o: 2, v: .00018, p: 2.2, c: C.blue },
-      { label: "KIRO AI", o: 2, v: .00018, p: 2.2 + Math.PI, c: C.pink }
+    /* --- gauges (values straight from the resume) --- */
+    const GAUGES = [
+      { num: "~$250K", cap: "observability cost saved / yr", pct: 1, c: C.orange },
+      { num: "80%", cap: "ci/cd runner cost cut", pct: .8, c: C.green },
+      { num: "1,200+", cap: "lambdas, centralized logs", pct: 1, c: C.amber },
+      { num: "2,100", cap: "projects migrated", pct: 1, c: C.blue }
     ];
-    const arcs = [];
-    let arcTimer = 0;
+    const gWrap = $("#gauges");
+    const RAD = 34, CIRC = 2 * Math.PI * RAD, ARC = CIRC * .75;
+    GAUGES.forEach((g, gi) => {
+      const d = document.createElement("div");
+      d.className = "gauge";
+      d.innerHTML = `<svg viewBox="0 0 90 80"><g transform="rotate(135 45 42)">
+          <circle class="g-ticks" cx="45" cy="42" r="${RAD + 7}" />
+          <circle class="g-track" cx="45" cy="42" r="${RAD}" stroke-dasharray="${ARC} ${CIRC}" />
+          <circle class="g-val" cx="45" cy="42" r="${RAD}" stroke="${g.c}" stroke-dasharray="${ARC} ${CIRC}" stroke-dashoffset="${ARC}" />
+        </g><text class="g-num" x="45" y="47"></text></svg><div class="g-cap"></div>`;
+      $("text", d).textContent = g.num;
+      if (g.num.length > 5) $("text", d).style.fontSize = "12.5px";
+      $(".g-cap", d).textContent = g.cap;
+      gWrap.append(d);
+      g.el = $(".g-val", d);
+      d.addEventListener("pointerenter", () => SFX.note(gi + 4, .04));
+    });
+    setTimeout(() => GAUGES.forEach(g => g.el.setAttribute("stroke-dashoffset", ARC * (1 - g.pct))), 700);
 
     const DOMAINS = [
       { name: "AWS", items: "EKS · ECS · Lambda · S3 · Kinesis", a: .4, r: .72, c: C.orange },
@@ -372,46 +395,19 @@
       { name: "Scripting", items: "Python · Shell Scripting", a: 5.6, r: .55, c: C.bone }
     ].map(d => ({ ...d, glow: 0 }));
 
-    /* --- gauges (values straight from the resume) --- */
-    const GAUGES = [
-      { num: "~$250K", cap: "observability cost saved / yr", pct: 1, c: C.orange },
-      { num: "80%", cap: "ci/cd runner cost cut", pct: .8, c: C.green },
-      { num: "1,200+", cap: "lambdas, centralized logs", pct: 1, c: C.amber },
-      { num: "2,100", cap: "projects migrated", pct: 1, c: C.blue }
-    ];
-    const gWrap = $("#gauges");
-    const RAD = 34, CIRC = 2 * Math.PI * RAD, ARC = CIRC * .75;
-    GAUGES.forEach(g => {
-      const d = document.createElement("div");
-      d.className = "gauge";
-      d.innerHTML = `<svg viewBox="0 0 90 80"><g transform="rotate(135 45 42)">
-          <circle class="g-ticks" cx="45" cy="42" r="${RAD + 7}" stroke-dasharray="1 5.3" />
-          <circle class="g-track" cx="45" cy="42" r="${RAD}" stroke-dasharray="${ARC} ${CIRC}" />
-          <circle class="g-val" cx="45" cy="42" r="${RAD}" stroke="${g.c}" stroke-dasharray="${ARC} ${CIRC}" stroke-dashoffset="${ARC}" />
-        </g><text class="g-num" x="45" y="47"></text></svg><div class="g-cap"></div>`;
-      $("text", d).textContent = g.num;
-      if (g.num.length > 5) $("text", d).style.fontSize = "12.5px";
-      $(".g-cap", d).textContent = g.cap;
-      gWrap.append(d);
-      g.el = $(".g-val", d);
-      d.addEventListener("pointerenter", () => SFX.note(GAUGES.indexOf(g) + 4, .04));
-    });
-    setTimeout(() => GAUGES.forEach(g => g.el.setAttribute("stroke-dashoffset", ARC * (1 - g.pct))), 700);
-
-    /* --- sizing --- */
+    /* --- sizing: the hole sits in the empty grid cell reserved for it --- */
     function resize() {
       ({ ctx, w, h } = fitCanvas(canvas, 1.5));
       if (radarCanvas.offsetParent) radar = fitCanvas(radarCanvas);
       if (tapeCanvas.offsetParent) tape = fitCanvas(tapeCanvas);
+      const s0 = section.getBoundingClientRect(), r = slot.getBoundingClientRect();
+      bh.x = r.left - s0.left + r.width / 2;
+      bh.y = r.top - s0.top + r.height / 2;
+      bh.R = Math.max(24, Math.min(r.width / 6.4, r.height / 4, (w - bh.x) / 4.4, 110));
     }
     resize();
     addEventListener("resize", debounce(resize, 150));
-
-    function layout() {
-      if (w >= 1180) return { gx: w * .635, gy: h * .52, R: Math.min(w, h) * .19, a: 1 };
-      if (w > 760) return { gx: w * .74, gy: h * .5, R: Math.min(w, h) * .22, a: .9 };
-      return { gx: w * .78, gy: h * .17, R: w * .2, a: .55 };
-    }
+    if (document.fonts) document.fonts.ready.then(resize);
 
     /* --- input --- */
     section.addEventListener("pointermove", e => {
@@ -423,134 +419,149 @@
         $(".ry", reticle).style.transform = `translateX(${x}px)`;
         $(".rbox", reticle).style.left = x + "px"; $(".rbox", reticle).style.top = y + "px";
         rlabel.style.left = x + "px"; rlabel.style.top = y + "px";
-        rlabel.textContent = `BRG ${((mouse.tx + 1) * 180).toFixed(1).padStart(5, "0")} · ELV ${(-mouse.ty * 45).toFixed(1)}`;
+        const dist = Math.hypot(x - bh.x, y - bh.y) / bh.R;
+        rlabel.textContent = dist < 6 ? `TARGET · EVENT HORIZON · ${dist.toFixed(1)} R` : `BRG ${((mouse.tx + 1) * 180).toFixed(1).padStart(5, "0")} · ELV ${(-mouse.ty * 45).toFixed(1)}`;
         cursorEl.classList.add("is-hidden");
       }
     });
     section.addEventListener("pointerleave", () => { mouse.tx = mouse.ty = 0; cursorEl.classList.remove("is-hidden"); });
     section.addEventListener("pointerdown", e => {
       if (e.target.closest("a, button")) return;
-      warp = 1;
+      warp = 1; flare = 1;
       SFX.whoosh();
     });
-    setInterval(() => { clock.textContent = new Date().toTimeString().slice(0, 8); }, 1000);
+    const tick = () => { clock.textContent = new Date().toTimeString().slice(0, 8); };
+    tick(); setInterval(tick, 1000);
 
-    /* --- math helpers --- */
-    const rotY = ([x, y, z], a) => [x * Math.cos(a) - z * Math.sin(a), y, x * Math.sin(a) + z * Math.cos(a)];
-    const rotX = ([x, y, z], a) => [x, y * Math.cos(a) - z * Math.sin(a), y * Math.sin(a) + z * Math.cos(a)];
-    const slerp = (a, b, u) => {
-      const d = Math.acos(Math.max(-1, Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2]))) || 1e-4;
-      const s1 = Math.sin((1 - u) * d) / Math.sin(d), s2 = Math.sin(u * d) / Math.sin(d);
-      return [a[0] * s1 + b[0] * s2, a[1] * s1 + b[1] * s2, a[2] * s1 + b[2] * s2];
-    };
-
+    let spin = 0;
     whileVisible(canvas, (dt, t) => {
       const k = Math.min(3, dt / 16.67);
       energy += (audioEnergy() - energy) * .15;
       const d = scrollY - lastScroll; lastScroll = scrollY;
       scrollVel += (d - scrollVel) * .1;
-      warp *= Math.pow(.965, k);
-      mouse.nx += (mouse.tx - mouse.nx) * .06 * k; mouse.ny += (mouse.ty - mouse.ny) * .06 * k;
+      warp *= Math.pow(.965, k); flare *= Math.pow(.95, k);
+      mouse.nx += (mouse.tx - mouse.nx) * .05 * k; mouse.ny += (mouse.ty - mouse.ny) * .05 * k;
 
-      const { gx, gy, R, a: sceneAlpha } = layout();
-      const spin = t * .00012 + mouse.nx * .5, tilt = .38 + mouse.ny * .22;
-      const P = v => { const s = 1 / (1 - v[2] * .16); return [gx + v[0] * R * s, gy - v[1] * R * s, v[2], s]; };
+      const { x: gx, y: gy, R } = bh;
+      const incl = 1.36 + mouse.ny * .1;              // near edge-on view of the disk
+      const ci = Math.cos(incl), si = Math.sin(incl);
+      const roll = -.12 + mouse.nx * .08, cr = Math.cos(roll), sr = Math.sin(roll);
+      const toScreen = (sx, sy) => [gx + (sx * cr - sy * sr) * R, gy + (sx * sr + sy * cr) * R];
+      const diskSpeed = (1 + warp * 5 + energy * 2.5) * (reduceMotion ? .3 : 1);
+      spin += .0009 * dt * diskSpeed;
 
+      ctx.globalCompositeOperation = "source-over";
       ctx.fillStyle = C.bg; ctx.fillRect(0, 0, w, h);
 
-      /* starfield: stars fly toward the viewer; warp, sound and scroll speed them up */
-      const speed = (.0018 + warp * .045 + energy * .012 + Math.min(.02, Math.abs(scrollVel) * .0006)) * k * (reduceMotion ? .3 : 1);
-      const vx = w / 2 - mouse.nx * 60, vy = h / 2 - mouse.ny * 40, f = Math.max(w, h) * .55;
+      /* stars, bent away from the hole (gravitational lensing) */
+      const speed = (.0016 + warp * .04 + energy * .01 + Math.min(.02, Math.abs(scrollVel) * .0006)) * k * (reduceMotion ? .3 : 1);
+      const vx = w / 2 - mouse.nx * 60, vy = h / 2 - mouse.ny * 40, f = Math.max(w, h) * .28;
+      const lens = (x, y) => {
+        const dx = x - gx, dy = y - gy, d2 = dx * dx + dy * dy, d = Math.sqrt(d2) || 1;
+        const push = (R * R * 2.2) / d;
+        return [x + dx / d * push, y + dy / d * push, d];
+      };
       ctx.lineCap = "round";
       for (const st of stars) {
         const pz = st.z;
         st.z -= speed;
         if (st.z <= .03) { Object.assign(st, newStar(false)); continue; }
-        const x1 = vx + st.x / pz * f * .5, y1 = vy + st.y / pz * f * .5;
-        const x2 = vx + st.x / st.z * f * .5, y2 = vy + st.y / st.z * f * .5;
+        const [x1, y1] = lens(vx + st.x / pz * f, vy + st.y / pz * f);
+        const [x2, y2, dd] = lens(vx + st.x / st.z * f, vy + st.y / st.z * f);
         if (x2 < -20 || x2 > w + 20 || y2 < -20 || y2 > h + 20) { Object.assign(st, newStar(false)); continue; }
+        if (dd < R * 1.05) continue; // swallowed
         ctx.globalAlpha = Math.min(1, (1 - st.z) * 1.3);
-        ctx.strokeStyle = st.c; ctx.lineWidth = (1 - st.z) * 2;
+        ctx.strokeStyle = st.c; ctx.lineWidth = (1 - st.z) * 1.8;
         ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 + .01, y2); ctx.stroke();
       }
       ctx.globalAlpha = 1;
 
-      /* atmosphere */
-      const atm = ctx.createRadialGradient(gx, gy, R * .7, gx, gy, R * 1.6);
-      atm.addColorStop(0, `rgba(124,247,193,${(.1 + energy * .15) * sceneAlpha})`); atm.addColorStop(1, "rgba(124,247,193,0)");
-      ctx.fillStyle = atm; ctx.beginPath(); ctx.arc(gx, gy, R * 1.6, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "rgba(7,8,10,.85)"; ctx.beginPath(); ctx.arc(gx, gy, R * 1.02, 0, Math.PI * 2); ctx.fill();
+      /* outer glow */
+      const glow = ctx.createRadialGradient(gx, gy, R, gx, gy, R * 6);
+      glow.addColorStop(0, `rgba(255,140,60,${.16 + energy * .2 + flare * .25})`);
+      glow.addColorStop(.4, "rgba(255,91,46,.05)");
+      glow.addColorStop(1, "rgba(255,91,46,0)");
+      ctx.fillStyle = glow; ctx.fillRect(gx - R * 6, gy - R * 6, R * 12, R * 12);
 
-      /* orbits (back halves first) */
-      const orbitPt = (o, ang) => rotX(rotY(rotX([Math.cos(ang) * o.r, 0, Math.sin(ang) * o.r], o.tilt), o.yaw), tilt);
-      const drawOrbits = front => {
-        ORBITS.forEach(o => {
-          ctx.beginPath();
-          let pen = false;
-          for (let i = 0; i <= 120; i++) {
-            const v = orbitPt(o, i / 120 * Math.PI * 2), pp = P(v);
-            if ((v[2] >= 0) === front) { pen ? ctx.lineTo(pp[0], pp[1]) : ctx.moveTo(pp[0], pp[1]); pen = true; } else pen = false;
-          }
-          ctx.strokeStyle = `rgba(125,133,143,${(front ? .35 : .12) * sceneAlpha})`; ctx.lineWidth = 1;
-          ctx.setLineDash([3, 6]); ctx.stroke(); ctx.setLineDash([]);
-        });
-      };
-      drawOrbits(false);
-
-      /* globe dots with a scanning band */
-      const scanY = Math.sin(t * .0006);
-      for (const g of globe) {
-        const v = rotX(rotY(g, spin), tilt);
-        const pp = P(v);
-        const band = Math.abs(g[1] - scanY) < .05;
-        ctx.globalAlpha = (v[2] > 0 ? .25 + v[2] * .7 : .06) * sceneAlpha * (band ? 1.4 : 1);
-        ctx.fillStyle = band ? C.orange : C.green;
-        const sz = (band ? 1.8 : 1.2) * pp[3];
-        ctx.fillRect(pp[0] - sz / 2, pp[1] - sz / 2, sz, sz);
+      /* relativistic jets: particles streaming out along the spin axis */
+      ctx.globalCompositeOperation = "lighter";
+      const jetLen = 4.8 + energy * 2 + flare * 2.5;
+      for (const jp of jets) {
+        jp.s += (.004 + jp.v) * k * (1 + warp * 3 + energy * 2);
+        if (jp.s > 1) { jp.s = 0; jp.off = (Math.random() - .5) * .22; }
+        const along = 1.05 + jp.s * jetLen, spread = jp.off * (.3 + jp.s * 1.6);
+        const [x0, y0] = toScreen(spread, jp.dir * along), [x1, y1] = toScreen(spread * 1.02, jp.dir * (along + .18));
+        ctx.globalAlpha = (1 - jp.s) * (.45 + energy * .4 + flare * .4);
+        ctx.strokeStyle = jp.s < .25 ? "#e8f0ff" : jp.s < .6 ? C.blue : C.green;
+        ctx.lineWidth = 1.4 * (1 - jp.s * .6);
+        ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
       }
-      ctx.globalAlpha = 1;
 
-      /* traffic arcs between random points on the globe */
-      arcTimer += dt;
-      if (arcTimer > (reduceMotion ? 2400 : 650)) {
-        arcTimer = 0;
-        arcs.push({ a: sph(Math.random() * 140 - 70, Math.random() * 360), b: sph(Math.random() * 140 - 70, Math.random() * 360), t0: t, c: [C.orange, C.green, C.blue, C.amber][(Math.random() * 4) | 0] });
+      /* disk particles, bucketed by colour and brightness so each bucket is one stroke */
+      const back = HEAT.map(() => [[], [], []]), front = HEAT.map(() => [[], [], []]), lensTop = HEAT.map(() => [[], [], []]), lensBot = HEAT.map(() => [[], [], []]);
+      for (const p of disk) {
+        const a = p.a + spin / Math.pow(p.r, 1.5) * 3;
+        const ca = Math.cos(a), sa = Math.sin(a);
+        const X = p.r * ca, Z = p.r * sa;
+        const doppler = 1 + .6 * -ca;                 // the side moving towards us is brighter
+        const lvl = Math.min(2, Math.floor(p.b * doppler * 1.6));
+        const trail = .11 / Math.sqrt(p.r);           // streak along the orbit
+        const X0 = p.r * Math.cos(a - trail), Z0 = p.r * Math.sin(a - trail);
+        const seg = [...toScreen(X0, -Z0 * ci + p.y), ...toScreen(X, -Z * ci + p.y)];
+        (Z > 0 ? back : front)[p.heat][lvl].push(seg);
+        // Lensed images: the far side bends over the top of the hole, the near side under it.
+        const rl = 1.1 + (p.r - R_IN) * .32;
+        const img = [...toScreen(rl * Math.cos(a - trail), -rl * Math.abs(Math.sin(a - trail))), ...toScreen(rl * ca, -rl * Math.abs(sa))];
+        if (Z > 0 && p.r < R_IN + 1.6) lensTop[p.heat][lvl].push(img);
+        else if (p.r < R_IN + .9) lensBot[p.heat][lvl].push([img[0], 2 * gy - img[1], img[2], 2 * gy - img[3]]);
       }
-      for (let i = arcs.length - 1; i >= 0; i--) {
-        const A = arcs[i], life = (t - A.t0) / 2200;
-        if (life > 1) { arcs.splice(i, 1); continue; }
-        const head = Math.min(1, life * 1.6), tailU = Math.max(0, life * 1.6 - .6);
-        ctx.strokeStyle = A.c; ctx.lineWidth = 1.4;
+      const drawBuckets = (b, alphaMul, width) => b.forEach((levels, hi) => levels.forEach((segs, li) => {
+        if (!segs.length) return;
+        ctx.strokeStyle = HEAT[hi];
+        ctx.globalAlpha = Math.min(1, (.22 + li * .28) * alphaMul * (1 + energy * .6 + flare * .8));
+        ctx.lineWidth = width * (1 + li * .25);
         ctx.beginPath();
-        let last = null;
-        for (let s2 = 0; s2 <= 24; s2++) {
-          const u = tailU + (head - tailU) * s2 / 24;
-          const base = slerp(A.a, A.b, u), lift = 1 + .28 * Math.sin(Math.PI * u);
-          const v = rotX(rotY([base[0] * lift, base[1] * lift, base[2] * lift], spin), tilt), pp = P(v);
-          ctx.globalAlpha = (v[2] > -.2 ? .9 : .15) * (1 - life * .6) * sceneAlpha;
-          s2 ? ctx.lineTo(pp[0], pp[1]) : ctx.moveTo(pp[0], pp[1]);
-          last = [pp, v];
-        }
+        for (const [a1, b1, a2, b2] of segs) { ctx.moveTo(a1, b1); ctx.lineTo(a2, b2); }
         ctx.stroke();
-        if (last && head < 1) { ctx.fillStyle = A.c; ctx.beginPath(); ctx.arc(last[0][0], last[0][1], 2.4, 0, Math.PI * 2); ctx.fill(); }
-      }
+      }));
+      drawBuckets(back, .8, 1.2);
+      drawBuckets(lensTop, 1.05, 1.1);
+      drawBuckets(lensBot, .3, .8);
+
+      /* event horizon + photon ring */
+      ctx.globalCompositeOperation = "source-over";
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = "#000";
+      ctx.beginPath(); ctx.arc(gx, gy, R, 0, Math.PI * 2); ctx.fill();
+      ctx.save();
+      ctx.shadowColor = "rgba(255,170,90,.9)"; ctx.shadowBlur = 16 + energy * 20 + flare * 30;
+      ctx.strokeStyle = `rgba(255,236,200,${.75 + energy * .25})`; ctx.lineWidth = 1.4 + energy * 1.5 + flare * 2;
+      ctx.beginPath(); ctx.arc(gx, gy, R * 1.04, 0, Math.PI * 2); ctx.stroke();
+      ctx.restore();
+
+      /* near side of the disk passes in front of the hole */
+      ctx.globalCompositeOperation = "lighter";
+      drawBuckets(front, 1, 1.3);
+      ctx.globalCompositeOperation = "source-over";
       ctx.globalAlpha = 1;
 
-      drawOrbits(true);
-
-      /* satellites carrying skill names */
+      /* captured skill probes */
       ctx.font = `500 ${w < 760 ? 9 : 10.5}px "JetBrains Mono", monospace`;
       ctx.textBaseline = "middle";
-      SATS.forEach(sat => {
-        const v = orbitPt(ORBITS[sat.o], sat.p + t * sat.v), pp = P(v);
-        const front = v[2] > -.15;
-        ctx.globalAlpha = (front ? 1 : .25) * sceneAlpha;
-        ctx.fillStyle = sat.c;
-        ctx.beginPath(); ctx.arc(pp[0], pp[1], 3.2 * pp[3], 0, Math.PI * 2); ctx.fill();
-        if (front) {
-          ctx.strokeStyle = sat.c; ctx.lineWidth = 1;
-          ctx.beginPath(); ctx.moveTo(pp[0], pp[1]); ctx.lineTo(pp[0] + 14, pp[1] - 14); ctx.lineTo(pp[0] + 22, pp[1] - 14); ctx.stroke();
-          ctx.fillText(sat.label, pp[0] + 26, pp[1] - 14);
+      PROBES.forEach(pr => {
+        const a = pr.a + spin / Math.pow(pr.r, 1.5) * 3;
+        const X = pr.r * Math.cos(a), Z = pr.r * Math.sin(a);
+        const [px, py] = toScreen(X, -Z * ci);
+        const behind = Z > 0 && Math.hypot(px - gx, py - gy) < R * 1.1;
+        if (behind) return;
+        ctx.globalAlpha = Z > 0 ? .45 : 1;
+        ctx.fillStyle = pr.c;
+        ctx.beginPath(); ctx.arc(px, py, 2.6, 0, Math.PI * 2); ctx.fill();
+        if (Z <= 0) {
+          ctx.strokeStyle = pr.c; ctx.lineWidth = 1;
+          const up = py < gy ? -1 : 1;
+          ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + 10, py + up * 12); ctx.lineTo(px + 18, py + up * 12); ctx.stroke();
+          ctx.fillText(pr.label, px + 21, py + up * 12);
         }
       });
       ctx.globalAlpha = 1;
@@ -588,17 +599,16 @@
         });
       }
 
-      /* heading tape follows the globe's spin */
+      /* heading tape follows the disk's rotation */
       if (tape && tapeCanvas.offsetParent) {
         const { ctx: tc, w: tw, h: th } = tape;
-        const heading = ((spin * 180 / Math.PI) % 360 + 360) % 360, pxPerDeg = 4;
+        const heading = ((spin * 20 + mouse.nx * 30) % 360 + 360) % 360, pxPerDeg = 4;
         tc.clearRect(0, 0, tw, th);
         tc.font = '500 9px "JetBrains Mono", monospace'; tc.textAlign = "center"; tc.textBaseline = "top";
         const from = Math.floor((heading - tw / 2 / pxPerDeg) / 5) * 5;
         for (let deg = from; deg < heading + tw / 2 / pxPerDeg; deg += 5) {
           const x = tw / 2 + (deg - heading) * pxPerDeg, major = deg % 30 === 0;
-          const fade = 1 - Math.abs(x - tw / 2) / (tw / 2);
-          tc.globalAlpha = Math.max(0, fade);
+          tc.globalAlpha = Math.max(0, 1 - Math.abs(x - tw / 2) / (tw / 2));
           tc.strokeStyle = major ? C.fg : C.muted;
           tc.beginPath(); tc.moveTo(x, 0); tc.lineTo(x, major ? 10 : 5); tc.stroke();
           if (major) {
@@ -663,12 +673,12 @@
     });
   });
 
-  /* ================= STACK SPHERE ================= */
+  /* ================= STACK GRAPH ================= */
   (function stack() {
     const canvas = $("#stack-canvas");
     const legend = $("#stack-legend");
     const list = $("#stack-list");
-    const tip = $("#stack-tip");
+    // Items are ordered so the longest labels sit at the ends of each fan (more room on phones).
     const GROUPS = [
       { name: "AWS", c: C.orange, items: ["AWS Batch", "Lambda", "EKS", "ECS", "EC2", "S3", "Kinesis", "AWS Network"] },
       { name: "Databases & Search", c: C.blue, items: ["RDS", "Aurora", "Elasticsearch", "MySQL"] },
@@ -679,45 +689,7 @@
       { name: "Scripting", c: C.bone, items: ["Python", "Shell Scripting"] }
     ];
 
-    // Spread every skill evenly over the sphere (Fibonacci points), then give each
-    // group a contiguous region: points are handed out greedily to the nearest group seed.
-    const GOLD = Math.PI * (3 - Math.sqrt(5));
-    const fib = (i, n) => { const y = 1 - ((i + .5) / n) * 2, r = Math.sqrt(1 - y * y), phi = i * GOLD; return [Math.cos(phi) * r, y, Math.sin(phi) * r]; };
-    const total = GROUPS.reduce((a, g) => a + g.items.length, 0);
-    const spots = Array.from({ length: total }, (_, i) => fib(i, total));
-    const seeds = GROUPS.map((_, gi) => fib(gi, GROUPS.length));
-    const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
-    // Round-robin region growing: each group in turn takes the free spot nearest its seed,
-    // which keeps every group in one compact patch.
-    const taken = new Set(), slots = GROUPS.map(() => []);
-    for (let round = 0; slots.some((sl, gi) => sl.length < GROUPS[gi].items.length); round++) {
-      GROUPS.forEach((g, gi) => {
-        if (slots[gi].length >= g.items.length) return;
-        let best = -1, bd = 9;
-        spots.forEach((p, si) => { if (!taken.has(si)) { const d = dist(p, seeds[gi]); if (d < bd) { bd = d; best = si; } } });
-        taken.add(best); slots[gi].push(spots[best]);
-      });
-    }
-    const items = [];
-    GROUPS.forEach((g, gi) => g.items.forEach((label, j) => {
-      const [x, y, z] = slots[gi][j];
-      items.push({ label, gi, x, y, z });
-    }));
-    // Link each skill to its nearest neighbour in the same group.
-    const links = [];
-    items.forEach((a, i) => {
-      let best = -1, bd = 9;
-      items.forEach((b, j) => { if (i !== j && a.gi === b.gi) { const d = dist([a.x, a.y, a.z], [b.x, b.y, b.z]); if (d < bd) { bd = d; best = j; } } });
-      if (best >= 0 && !links.some(([p, q]) => p === best && q === i)) links.push([i, best]);
-    });
-    // Three guide rings for depth.
-    const RINGS = [0, 1, 2].map(k => Array.from({ length: 72 }, (_, i) => {
-      const a = (i / 72) * Math.PI * 2;
-      return k === 0 ? [Math.cos(a), 0, Math.sin(a)] : k === 1 ? [Math.cos(a), Math.sin(a), 0] : [0, Math.sin(a), Math.cos(a)];
-    }));
-
-    let ctx, w, h, ax = -.35, ay = 0, vax = 0, vay = .004, focus = -1, hover = null, energy = 0;
-    let drag = null;
+    let ctx, w, h, hubs = [], nodes = [], focus = -1, hover = null, stackSmall = false;
     const mouse = { x: -1e4, y: -1e4 };
 
     GROUPS.forEach((g, gi) => {
@@ -735,120 +707,124 @@
       legend.append(b);
     });
 
-    function resize() { ({ ctx, w, h } = fitCanvas(canvas)); }
-    resize();
-    addEventListener("resize", debounce(resize, 200));
+    function build() {
+      // Phones get a 2-column grid of clusters; wider screens get a ring.
+      const small = canvas.parentElement.clientWidth < 640;
+      const CELL_H = 160;
+      canvas.style.height = small ? Math.ceil(GROUPS.length / 2) * CELL_H + 16 + "px" : "";
+      ({ ctx, w, h } = fitCanvas(canvas));
+      const R = small ? 62 : 92;
+      const rx = w / 2 - R - 110, ry = h / 2 - R - 30;
+      hubs = GROUPS.map((g, i) => {
+        let bx, by, lx, ly, la;
+        if (small) {
+          const cw = (w - 16) / 2, x0 = 8 + (i % 2) * cw, y0 = 8 + Math.floor(i / 2) * CELL_H;
+          bx = x0 + 16; by = y0 + CELL_H / 2 + 8; lx = x0 + 8; ly = y0 + 12; la = "left";
+        } else {
+          const a = (i / GROUPS.length) * Math.PI * 2 - Math.PI / 2;
+          bx = w / 2 + Math.cos(a) * rx; by = h / 2 + Math.sin(a) * ry; lx = 0; ly = -18; la = "center";
+        }
+        return { ...g, i, bx, by, x: bx, y: by, lx, ly, la };
+      });
+      const old = nodes;
+      nodes = [];
+      hubs.forEach(hb => hb.items.forEach((label, j) => {
+        const prev = old.find(n => n.label === label);
+        const n = hb.items.length;
+        let a, rr;
+        if (small) {
+          // Fan out to the right of the hub so labels have room.
+          a = n === 1 ? 0 : -1.2 + (j / (n - 1)) * 2.4;
+          rr = n <= 3 ? 48 : R;
+        } else {
+          // Spread items around the hub, leaving the top free for the hub label.
+          a = -Math.PI / 2 + Math.PI / 5 + (j + .5) / n * (Math.PI * 2 - Math.PI * 2 / 5);
+          rr = R * (n > 5 && j % 2 ? .62 : 1);
+        }
+        nodes.push({
+          label, hub: hb, ox: Math.cos(a) * rr, oy: Math.sin(a) * rr,
+          x: prev ? Math.min(w, prev.x) : hb.x, y: prev ? Math.min(h, prev.y) : hb.y,
+          vx: 0, vy: 0, r: j === 0 ? 5.5 : 4, phase: Math.random() * 6
+        });
+      }));
+      stackSmall = small;
+    }
+    build();
+    addEventListener("resize", debounce(build, 200));
 
-    canvas.addEventListener("pointerdown", e => {
-      drag = { x: e.clientX, y: e.clientY, moved: false };
-      canvas.setPointerCapture(e.pointerId);
-      canvas.classList.add("is-dragging");
-    });
     canvas.addEventListener("pointermove", e => {
       const r = canvas.getBoundingClientRect();
       mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top;
-      if (!drag) return;
-      const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
-      drag.x = e.clientX; drag.y = e.clientY;
-      vay = dx * .006; vax = dy * .006;
-      if (Math.abs(dx) + Math.abs(dy) > 2) { drag.moved = true; focus = -1; $$("button", legend).forEach(x => x.classList.remove("is-on")); }
     });
-    const end = () => { drag = null; canvas.classList.remove("is-dragging"); };
-    canvas.addEventListener("pointerup", end);
-    canvas.addEventListener("pointercancel", end);
-    canvas.addEventListener("pointerleave", () => { if (!drag) mouse.x = mouse.y = -1e4; });
-
-    const rot = (x, y, z) => {
-      const cy = Math.cos(ay), sy = Math.sin(ay), cx = Math.cos(ax), sx = Math.sin(ax);
-      const x1 = x * cy - z * sy, z1 = x * sy + z * cy;
-      return [x1, y * cx - z1 * sx, y * sx + z1 * cx];
-    };
-    const wrapAngle = a => Math.atan2(Math.sin(a), Math.cos(a));
+    canvas.addEventListener("pointerleave", () => { mouse.x = mouse.y = -1e4; });
 
     whileVisible(canvas, (dt, t) => {
-      const k = Math.min(3, dt / 16.67);
-      energy += (audioEnergy() - energy) * .12;
+      const k = Math.min(2, dt / 16.67);
+      const small = stackSmall;
+      const font = small ? 10.5 : 12;
 
-      if (focus >= 0 && !drag) {
-        // Turn the chosen group's centre towards the viewer.
-        let cx = 0, cy = 0, cz = 0;
-        items.forEach(it => { if (it.gi === focus) { cx += it.x; cy += it.y; cz += it.z; } });
-        const tay = Math.atan2(cx, cz), tax = Math.atan2(cy, Math.hypot(cx, cz));
-        ay += wrapAngle(tay - ay) * .08 * k; ax += (tax - ax) * .08 * k;
-        vax = vay = 0;
-      } else if (!drag) {
-        vay += ((reduceMotion ? .0008 : .003) - vay) * .02 * k;
-        vax += (0 - vax) * .04 * k;
-        ax += (-.35 - ax) * .01 * k;
+      hubs.forEach(hb => {
+        hb.x = hb.bx + Math.sin(t * .0004 + hb.i) * 8;
+        hb.y = hb.by + Math.cos(t * .0005 + hb.i * 2) * 8;
+      });
+
+      // Forces: spring to hub, repel each other, flee the cursor.
+      for (const n of nodes) {
+        n.vx += (n.hub.x + n.ox - n.x) * .02 * k;
+        n.vy += (n.hub.y + n.oy - n.y) * .02 * k;
+        const mx = n.x - mouse.x, my = n.y - mouse.y, md = Math.hypot(mx, my) || 1;
+        if (md < 110) { const f = (1 - md / 110) * 2.2; n.vx += mx / md * f * k; n.vy += my / md * f * k; }
       }
-      ay += vay * k; ax += vax * k;
-      ax = Math.max(-1.3, Math.min(1.3, ax));
-
-      const small = w < 640;
-      const R = Math.min(w, h) * (small ? .42 : .4) * (1 + energy * .06);
-      const ox = w / 2, oy = h / 2;
-      const proj = ([x, y, z]) => { const p = 1 / (1 - z * .25); return [ox + x * R * p, oy - y * R * p, z, p]; };
+      let newHover = null;
+      for (const n of nodes) {
+        n.vx *= .86; n.vy *= .86;
+        n.x += n.vx * k + Math.sin(t * .001 + n.phase) * .08;
+        n.y += n.vy * k + Math.cos(t * .0012 + n.phase) * .08;
+        n.x = Math.max(8, Math.min(w - 8, n.x)); n.y = Math.max(8, Math.min(h - 8, n.y));
+        if (Math.hypot(n.x - mouse.x, n.y - mouse.y) < 130 && !newHover) newHover = n;
+      }
+      if (newHover !== hover) { hover = newHover; if (hover) SFX.hover(); }
 
       ctx.clearRect(0, 0, w, h);
-
-      // Soft core glow.
-      const glow = ctx.createRadialGradient(ox, oy, 0, ox, oy, R * 1.2);
-      glow.addColorStop(0, `rgba(124,247,193,${.05 + energy * .12})`); glow.addColorStop(1, "rgba(124,247,193,0)");
-      ctx.fillStyle = glow; ctx.fillRect(0, 0, w, h);
-
+      // Faint links between neighbouring hubs.
       ctx.lineWidth = 1;
-      RINGS.forEach(ring => {
-        for (let i = 0; i < ring.length; i++) {
-          const a = proj(rot(...ring[i])), b = proj(rot(...ring[(i + 1) % ring.length]));
-          ctx.strokeStyle = `rgba(125,133,143,${.06 + (a[2] + 1) * .07})`;
-          ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
-        }
-      });
-
-      const pts = items.map(it => { const p = proj(rot(it.x, it.y, it.z)); return { it, sx: p[0], sy: p[1], z: p[2], s: p[3] }; });
-
-      // Constellation lines inside each group.
-      links.forEach(([i, j]) => {
-        const a = pts[i], b = pts[j], dim = focus >= 0 && a.it.gi !== focus;
-        ctx.strokeStyle = GROUPS[a.it.gi].c;
-        ctx.globalAlpha = dim ? .04 : .1 + ((a.z + b.z) / 2 + 1) * .2;
-        ctx.beginPath(); ctx.moveTo(a.sx, a.sy); ctx.lineTo(b.sx, b.sy); ctx.stroke();
-      });
-      ctx.globalAlpha = 1;
-
-      let best = null, bestD = 36;
-      pts.forEach(p => {
-        if (p.z < -.1) return;
-        const d = Math.hypot(p.sx - mouse.x, p.sy - mouse.y);
-        if (d < bestD) { bestD = d; best = p; }
-      });
-      const newHover = best && best.it;
-      if (newHover !== hover) {
-        hover = newHover;
-        if (hover) { SFX.hover(); tip.innerHTML = `${GROUPS[hover.gi].name} › <b></b>`; $("b", tip).textContent = hover.label; }
-        else tip.textContent = "drag to spin";
+      if (!small) {
+        ctx.strokeStyle = C.line; ctx.setLineDash([2, 6]);
+        ctx.beginPath();
+        hubs.forEach((hb, i) => { const nx = hubs[(i + 1) % hubs.length]; ctx.moveTo(hb.x, hb.y); ctx.lineTo(nx.x, nx.y); });
+        ctx.stroke(); ctx.setLineDash([]);
       }
 
-      pts.sort((a, b) => a.z - b.z);
+      for (const n of nodes) {
+        const dim = focus >= 0 && n.hub.i !== focus;
+        ctx.globalAlpha = dim ? .08 : .35;
+        ctx.strokeStyle = n.hub.c;
+        ctx.beginPath(); ctx.moveTo(n.hub.x, n.hub.y); ctx.lineTo(n.x, n.y); ctx.stroke();
+      }
+
       ctx.textBaseline = "middle";
-      const base = small ? 10 : 12.5;
-      pts.forEach(p => {
-        const g = GROUPS[p.it.gi];
-        const dim = focus >= 0 && p.it.gi !== focus;
-        const isHover = p.it === hover;
-        const depth = (p.z + 1) / 2;
-        ctx.globalAlpha = dim ? .08 + depth * .12 : .18 + depth * .82;
-        const size = base * Math.min(1.2, p.s) * (isHover ? 1.3 : 1);
-        ctx.fillStyle = g.c;
-        ctx.beginPath(); ctx.arc(p.sx, p.sy, (isHover ? 4.5 : 2.6) * p.s, 0, Math.PI * 2); ctx.fill();
-        if (isHover) { ctx.strokeStyle = g.c; ctx.beginPath(); ctx.arc(p.sx, p.sy, 10 + Math.sin(t * .01) * 2, 0, Math.PI * 2); ctx.stroke(); }
-        ctx.font = `${isHover || depth > .75 ? 600 : 500} ${size.toFixed(1)}px "Space Grotesk", sans-serif`;
-        ctx.fillStyle = isHover ? g.c : dim ? C.muted : C.fg;
-        // Labels on the right side of the sphere go to the left of their dot so they stay inside the canvas.
-        const left = p.sx > ox + R * .25;
-        ctx.textAlign = left ? "right" : "left";
-        ctx.fillText(p.it.label, p.sx + (left ? -7 : 7) * p.s, p.sy);
-      });
+      for (const n of nodes) {
+        const dim = focus >= 0 && n.hub.i !== focus;
+        const near = Math.max(0, 1 - Math.hypot(n.x - mouse.x, n.y - mouse.y) / 160);
+        ctx.globalAlpha = dim ? .15 : 1;
+        ctx.fillStyle = n.hub.c;
+        ctx.beginPath(); ctx.arc(n.x, n.y, n.r + near * 3, 0, Math.PI * 2); ctx.fill();
+        ctx.font = `${500} ${font + near * 2}px "Space Grotesk", sans-serif`;
+        ctx.fillStyle = dim ? C.muted : C.fg;
+        ctx.textAlign = !small && n.x < n.hub.x - 4 ? "right" : "left";
+        ctx.fillText(n.label, n.x + (ctx.textAlign === "right" ? -9 : 9), n.y);
+      }
+
+      for (const hb of hubs) {
+        const dim = focus >= 0 && hb.i !== focus;
+        ctx.globalAlpha = dim ? .2 : 1;
+        ctx.fillStyle = C.bg; ctx.strokeStyle = hb.c; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(hb.x, hb.y, 7, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.font = `500 ${small ? 9 : 10.5}px "JetBrains Mono", monospace`;
+        ctx.fillStyle = hb.c; ctx.textAlign = hb.la;
+        if (small) ctx.fillText(hb.name.toUpperCase(), hb.lx, hb.ly);
+        else ctx.fillText(hb.name.toUpperCase(), hb.x, hb.y + hb.ly);
+      }
       ctx.globalAlpha = 1;
     });
   })();
