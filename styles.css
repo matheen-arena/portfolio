@@ -351,3 +351,12 @@ body.is-ready .hero-title .split { transform: none; }
   .stage-facts li { font-size: 14px; padding: 8px 12px; }
 }
 @media (prefers-reduced-motion: reduce) { .stage { transition: none; filter: none; } }
+
+/* message stages */
+.stage-q { font-size: clamp(34px, 4.6vw, 72px); line-height: 1.02; max-width: 20ch; margin-left: auto; margin-right: auto; }
+.stage-q .hl { color: var(--accent); text-shadow: 0 0 24px rgba(255,91,46,.45); }
+.strike { position: relative; text-decoration: none; color: #9aa0ad; }
+.strike::after { content: ""; position: absolute; left: -4%; right: -4%; top: 52%; height: .09em; background: var(--accent);
+  box-shadow: 0 0 12px var(--accent); transform: scaleX(0); transform-origin: left; transition: transform .7s var(--ease) .35s; }
+.stage.is-on .strike::after { transform: scaleX(1); }
+.stage .btn-ghost { background: rgba(6,8,16,.55); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
