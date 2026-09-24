@@ -127,117 +127,92 @@
     return { ctx, w, h };
   }
 
-  /* ================= HERO: TELEMETRY FLOW FIELD ================= */
-  (function hero() {
-    const canvas = $("#hero-canvas");
-    const section = $(".hero");
-    const hud = $("#hud-rate");
-    let ctx, w, h, parts = [], ingested = 0;
-    const mouse = { x: -1e4, y: -1e4, lastMove: -1e4 };
-    const shocks = [];
-    const PALETTE = [C.bone, C.bone, C.bone, C.bone, C.green, C.orange, C.blue, C.amber];
+  /* ================= HERO: COCKPIT FLIGHT (stages, radar, log) ================= */
+  (function flightHud() {
+    const section = $("#flight");
+    const stages = $$(".stage", section), dots = $$(".stage-dots i", section), label = $("#dash-label");
+    const LABELS = ["scroll down", "keep scrolling", "enter the site"];
+    let current = 0;
 
-    function spawn(p, anywhere) {
-      p.x = anywhere ? Math.random() * w : (Math.random() < .5 ? -5 : Math.random() * w);
-      p.y = Math.random() * h;
-      p.px = p.x; p.py = p.y;
-      p.s = .6 + Math.random() * 1.4;
-      p.life = 200 + Math.random() * 400;
-      p.c = (Math.random() * PALETTE.length) | 0;
-      return p;
-    }
+    // Scroll progress through the pinned section (0 → 1), shared with the 3D scene.
+    const progress = () => {
+      const r = section.getBoundingClientRect(), span = r.height - innerHeight;
+      return span > 0 ? Math.max(0, Math.min(1, -r.top / span)) : 0;
+    };
+    window.flightProgress = progress;
 
-    function resize() {
-      ({ ctx, w, h } = fitCanvas(canvas, 1.5));
-      ctx.fillStyle = C.bg; ctx.fillRect(0, 0, w, h);
-      const target = Math.round(Math.min(1500, (w * h) / 750) * (reduceMotion ? .3 : 1));
-      while (parts.length < target) parts.push(spawn({}, true));
-      parts.length = target;
-    }
-    resize();
-    addEventListener("resize", debounce(resize, 150));
-
-    section.addEventListener("pointermove", e => {
-      const r = canvas.getBoundingClientRect();
-      mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; mouse.lastMove = performance.now();
-    });
-    section.addEventListener("pointerleave", () => { mouse.lastMove = -1e4; });
-    section.addEventListener("pointerdown", e => {
-      if (e.target.closest("a, button")) return;
-      const r = canvas.getBoundingClientRect();
-      shocks.push({ x: e.clientX - r.left, y: e.clientY - r.top, r: 0 });
+    function update() {
+      const p = progress();
+      const next = p < .3 ? 0 : p < .66 ? 1 : 2;
+      if (next === current) return;
+      current = next;
+      stages.forEach((st, i) => st.classList.toggle("is-on", i === next));
+      dots.forEach((d, i) => d.classList.toggle("is-on", i <= next));
+      label.textContent = LABELS[next];
       SFX.whoosh();
+    }
+    addEventListener("scroll", update, { passive: true });
+    update();
+
+    // Center console jumps to the next stage, then into the page.
+    $(".dash-center", section).addEventListener("click", e => {
+      e.preventDefault();
+      const span = section.offsetHeight - innerHeight;
+      const target = current < 2 ? section.offsetTop + span * (current === 0 ? .45 : .82) : $("#about").offsetTop;
+      scrollTo({ top: target, behavior: reduceMotion ? "auto" : "smooth" });
     });
 
-    const field = (x, y, t) =>
-      Math.sin(x * .0018 + t * .00015) * 1.3 +
-      Math.cos(y * .0024 - t * .0001) * 1.3 +
-      Math.sin((x - y) * .0009 + t * .0002) * .9;
-
-    const buckets = PALETTE.map(() => []);
-
-    whileVisible(canvas, (dt, t) => {
-      const k = dt / 16.67 * (reduceMotion ? .4 : 1);
-      ctx.fillStyle = "rgba(7,8,10,0.11)";
-      ctx.fillRect(0, 0, w, h);
-
-      // Collector follows the cursor; with no cursor it drifts on its own.
-      let cx = mouse.x, cy = mouse.y;
-      if (t - mouse.lastMove > 2500) {
-        cx = w * (.62 + .22 * Math.sin(t * .00023));
-        cy = h * (.5 + .28 * Math.sin(t * .00031 + 1));
+    /* dashboard radar sweeping the skill domains */
+    const rc = $("#radar");
+    const DOMAINS = ["AWS", "OBSERV", "CI/CD", "DATA", "IAC", "AI", "SCRIPT"].map((n, i) => ({ n, a: i / 7 * Math.PI * 2 + .3, r: .45 + (i % 3) * .18, g: 0 }));
+    let radar = null;
+    const fitRadar = () => { if (rc.offsetParent) radar = fitCanvas(rc); };
+    fitRadar();
+    addEventListener("resize", debounce(fitRadar, 200));
+    whileVisible(section, (dt, t) => {
+      if (!radar || !rc.offsetParent) return;
+      const { ctx: r, w: rw, h: rh } = radar, c = rw / 2, cy = rh / 2, rr = Math.min(c, cy) - 3;
+      const sweep = (t * .0018) % (Math.PI * 2);
+      r.clearRect(0, 0, rw, rh);
+      r.strokeStyle = "rgba(255,120,100,.3)"; r.lineWidth = 1;
+      [1, .6, .25].forEach(q => { r.beginPath(); r.arc(c, cy, rr * q, 0, Math.PI * 2); r.stroke(); });
+      for (let i = 0; i < 24; i++) {
+        const a0 = sweep - i * .035;
+        r.fillStyle = `rgba(255,80,60,${.3 * (1 - i / 24)})`;
+        r.beginPath(); r.moveTo(c, cy); r.arc(c, cy, rr, a0 - .035, a0); r.closePath(); r.fill();
       }
-      const R = Math.min(220, Math.max(140, w * .14)), R2 = R * R;
-
-      for (const s of shocks) s.r += 14 * k;
-      while (shocks.length && shocks[0].r > Math.max(w, h)) shocks.shift();
-
-      buckets.forEach(b => (b.length = 0));
-      for (const p of parts) {
-        const a = field(p.x, p.y, t);
-        let vx = Math.cos(a) * p.s, vy = Math.sin(a) * p.s;
-        const dx = cx - p.x, dy = cy - p.y, d2 = dx * dx + dy * dy;
-        if (d2 < R2) {
-          const d = Math.sqrt(d2) || 1, f = 1 - d / R;
-          vx += (-dy / d) * f * 3.2 + (dx / d) * f * 1.6;
-          vy += (dx / d) * f * 3.2 + (dy / d) * f * 1.6;
-          if (d < 10) { ingested++; spawn(p); continue; }
-        }
-        for (const s of shocks) {
-          const sx = p.x - s.x, sy = p.y - s.y, sd = Math.sqrt(sx * sx + sy * sy) || 1;
-          if (Math.abs(sd - s.r) < 40) { vx += sx / sd * 6; vy += sy / sd * 6; }
-        }
-        p.px = p.x; p.py = p.y;
-        p.x += vx * k; p.y += vy * k;
-        p.life -= k;
-        if (p.life < 0 || p.x < -10 || p.x > w + 10 || p.y < -10 || p.y > h + 10) { spawn(p); continue; }
-        buckets[p.c].push(p);
-      }
-
-      ctx.lineWidth = 1.2;
-      ctx.lineCap = "round";
-      buckets.forEach((b, i) => {
-        if (!b.length) return;
-        ctx.strokeStyle = PALETTE[i];
-        ctx.globalAlpha = PALETTE[i] === C.bone ? .45 : .85;
-        ctx.beginPath();
-        for (const p of b) { ctx.moveTo(p.px, p.py); ctx.lineTo(p.x, p.y); }
-        ctx.stroke();
+      r.font = '500 7px "JetBrains Mono", monospace'; r.textAlign = "center";
+      DOMAINS.forEach(d => {
+        if ((sweep - d.a + Math.PI * 4) % (Math.PI * 2) < .08) d.g = 1;
+        d.g = Math.max(.2, d.g - dt * .0006);
+        const x = c + Math.cos(d.a) * rr * d.r, y = cy + Math.sin(d.a) * rr * d.r;
+        r.globalAlpha = d.g; r.fillStyle = "#ffd2c8";
+        r.beginPath(); r.arc(x, y, 2, 0, Math.PI * 2); r.fill();
+        r.fillText(d.n, x, y - 5);
+        r.globalAlpha = 1;
       });
-      ctx.globalAlpha = 1;
-
-      // Collector ring.
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(t * .0008);
-      ctx.strokeStyle = C.green; ctx.globalAlpha = .55; ctx.setLineDash([4, 7]);
-      ctx.beginPath(); ctx.arc(0, 0, 26, 0, Math.PI * 2); ctx.stroke();
-      ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.fillStyle = C.orange;
-      ctx.beginPath(); ctx.arc(0, 0, 3.5, 0, Math.PI * 2); ctx.fill();
-      ctx.restore();
-
-      hud.textContent = ingested.toLocaleString();
     });
+
+    /* dashboard log streaming resume facts */
+    const log = $("#dash-log");
+    const LINES = [
+      ["zeb", "Argo Cron Workflows on EKS"], ["zeb", "always-on EC2 eliminated for ETL"], ["zeb", "AWS data transfer costs reduced"],
+      ["avasoft", "Grafana OSS on EKS, ~$250K/yr saved"], ["avasoft", "1,200+ Lambdas → Kinesis ingestion"],
+      ["avasoft", "Kiro AI agent: 150+ dashboards"], ["avasoft", "Kiro AI agent: 300+ alerts"], ["avasoft", "GitSync dashboards in Git"],
+      ["avasoft", "2,100 projects GitLab → GitHub"], ["avasoft", "ARC runners on EKS, -80% cost"], ["stellar", "ETL pipelines → AWS S3"]
+    ];
+    let li = 0;
+    const addLine = () => {
+      const [who, msg] = LINES[li++ % LINES.length];
+      const d = document.createElement("div");
+      d.innerHTML = "<b></b> ";
+      $("b", d).textContent = who + " ›";
+      d.append(msg);
+      log.append(d);
+      while (log.children.length > 7) log.firstChild.remove();
+    };
+    for (let k = 0; k < 6; k++) addLine();
+    setInterval(() => { if (log.offsetParent && document.visibilityState === "visible") addLine(); }, 1600);
   })();
 
   /* ================= METRICS: COUNT-UP + SPARKLINES ================= */
