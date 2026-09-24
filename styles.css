@@ -616,3 +616,8 @@ body.is-ready .hero-title .split { transform: none; }
   .rail-track { top: 50%; bottom: auto; left: auto; right: 3px; width: 14px; height: 200px; margin-top: -100px; border-radius: 7px; }
   .rail-thumb { height: 26px !important; border-radius: 5px; }
 }
+
+.job-env { font-family: var(--mono); font-size: 11.5px; letter-spacing: .04em; color: var(--accent-2); margin: -6px 0 10px; }
+.job.is-in .log li:nth-child(5) { transition-delay: .32s, .32s, 0s; }
+.job.is-in .log li:nth-child(6) { transition-delay: .4s, .4s, 0s; }
+.job.is-in .log li:nth-child(7) { transition-delay: .48s, .48s, 0s; }
