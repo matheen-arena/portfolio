@@ -578,3 +578,23 @@ body.is-ready .hero-title .split { transform: none; }
 .console .dash-center { border-radius: 18px 18px 0 0; overflow: hidden; }
 .dc-scope { border-radius: 8px; }
 .dc-meter, .dc-bracket i { border-radius: 6px; }
+
+/* ================= CUSTOM SCROLL RAIL (replaces the native scrollbar on mouse devices) ================= */
+.rail { display: none; }
+@media (hover: hover) and (pointer: fine) {
+  html { scrollbar-width: none; }
+  html::-webkit-scrollbar, body::-webkit-scrollbar { width: 0; height: 0; }
+  .rail { display: block; position: fixed; top: 0; right: 0; bottom: 0; width: 16px; z-index: 95;
+    background: linear-gradient(90deg, #d8102c, #ff2340 40%, #e0142f); box-shadow: -2px 0 12px rgba(255,20,50,.35); }
+  .rail::before, .rail::after { content: ""; position: absolute; left: 0; right: 0; height: 18px; background: #ff2340; }
+  .rail::before { top: 0; } .rail::after { bottom: 0; }
+  .rail-track { position: absolute; left: 3px; right: 3px; top: 22px; bottom: 22px; border-radius: 8px; cursor: pointer;
+    background: repeating-linear-gradient(to bottom, #a3001b 0 2px, #6e0011 2px 4px);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.35), inset 0 2px 6px rgba(0,0,0,.5); }
+  .rail-thumb { position: absolute; left: 0; right: 0; top: 0; height: 40px; border-radius: 6px; cursor: grab;
+    background: linear-gradient(90deg, #d9dbe0, #ffffff 45%, #e3e5ea); box-shadow: 0 0 10px rgba(255,255,255,.55), 0 2px 4px rgba(0,0,0,.4);
+    will-change: transform; transition: box-shadow .2s; }
+  .rail-thumb:hover, .rail.is-drag .rail-thumb { box-shadow: 0 0 16px rgba(255,255,255,.85), 0 2px 4px rgba(0,0,0,.4); }
+  .rail.is-drag .rail-thumb { cursor: grabbing; }
+  .rail.is-drag { user-select: none; }
+}
