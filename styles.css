@@ -433,3 +433,63 @@ body.is-ready .hero-title .split { transform: none; }
 }
 .hood .dash-log div:nth-last-child(n+6) { display: none; }
 @media (max-height: 820px) { .hood .dash-log div:nth-last-child(n+5) { display: none; } }
+
+/* ---------- side windows: tinted glass beyond the pillars ---------- */
+.cp-glass { fill: rgba(90,120,255,.05); stroke: rgba(170,190,255,.12); stroke-width: 1; }
+.cp-glint { stroke: rgba(200,215,255,.08); stroke-width: 18; stroke-linecap: round; }
+.cp-glint.thin { stroke-width: 5; stroke: rgba(200,215,255,.06); }
+
+/* ---------- console detail ---------- */
+.console { width: min(1060px, 78vw); grid-template-columns: 9% 1fr minmax(160px, 200px) 1fr 9%; }
+.console::before { background:
+    radial-gradient(ellipse 30% 70% at 24% 0%, rgba(255,40,60,.22), transparent 70%),
+    radial-gradient(ellipse 30% 70% at 76% 0%, rgba(255,40,60,.22), transparent 70%),
+    repeating-linear-gradient(90deg, transparent 0 58px, rgba(0,0,0,.35) 58px 59px),
+    linear-gradient(to bottom, #1d1e24, #0a0b0e); }
+.hood { padding: 26px 16% 16%; }
+.hood::after { content: ""; position: absolute; left: 12%; right: 12%; top: 20px; bottom: 11%; border: 1px solid rgba(255,255,255,.06);
+  border-radius: 4px; box-shadow: inset 0 0 0 5px #0b0c0f, inset 0 0 0 6px rgba(255,255,255,.05); pointer-events: none; }
+.hood-leds { position: absolute; right: 18%; top: 20px; display: flex; gap: 4px; z-index: 2; }
+.hood-leds i { width: 4px; height: 4px; border-radius: 50%; background: #3a1a1e; }
+.hood-leds i:first-child { background: #ff2f45; box-shadow: 0 0 6px #ff2f45; animation: blinkBtn 1.6s steps(1) infinite; }
+.hood-leds i:nth-child(2) { background: #ffb36b; box-shadow: 0 0 5px #ffb36b; opacity: .7; }
+@keyframes blinkBtn { 50% { opacity: .2; } }
+.hood-vents { position: absolute; left: 22%; right: 22%; bottom: 4%; height: 6%; z-index: 2;
+  background: repeating-linear-gradient(90deg, #050507 0 3px, transparent 3px 7px); opacity: .9; }
+
+.hood .dash-screen { background:
+    linear-gradient(#ff5b6a, #ff5b6a) 0 0 / 10px 1px no-repeat, linear-gradient(#ff5b6a, #ff5b6a) 0 0 / 1px 10px no-repeat,
+    linear-gradient(#ff5b6a, #ff5b6a) 100% 0 / 10px 1px no-repeat, linear-gradient(#ff5b6a, #ff5b6a) 100% 0 / 1px 10px no-repeat,
+    linear-gradient(#ff5b6a, #ff5b6a) 0 100% / 10px 1px no-repeat, linear-gradient(#ff5b6a, #ff5b6a) 0 100% / 1px 10px no-repeat,
+    linear-gradient(#ff5b6a, #ff5b6a) 100% 100% / 10px 1px no-repeat, linear-gradient(#ff5b6a, #ff5b6a) 100% 100% / 1px 10px no-repeat,
+    radial-gradient(ellipse at 50% 0%, rgba(255,50,60,.24), rgba(24,3,6,.94) 72%); }
+.hood .dash-screen::before { content: ""; position: absolute; left: 0; right: 0; height: 40%; top: -40%; pointer-events: none;
+  background: linear-gradient(to bottom, transparent, rgba(255,90,100,.12), transparent); animation: screenScan 3.5s linear infinite; }
+@keyframes screenScan { to { transform: translateY(350%); } }
+.hood .dash-title { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,80,90,.35); padding-bottom: 3px; margin-bottom: 4px; }
+.dash-title .rec { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #ff2f45; margin-right: 6px; vertical-align: 1px; box-shadow: 0 0 6px #ff2f45; animation: blinkBtn 1.2s steps(1) infinite; }
+
+/* hologram above the centre module */
+.holo { position: absolute; left: 50%; bottom: 100%; width: 160px; height: 110px; margin-left: -80px; pointer-events: none; }
+.holo::before { content: ""; position: absolute; left: 30%; right: 30%; bottom: -4px; top: 30%;
+  background: linear-gradient(to top, rgba(255,50,70,.28), transparent); clip-path: polygon(40% 100%, 60% 100%, 100% 0, 0 0); }
+.holo svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.holo ellipse, .holo polygon, .holo line { fill: none; stroke: rgba(255,90,100,.75); stroke-width: 1; filter: drop-shadow(0 0 3px rgba(255,50,70,.9)); }
+.holo-rings { transform-origin: 80px 46px; animation: holoPulse 3s ease-in-out infinite; }
+.holo-core { transform-origin: 80px 46px; animation: holoSpin 6s linear infinite; }
+@keyframes holoSpin { to { transform: rotateY(360deg); } }
+@keyframes holoPulse { 50% { opacity: .45; transform: scale(1.06); } }
+
+/* side fins with throttle levers and hazard stripes */
+.fin { height: 70%; }
+.fin i { bottom: 12%; height: 10%; }
+.fin .lever { position: absolute; bottom: 30%; width: 14%; height: 44%; border-radius: 3px; background: #07080a; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+.fin-l .lever { right: 26%; } .fin-r .lever { left: 26%; }
+.fin .lever em { position: absolute; left: -60%; right: -60%; height: 14%; top: 30%; border-radius: 3px;
+  background: linear-gradient(#e6e8ee, #8b8f99); box-shadow: 0 0 8px rgba(255,255,255,.25); animation: lever 6s ease-in-out infinite; }
+@keyframes lever { 0%, 100% { top: 30%; } 50% { top: 58%; } }
+.fin .hazard { position: absolute; left: 0; right: 0; bottom: 0; height: 7%; text-decoration: none;
+  background: repeating-linear-gradient(45deg, #ffb020 0 6px, #0b0c0f 6px 12px); opacity: .7; }
+
+@media (max-width: 760px) { .holo { display: none; } }
+@media (prefers-reduced-motion: reduce) { .holo-rings, .holo-core, .fin .lever em, .hood .dash-screen::before, .hood-leds i, .dash-title .rec { animation: none; } }
