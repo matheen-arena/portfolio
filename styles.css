@@ -605,3 +605,14 @@ body.is-ready .hero-title .split { transform: none; }
 .brand { padding-left: 10px; }
 .nav-links { padding: 9px 20px; }
 .sound-toggle { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+/* compact rail: a short ribbed slot in the middle of the edge, small thumb */
+@media (hover: hover) and (pointer: fine) {
+  .rail { width: 12px; }
+  .rail::after { display: none; }
+  .rail::before { top: 50%; bottom: auto; right: 0; left: auto; width: 24px; height: 236px; margin-top: -118px;
+    background: linear-gradient(90deg, #d8102c, #ff2340 45%, #e0142f); border-radius: 10px 0 0 10px;
+    clip-path: polygon(0 12px, 12px 0, 100% 0, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+    box-shadow: -2px 0 12px rgba(255,20,50,.4); }
+  .rail-track { top: 50%; bottom: auto; left: auto; right: 3px; width: 14px; height: 200px; margin-top: -100px; border-radius: 7px; }
+  .rail-thumb { height: 26px !important; border-radius: 5px; }
+}

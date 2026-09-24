@@ -587,7 +587,7 @@ stellar-innovations-python-dev-intern    Completed   Bangalore   August 2024 –
     let dragging = null;
     const metrics = () => {
       const max = document.documentElement.scrollHeight - innerHeight, th = track.clientHeight;
-      const h = Math.max(36, th * innerHeight / Math.max(innerHeight, document.documentElement.scrollHeight));
+      const h = thumb.offsetHeight || 26;
       return { max, th, h };
     };
     const paint = () => {
