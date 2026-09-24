@@ -9,7 +9,7 @@ Plain HTML, CSS and JavaScript with no build step and no frameworks:
 - **Impact**: animated counters with sparklines.
 - **Stack graph**: an interactive force graph of skills grouped by domain.
 - **Terminal**: a working shell. Try `help`, `kubectl get pods`, `terraform plan` or `sudo hire-me`.
-- **Sound**: generated live with the Web Audio API (ambient pad, UI blips, key clicks), so there are no audio files. Toggle it from the top-right corner or press `M`.
+- **Sound**: an original synthwave track, "Night Flight" (100 BPM, A minor: Am–F–C–G), composed for this site and generated live with the Web Audio API: kick, snare, hats, pulsing bass, a 16th-note arpeggio with echo, pads, a lead hook, a breakdown and a riser, with kick-driven ducking. Plus UI blips and key clicks. No audio files. Toggle it from the top-right corner or press `M`.
 
 Respects `prefers-reduced-motion`, and works on phones.
 

@@ -73,26 +73,26 @@
           <rect class="cp-red" x="786" y="0" width="28" height="30" rx="2" />
           <polygon class="cp-face" points="400,0 470,0 452,20 410,20" /><polygon class="cp-face" points="1130,0 1200,0 1190,20 1148,20" />
           <!-- left pillar: outer wall, beveled front face, inner lip -->
-          <polygon class="cp-wall" points="0,0 20,0 300,900 0,900" />
+          <polygon class="cp-glass" points="0,26 28,26 313,900 0,900" /><line class="cp-glint" x1="40" y1="330" x2="150" y2="900" /><line class="cp-glint thin" x1="10" y1="420" x2="96" y2="900" />
           <polygon class="cp-face" points="20,0 110,0 416,900 313,900" />
           <polygon class="cp-lip" points="110,0 128,0 436,900 416,900" />
           <line class="cp-seam" x1="55" y1="40" x2="290" y2="728" />
           <line class="cp-seam" x1="38" y1="0" x2="276" y2="736" />
           <polygon class="cp-recess" points="142,300 170,290 282,590 254,602" />
           <line class="cp-tube" x1="156" y1="300" x2="268" y2="596" />
-          <polygon class="cp-red" points="6,180 22,180 62,300 46,300" />
-          <polygon class="cp-red" points="58,350 74,350 114,470 98,470" />
+          <polygon class="cp-red" points="48,60 58,60 90,160 80,160" />
+          <polygon class="cp-red" points="86,180 96,180 128,280 118,280" />
           <circle class="cp-bolt" cx="80" cy="140" r="3" /><circle class="cp-bolt" cx="220" cy="520" r="3" /><circle class="cp-bolt" cx="310" cy="690" r="3" />
           <!-- right pillar: outer wall, beveled front face, inner lip -->
-          <polygon class="cp-wall" points="1600,0 1580,0 1300,900 1600,900" />
+          <polygon class="cp-glass" points="1600,26 1572,26 1287,900 1600,900" /><line class="cp-glint" x1="1560" y1="330" x2="1450" y2="900" /><line class="cp-glint thin" x1="1590" y1="420" x2="1504" y2="900" />
           <polygon class="cp-face" points="1580,0 1490,0 1184,900 1287,900" />
           <polygon class="cp-lip" points="1490,0 1472,0 1164,900 1184,900" />
           <line class="cp-seam" x1="1545" y1="40" x2="1310" y2="728" />
           <line class="cp-seam" x1="1562" y1="0" x2="1324" y2="736" />
           <polygon class="cp-recess" points="1458,300 1430,290 1318,590 1346,602" />
           <line class="cp-tube" x1="1444" y1="300" x2="1332" y2="596" />
-          <polygon class="cp-red" points="1594,180 1578,180 1538,300 1554,300" />
-          <polygon class="cp-red" points="1542,350 1526,350 1486,470 1502,470" />
+          <polygon class="cp-red" points="1552,60 1542,60 1510,160 1520,160" />
+          <polygon class="cp-red" points="1514,180 1504,180 1472,280 1482,280" />
           <circle class="cp-bolt" cx="1520" cy="140" r="3" /><circle class="cp-bolt" cx="1380" cy="520" r="3" /><circle class="cp-bolt" cx="1290" cy="690" r="3" />
         </svg>
         <div class="crt" aria-hidden="true"></div>
@@ -124,35 +124,34 @@
 
         <div class="dash" aria-hidden="true">
           <div class="deck">
-            <div class="deck-side deck-l">
-              <div class="leds"><i class="led l0"></i><i class="led l1"></i><i class="led l2"></i><i class="led l3"></i><i class="led l4"></i><i class="led l0"></i><i class="led l1"></i><i class="led l2"></i><i class="led l3"></i><i class="led l4"></i><i class="led l0"></i><i class="led l1"></i></div>
-              <div class="dials"><span class="dial" style="--a:-40deg"><i></i></span><span class="dial" style="--a:25deg"><i></i></span></div>
-              <div class="keys"><i class="key k0"></i><i class="key k1"></i><i class="key k2"></i><i class="key k3"></i><i class="key k4"></i><i class="key k5"></i><i class="key k0"></i><i class="key k1"></i><i class="key k2"></i><i class="key k3"></i></div>
-            </div>
-            <div class="hood hood-l">
-              <div class="hood-strip"></div>
-              <div class="dash-screen dash-left">
-                <div class="dash-title">scan // stack</div>
-                <canvas id="radar"></canvas>
+            <div class="console">
+              <div class="pod pod-l"><div class="pod-screen"><svg class="pilot" viewBox="0 0 40 40"><path d="M20 6c-6 0-10 4.5-10 10.5 0 3.5 1.6 6.4 4 8.2V27h12v-2.3c2.4-1.8 4-4.7 4-8.2C30 10.5 26 6 20 6z"/><path d="M13 16h14v5H13z" class="visor"/><path d="M8 38c1.5-6 6-9 12-9s10.5 3 12 9z"/></svg><span>PILOT</span></div></div>
+              <div class="hood hood-l">
+                <div class="bezel">
+                  <div class="glow-bar"></div>
+                  <div class="dash-screen dash-left">
+                    <div class="dash-title"><span>scan // stack</span><span>07</span></div>
+                    <canvas id="radar"></canvas>
+                  </div>
+                </div>
               </div>
-            </div>
-            <a href="#about" class="dash-center" aria-label="Scroll down" data-sfx>
-              <span class="dc-emblem"></span>
-              <span class="mouse"><i></i></span>
-              <span class="dash-label" id="dash-label">scroll down</span>
-              <span class="stage-dots"><i class="is-on"></i><i></i><i></i></span>
-            </a>
-            <div class="hood hood-r">
-              <div class="hood-strip"></div>
-              <div class="dash-screen dash-right">
-                <div class="dash-title">telemetry // log</div>
-                <div class="dash-log" id="dash-log"></div>
+              <a href="#about" class="dash-center" aria-label="Scroll down" data-sfx>
+                <span class="dc-slots"><i></i><i></i></span>
+                <span class="dc-bracket"><i></i><i></i></span>
+                <span class="dc-mark"><svg viewBox="0 0 60 40"><path d="M4 30 22 8h14L18 30z" /><path d="M24 34 42 12h14L38 34z" /></svg><span class="mouse"><i></i></span></span>
+                <span class="dash-label" id="dash-label">scroll down</span>
+                <span class="stage-dots"><i class="is-on"></i><i></i><i></i></span>
+              </a>
+              <div class="hood hood-r">
+                <div class="bezel">
+                  <div class="glow-bar"></div>
+                  <div class="dash-screen dash-right">
+                    <div class="dash-title"><span>telemetry // log</span><span>live</span></div>
+                    <div class="dash-log" id="dash-log"></div>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div class="deck-side deck-r">
-              <div class="keys"><i class="key k0"></i><i class="key k1"></i><i class="key k2"></i><i class="key k3"></i><i class="key k4"></i><i class="key k5"></i><i class="key k0"></i><i class="key k1"></i><i class="key k2"></i><i class="key k3"></i></div>
-              <div class="dials"><span class="dial" style="--a:60deg"><i></i></span><span class="dial" style="--a:-15deg"><i></i></span></div>
-              <div class="leds"><i class="led l0"></i><i class="led l1"></i><i class="led l2"></i><i class="led l3"></i><i class="led l4"></i><i class="led l0"></i><i class="led l1"></i><i class="led l2"></i><i class="led l3"></i><i class="led l4"></i><i class="led l0"></i><i class="led l1"></i></div>
+              <div class="pod pod-r"><div class="pod-screen"><svg class="pilot" viewBox="0 0 40 40"><path d="M20 6c-6 0-10 4.5-10 10.5 0 3.5 1.6 6.4 4 8.2V27h12v-2.3c2.4-1.8 4-4.7 4-8.2C30 10.5 26 6 20 6z"/><path d="M13 16h14v5H13z" class="visor"/><path d="M8 38c1.5-6 6-9 12-9s10.5 3 12 9z"/></svg><span>CO-PILOT</span></div></div>
             </div>
           </div>
         </div>
