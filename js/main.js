@@ -245,7 +245,7 @@
     const LINES = [
       ["cloud", "AWS · EKS · ECS · Lambda · S3"], ["iac", "Terraform"], ["gitops", "Argo CD · Argo Cron Workflow"],
       ["ci/cd", "GitHub Actions · ARC runners"], ["observe", "Grafana Loki · Grafana Mimir · Tempo"], ["collect", "Grafana Alloy pipelines"],
-      ["data", "RDS · Aurora · Elasticsearch"], ["ai", "Kiro AI Agent · Copilot Agent"],
+      ["data", "RDS · Aurora · Elasticsearch"], ["gov", "AWS Control Tower · DevSecOps"], ["ai", "Kiro AI Agent · Copilot Agent"],
       ["status", "all systems nominal"]
     ];
     let li = 0;
@@ -313,7 +313,7 @@
     const list = $("#stack-list");
     // Items are ordered so the longest labels sit at the ends of each fan (more room on phones).
     const GROUPS = [
-      { name: "AWS", c: C.orange, items: ["AWS Batch", "Lambda", "EKS", "ECS", "EC2", "S3", "Kinesis", "AWS Network"] },
+      { name: "AWS", c: C.orange, items: ["AWS Batch", "Lambda", "EKS", "ECS", "EC2", "S3", "Kinesis", "AWS Network", "Control Tower"] },
       { name: "Databases & Search", c: C.blue, items: ["RDS", "Aurora", "Elasticsearch"] },
       { name: "Observability", c: C.green, items: ["Grafana Metrics", "Grafana OSS", "Grafana Loki", "Alloy", "Logz.io", "Grafana Mimir", "Grafana Logs", "Grafana Tempo"] },
       { name: "CI/CD & GitOps", c: C.amber, items: ["Argo Cron Workflow", "GitHub Actions", "GitLab", "JFrog", "GitHub", "Argo CD", "GitHub ARC"] },
@@ -486,6 +486,7 @@ Expertise in Cloud, DevOps, Observability and AI automation. Focused on building
 modern developer workflows, and integrating AI into modern engineering practices.`,
       about: () => CMDS.whoami(),
       experience: () => `<pre><span class="t-ok">May 2026 – Present</span>           Cloud and Platform Engineer, <span class="t-acc">zeb</span>, Chennai
+                             Education · Cloud-Native University Athletics Platform
                              Retail · Unified Customer Data Portal
 <span class="t-ok">May 2025 – April 2026</span>        Cloud and DevOps Engineer, <span class="t-acc">Avasoft</span>, Chennai
                              Retail · Logz to Grafana OSS Migration
@@ -494,7 +495,7 @@ modern developer workflows, and integrating AI into modern engineering practices
                              Healthcare · ETL pipeline development</pre>`,
       work: () => CMDS.experience(),
       skills: () => `<pre><span class="t-acc">iac</span>            Terraform
-<span class="t-acc">aws</span>            EKS ECS S3 Lambda EC2 RDS Aurora Elasticsearch Kinesis Batch, AWS Network
+<span class="t-acc">aws</span>            EKS ECS S3 Lambda EC2 RDS Aurora Elasticsearch Kinesis Batch, AWS Network, Control Tower
 <span class="t-ok">observability</span>  Grafana OSS, Grafana Logs, Grafana Metrics, Grafana Tempo, Grafana Loki, Grafana Mimir, Alloy, Logz.io
 <span class="t-blue">tools</span>          Argo Cron Workflow, Argo CD
 <span class="t-acc">ci/cd</span>          GitLab, GitHub, GitHub Actions, Action Runner Controller, JFrog
