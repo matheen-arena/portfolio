@@ -174,11 +174,11 @@
       const { ctx: r, w: rw, h: rh } = radar, c = rw / 2, cy = rh / 2, rr = Math.min(c, cy) - 3;
       const sweep = (t * .0018) % (Math.PI * 2);
       r.clearRect(0, 0, rw, rh);
-      r.strokeStyle = "rgba(255,120,100,.3)"; r.lineWidth = 1;
+      r.strokeStyle = "rgba(217,84,63,.35)"; r.lineWidth = 1;
       [1, .6, .25].forEach(q => { r.beginPath(); r.arc(c, cy, rr * q, 0, Math.PI * 2); r.stroke(); });
       for (let i = 0; i < 24; i++) {
         const a0 = sweep - i * .035;
-        r.fillStyle = `rgba(255,80,60,${.3 * (1 - i / 24)})`;
+        r.fillStyle = `rgba(217,84,63,${.22 * (1 - i / 24)})`;
         r.beginPath(); r.moveTo(c, cy); r.arc(c, cy, rr, a0 - .035, a0); r.closePath(); r.fill();
       }
       r.font = '500 7px "JetBrains Mono", monospace'; r.textAlign = "center";
@@ -186,7 +186,7 @@
         if ((sweep - d.a + Math.PI * 4) % (Math.PI * 2) < .08) d.g = 1;
         d.g = Math.max(.2, d.g - dt * .0006);
         const x = c + Math.cos(d.a) * rr * d.r, y = cy + Math.sin(d.a) * rr * d.r;
-        r.globalAlpha = d.g; r.fillStyle = "#ffd2c8";
+        r.globalAlpha = d.g; r.fillStyle = "#f0b3a6";
         r.beginPath(); r.arc(x, y, 2, 0, Math.PI * 2); r.fill();
         r.fillText(d.n, x, y - 5);
         r.globalAlpha = 1;
@@ -212,6 +212,9 @@
       while (log.children.length > 6) log.firstChild.remove();
     };
     for (let k = 0; k < 6; k++) addLine();
+    const dashClock = $("#dash-clock");
+    const tickClock = () => { if (dashClock) dashClock.textContent = new Date().toTimeString().slice(0, 8); };
+    tickClock(); setInterval(tickClock, 1000);
     setInterval(() => { if (log.offsetParent && document.visibilityState === "visible") addLine(); }, 1600);
   })();
 

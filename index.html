@@ -123,36 +123,44 @@
         </div>
 
         <div class="dash" aria-hidden="true">
+          <div class="glare"></div>
           <div class="deck">
             <div class="deck-side deck-l">
-              <div class="leds"><i class="led l0"></i><i class="led l1"></i><i class="led l2"></i><i class="led l3"></i><i class="led l4"></i><i class="led l0"></i><i class="led l1"></i><i class="led l2"></i><i class="led l3"></i><i class="led l4"></i><i class="led l0"></i><i class="led l1"></i></div>
-              <div class="dials"><span class="dial" style="--a:-40deg"><i></i></span><span class="dial" style="--a:25deg"><i></i></span></div>
-              <div class="keys"><i class="key k0"></i><i class="key k1"></i><i class="key k2"></i><i class="key k3"></i><i class="key k4"></i><i class="key k5"></i><i class="key k0"></i><i class="key k1"></i><i class="key k2"></i><i class="key k3"></i></div>
+              <b class="screw s1"></b><b class="screw s2"></b><b class="screw s3"></b><b class="screw s4"></b>
+              <div class="annun"><span class="ann on-g">SYS OK</span><span class="ann">NAV</span><span class="ann on-a">AUTO</span><span class="ann">CAUTION</span><span class="ann">FUEL</span><span class="ann">HYD</span></div>
+              <div class="tgl-row"><span class="tgl"><i></i><em>BAT</em></span><span class="tgl down"><i></i><em>GEN</em></span><span class="tgl"><i></i><em>NAV</em></span></div>
+              <div class="knob-row"><span class="knob"><i></i></span><em>BRT</em></div>
             </div>
-            <div class="hood hood-l">
-              <div class="hood-strip"></div>
+            <div class="mfd mfd-l">
+              <b class="screw s1"></b><b class="screw s2"></b><b class="screw s3"></b><b class="screw s4"></b>
+              <div class="sk sk-top"><i>SCAN</i><i>RNG</i><i>MAP</i><i>TGT</i></div>
               <div class="dash-screen dash-left">
-                <div class="dash-title">scan // stack</div>
+                <div class="dash-title"><span>SCAN</span><span>STACK · 7</span></div>
                 <canvas id="radar"></canvas>
               </div>
+              <div class="sk sk-bot"><i>AWS</i><i>OBS</i><i>CI/CD</i><i>AI</i></div>
             </div>
             <a href="#about" class="dash-center" aria-label="Scroll down" data-sfx>
-              <span class="dc-emblem"></span>
+              <b class="screw s1"></b><b class="screw s2"></b><b class="screw s3"></b><b class="screw s4"></b>
+              <span class="dc-caption">STAGE</span>
+              <span class="stage-dots"><i class="is-on"></i><i></i><i></i></span>
               <span class="mouse"><i></i></span>
               <span class="dash-label" id="dash-label">scroll down</span>
-              <span class="stage-dots"><i class="is-on"></i><i></i><i></i></span>
             </a>
-            <div class="hood hood-r">
-              <div class="hood-strip"></div>
+            <div class="mfd mfd-r">
+              <b class="screw s1"></b><b class="screw s2"></b><b class="screw s3"></b><b class="screw s4"></b>
+              <div class="sk sk-top"><i>LOG</i><i>SYS</i><i>CFG</i><i>MSG</i></div>
               <div class="dash-screen dash-right">
-                <div class="dash-title">telemetry // log</div>
+                <div class="dash-title"><span>SYS LOG</span><span id="dash-clock">--:--:--</span></div>
                 <div class="dash-log" id="dash-log"></div>
               </div>
+              <div class="sk sk-bot"><i>PREV</i><i>NEXT</i><i>CLR</i><i>ACK</i></div>
             </div>
             <div class="deck-side deck-r">
-              <div class="keys"><i class="key k0"></i><i class="key k1"></i><i class="key k2"></i><i class="key k3"></i><i class="key k4"></i><i class="key k5"></i><i class="key k0"></i><i class="key k1"></i><i class="key k2"></i><i class="key k3"></i></div>
-              <div class="dials"><span class="dial" style="--a:60deg"><i></i></span><span class="dial" style="--a:-15deg"><i></i></span></div>
-              <div class="leds"><i class="led l0"></i><i class="led l1"></i><i class="led l2"></i><i class="led l3"></i><i class="led l4"></i><i class="led l0"></i><i class="led l1"></i><i class="led l2"></i><i class="led l3"></i><i class="led l4"></i><i class="led l0"></i><i class="led l1"></i></div>
+              <b class="screw s1"></b><b class="screw s2"></b><b class="screw s3"></b><b class="screw s4"></b>
+              <div class="annun"><span class="ann on-g">LINK</span><span class="ann">STBY</span><span class="ann">ICE</span><span class="ann">DOOR</span><span class="ann">GEN</span><span class="ann">APU</span></div>
+              <div class="tgl-row"><span class="tgl"><i></i><em>LDG</em></span><span class="tgl down"><i></i><em>TAXI</em></span><span class="tgl"><i></i><em>STRB</em></span></div>
+              <div class="knob-row"><em>VOL</em><span class="knob"><i></i></span></div>
             </div>
           </div>
         </div>
