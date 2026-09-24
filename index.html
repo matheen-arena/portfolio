@@ -12,7 +12,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2307080a'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%23ff5b2e'/%3E%3Ccircle cx='32' cy='32' r='19' fill='none' stroke='%237cf7c1' stroke-width='3' stroke-dasharray='8 6'/%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Anton&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -42,31 +42,99 @@
 
   <main id="top">
 
-    <!-- ============ HERO ============ -->
-    <section class="hero" aria-label="Intro">
-      <canvas id="hero-canvas" aria-hidden="true"></canvas>
-      <div class="hero-content">
-        <p class="eyebrow reveal"><span class="live-dot"></span> cloud · platform · observability · ai</p>
-        <h1 class="hero-title">
-          <span class="line"><span class="split">Abdul Matheen<span class="end-dot" aria-hidden="true"></span></span></span>
-        </h1>
-        <p class="hero-role reveal">Cloud &amp; Platform Engineer</p>
-        <p class="hero-sub reveal">
-          AI-first engineer working across Cloud, DevOps, Observability and AI automation, focused on building
-          <em class="serif">reliable cloud platforms</em> and <em class="serif">modern developer workflows</em>.
-        </p>
-        <div class="hero-cta reveal">
-          <a href="#work" class="btn btn-primary" data-sfx>See the work <span aria-hidden="true">↘</span></a>
-          <a href="mailto:matheenroy@gmail.com" class="btn btn-primary" data-sfx>matheenroy@gmail.com</a>
+    <!-- ============ HERO: COCKPIT FLIGHT (scroll-driven) ============ -->
+    <section class="flight" id="flight" aria-label="Intro">
+      <div class="flight-sticky">
+        <canvas id="flight-canvas" aria-hidden="true"></canvas>
+        <div class="flight-sky" aria-hidden="true"></div>
+
+        <svg class="cockpit" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <linearGradient id="cpMetal" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#1b1e26" /><stop offset=".6" stop-color="#101218" /><stop offset="1" stop-color="#08090d" />
+            </linearGradient>
+            <linearGradient id="cpDash" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#1a1c23" /><stop offset="1" stop-color="#060709" />
+            </linearGradient>
+            <filter id="cpGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="4" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+            </filter>
+          </defs>
+          <!-- roof and centre strut -->
+          <polygon class="cp-metal" points="0,0 1600,0 1600,40 0,40" />
+          <polygon class="cp-metal" points="560,0 1040,0 985,125 615,125" />
+          <line class="cp-edge" x1="615" y1="125" x2="985" y2="125" />
+          <rect class="cp-strip" x="790" y="0" width="20" height="95" rx="3" />
+          <!-- left pillar -->
+          <polygon class="cp-metal" points="0,40 190,40 640,690 560,745 0,300" />
+          <polygon class="cp-metal-2" points="0,300 560,745 560,900 0,900" />
+          <line class="cp-edge" x1="190" y1="40" x2="640" y2="690" />
+          <line class="cp-neon" x1="60" y1="120" x2="150" y2="250" />
+          <line class="cp-neon" x1="170" y1="280" x2="250" y2="395" />
+          <line class="cp-neon" x1="265" y1="420" x2="330" y2="515" />
+          <line class="cp-tube" x1="330" y1="330" x2="470" y2="540" />
+          <!-- right pillar -->
+          <polygon class="cp-metal" points="1600,40 1410,40 960,690 1040,745 1600,300" />
+          <polygon class="cp-metal-2" points="1600,300 1040,745 1040,900 1600,900" />
+          <line class="cp-edge" x1="1410" y1="40" x2="960" y2="690" />
+          <line class="cp-neon" x1="1540" y1="120" x2="1450" y2="250" />
+          <line class="cp-neon" x1="1430" y1="280" x2="1350" y2="395" />
+          <line class="cp-neon" x1="1335" y1="420" x2="1270" y2="515" />
+          <line class="cp-tube" x1="1270" y1="330" x2="1130" y2="540" />
+          <!-- dashboard -->
+          <polygon fill="url(#cpDash)" points="0,900 0,815 470,735 1130,735 1600,815 1600,900" />
+          <line class="cp-edge" x1="470" y1="735" x2="1130" y2="735" />
+          <polygon class="cp-panel" points="500,760 760,760 745,900 515,900" />
+          <polygon class="cp-panel" points="840,760 1100,760 1085,900 855,900" />
+        </svg>
+        <div class="crt" aria-hidden="true"></div>
+
+        <div class="stages">
+          <div class="stage is-on" data-stage="0">
+            <p class="stage-kicker"><span class="live-dot"></span> matheen.cloud</p>
+            <h1 class="stage-title">Abdul Matheen</h1>
+            <p class="stage-sub">AI-first Cloud &amp; Platform Engineer · Chennai, India</p>
+            <div class="hero-cta">
+              <a href="#work" class="btn btn-primary" data-sfx>See the work <span aria-hidden="true">↘</span></a>
+              <a href="mailto:matheenroy@gmail.com" class="btn btn-primary" data-sfx>matheenroy@gmail.com</a>
+            </div>
+          </div>
+          <div class="stage" data-stage="1">
+            <p class="stage-kicker">stage 01 // observability</p>
+            <h2 class="stage-title">Logz.io → Grafana OSS</h2>
+            <ul class="stage-facts">
+              <li><b>~$250K</b> observability costs reduced per year</li>
+              <li><b>1,200+</b> Lambda functions with centralized log ingestion</li>
+              <li><b>150+ / 300+</b> dashboards / alerts migrated by a Kiro AI agent</li>
+            </ul>
+          </div>
+          <div class="stage" data-stage="2">
+            <p class="stage-kicker">stage 02 // platform &amp; ci/cd</p>
+            <h2 class="stage-title">GitLab → GitHub</h2>
+            <ul class="stage-facts">
+              <li><b>2,100</b> projects migrated, reducing user seat costs</li>
+              <li><b>80%</b> lower CI/CD runner costs with GitHub ARC on EKS</li>
+              <li><b>Argo Cron Workflows</b> on EKS replacing always-on EC2</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="dash" aria-hidden="true">
+          <div class="dash-screen dash-left">
+            <div class="dash-title">scan // stack</div>
+            <canvas id="radar"></canvas>
+          </div>
+          <a href="#about" class="dash-center" aria-label="Scroll down" data-sfx>
+            <span class="mouse"><i></i></span>
+            <span class="dash-label" id="dash-label">scroll down</span>
+            <span class="stage-dots"><i class="is-on"></i><i></i><i></i></span>
+          </a>
+          <div class="dash-screen dash-right">
+            <div class="dash-title">telemetry // log</div>
+            <div class="dash-log" id="dash-log"></div>
+          </div>
         </div>
       </div>
-      <div class="hero-hud" aria-hidden="true">
-        <div><span class="muted">status</span> <b class="ok">● operational</b></div>
-        <div><span class="muted">location</span> chennai, india</div>
-        <div><span class="muted">signals ingested</span> <b id="hud-rate">0</b></div>
-        <div><span class="muted">move cursor</span> to steer the telemetry</div>
-      </div>
-      <a href="#about" class="scroll-cue" aria-label="Scroll down" data-sfx><span></span></a>
     </section>
 
     <!-- ============ MARQUEE ============ -->
@@ -279,5 +347,6 @@
 
   <script src="js/audio.js"></script>
   <script src="js/main.js"></script>
+  <script type="module" src="js/flight.js"></script>
 </body>
 </html>
