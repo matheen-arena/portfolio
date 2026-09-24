@@ -81,14 +81,19 @@
 
   /* ================= CURSOR ================= */
   if (finePointer) {
-    const cur = $(".cursor"), dot = $(".cursor-dot"), ring = $(".cursor-ring");
+    const cur = $(".cursor"), ring = $(".cursor-ring");
     let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my;
-    addEventListener("pointermove", e => { mx = e.clientX; my = e.clientY; dot.style.transform = `translate(${mx}px,${my}px)`; });
+    addEventListener("pointermove", e => {
+      if (e.pointerType !== "mouse") return;
+      if (!cur.classList.contains("is-visible")) { rx = e.clientX; ry = e.clientY; cur.classList.add("is-visible"); }
+      mx = e.clientX; my = e.clientY;
+    });
+    document.documentElement.addEventListener("mouseleave", () => cur.classList.remove("is-visible"));
     addEventListener("pointerdown", () => cur.classList.add("is-down"));
     addEventListener("pointerup", () => cur.classList.remove("is-down"));
     document.addEventListener("pointerover", e => cur.classList.toggle("is-hover", !!e.target.closest("a, button, input, .node, #stack-canvas")));
     (function loop() {
-      rx += (mx - rx) * .18; ry += (my - ry) * .18;
+      rx += (mx - rx) * .2; ry += (my - ry) * .2;
       ring.style.transform = `translate(${rx}px,${ry}px)`;
       requestAnimationFrame(loop);
     })();
