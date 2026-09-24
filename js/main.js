@@ -127,6 +127,202 @@
     return { ctx, w, h };
   }
 
+  // 0..1 loudness of what the site is currently playing (0 when muted).
+  function audioEnergy() {
+    if (!SFX.playing) return 0;
+    const buf = SFX.wave();
+    if (!buf) return 0;
+    let sum = 0;
+    for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
+    return Math.min(1, Math.sqrt(sum / buf.length) * 14);
+  }
+
+  /* ================= SMALL EFFECTS ================= */
+  // Decode-style text reveal.
+  const GLYPHS = "!<>-_\\/[]{}=+*^?#01";
+  function scramble(el, dur = 650) {
+    if (reduceMotion) return;
+    const final = el._final || (el._final = el.textContent);
+    const start = performance.now();
+    cancelAnimationFrame(el._raf);
+    (function step(now) {
+      const p = Math.min(1, (now - start) / dur), n = Math.floor(final.length * p);
+      let out = final.slice(0, n);
+      for (let i = n; i < final.length; i++) out += final[i] === " " ? " " : GLYPHS[(Math.random() * GLYPHS.length) | 0];
+      el.textContent = out;
+      if (p < 1) el._raf = requestAnimationFrame(step); else el.textContent = final;
+    })(start);
+  }
+  $$(".section-head").forEach(h => h.addEventListener("reveal", () => scramble($("h2", h))));
+  $$(".metric").forEach(m => m.addEventListener("reveal", () => scramble($(".tag", m), 900)));
+  setTimeout(() => scramble($(".hero-role"), 900), 500);
+  if (finePointer) $$(".nav-links a").forEach(a => a.addEventListener("pointerenter", () => scramble(a, 350)));
+
+  // Scroll progress bar.
+  const bar = $(".progress i");
+  const onScroll = () => {
+    const max = document.documentElement.scrollHeight - innerHeight;
+    bar.style.transform = `scaleX(${max > 0 ? scrollY / max : 0})`;
+  };
+  addEventListener("scroll", onScroll, { passive: true }); onScroll();
+
+  if (finePointer && !reduceMotion) {
+    // Faint grid revealed around the cursor.
+    const spot = $(".spot");
+    addEventListener("pointermove", e => {
+      spot.style.setProperty("--mx", e.clientX + "px");
+      spot.style.setProperty("--my", e.clientY + "px");
+      spot.classList.add("is-on");
+    }, { passive: true });
+    document.documentElement.addEventListener("mouseleave", () => spot.classList.remove("is-on"));
+
+    // Magnetic buttons.
+    $$(".btn, .sound-toggle").forEach(el => {
+      el.addEventListener("pointermove", e => {
+        const r = el.getBoundingClientRect();
+        el.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * .25}px, ${(e.clientY - r.top - r.height / 2) * .35}px)`;
+      });
+      el.addEventListener("pointerleave", () => (el.style.transform = ""));
+    });
+
+    // Spotlight inside metric cards.
+    $$(".metric").forEach(m => m.addEventListener("pointermove", e => {
+      const r = m.getBoundingClientRect();
+      m.style.setProperty("--mx", e.clientX - r.left + "px");
+      m.style.setProperty("--my", e.clientY - r.top + "px");
+    }));
+  }
+
+  /* ================= HERO LETTERS ================= */
+  (function heroLetters() {
+    const h1 = $(".hero-title"), split = $(".hero-title .split"), dot = $(".end-dot", split);
+    const text = split.firstChild.textContent;
+    h1.setAttribute("aria-label", text.trim());
+    split.firstChild.remove();
+    const chars = [...text].map(ch => {
+      const el = document.createElement("span");
+      el.className = "ch" + (ch === " " ? " sp" : "");
+      el.textContent = ch === " " ? " " : ch;
+      el.setAttribute("aria-hidden", "true");
+      split.insertBefore(el, dot);
+      return { el, y: 0 };
+    });
+    if (!finePointer || reduceMotion) return;
+    let mx = -1e4, my = -1e4;
+    const hero = $(".hero");
+    hero.addEventListener("pointermove", e => { mx = e.clientX; my = e.clientY; });
+    hero.addEventListener("pointerleave", () => { mx = my = -1e4; });
+    whileVisible(h1, () => {
+      const e = audioEnergy();
+      chars.forEach((c, i) => {
+        const r = c.el.getBoundingClientRect();
+        const cx = r.left + r.width / 2, cy = r.top + r.height / 2 - c.y; // undo our own offset
+        const f = Math.max(0, 1 - Math.hypot(mx - cx, my - cy) / 180);
+        const target = -f * f * 22 - e * 10 * Math.max(0, Math.sin(performance.now() * .006 - i * .5));
+        c.y += (target - c.y) * .18;
+        c.el.style.transform = `translateY(${c.y.toFixed(2)}px)`;
+        c.el.style.color = f > .35 ? C.green : "";
+      });
+    });
+  })();
+
+  /* ================= MARQUEE (scroll-velocity driven) ================= */
+  (function marquee() {
+    const wrap = $(".marquee");
+    const rows = $$(".marquee-row", wrap).map(row => {
+      const tr = $(".marquee-track", row);
+      tr.innerHTML += tr.innerHTML; // two copies so it can loop seamlessly
+      return { tr, dir: +row.dataset.dir, x: 0, w: 0 };
+    });
+    const measure = () => rows.forEach(r => { r.w = r.tr.scrollWidth / 2; r.x = r.dir < 0 ? 0 : -r.w; });
+    measure();
+    addEventListener("resize", debounce(measure, 200));
+    if (document.fonts) document.fonts.ready.then(measure);
+    if (reduceMotion) return;
+    let lastY = scrollY, vel = 0, flip = 1;
+    whileVisible(wrap, dt => {
+      const d = scrollY - lastY; lastY = scrollY;
+      vel += (d - vel) * .1;
+      if (Math.abs(d) > 1) flip = d > 0 ? 1 : -1;
+      const speed = (.035 + Math.min(1.2, Math.abs(vel) * .02)) * dt;
+      const skew = Math.max(-8, Math.min(8, vel * .15));
+      rows.forEach(r => {
+        r.x += speed * r.dir * flip;
+        if (r.x < -r.w) r.x += r.w;
+        if (r.x > 0) r.x -= r.w;
+        r.tr.style.transform = `translate3d(${r.x.toFixed(1)}px,0,0) skewX(${(-skew * r.dir).toFixed(2)}deg)`;
+      });
+    });
+  })();
+
+  /* ================= LIVE TAIL (facts from the resume) ================= */
+  (function tail() {
+    const body = $("#tail-body");
+    const LINES = [
+      ["DEPLOY", "ship", "zeb", "Argo Cron Workflows on Amazon EKS for on-demand ETL compute"],
+      ["COST", "cost", "zeb", "always-on EC2 instances eliminated for ETL jobs"],
+      ["COST", "cost", "zeb", "AWS data transfer costs reduced with a cost-optimized architecture"],
+      ["COST", "cost", "avasoft", "self-hosted Grafana OSS on Amazon EKS, ~$250K/yr observability savings"],
+      ["INGEST", "", "avasoft", "log ingestion centralized for 1,200+ Lambda functions with Amazon Kinesis"],
+      ["INGEST", "", "avasoft", "log ingestion for 50+ AWS Batch and Amazon ECS workloads"],
+      ["AI", "ai", "avasoft", "Kiro AI agent migrated 150+ dashboards and 300+ alerts"],
+      ["GITOPS", "", "avasoft", "GitSync: production Grafana dashboards version-controlled in Git"],
+      ["MIGRATE", "ship", "avasoft", "2,100 projects migrated GitLab → GitHub, reducing user seat costs"],
+      ["SCALE", "ship", "avasoft", "self-hosted GitHub ARC runners on EKS with auto-scaling"],
+      ["COST", "cost", "avasoft", "CI/CD runner costs reduced by 80%"],
+      ["ETL", "", "stellar", "ETL pipelines from open-source databases to AWS S3"],
+      ["DATA", "", "stellar", "MySQL data integrated and cleaned for high data quality"]
+    ];
+    let i = 0, timer = 0, running = false;
+    const ts = () => new Date().toTimeString().slice(0, 8);
+
+    function add(instant) {
+      const [lvl, cls, who, msg] = LINES[i++ % LINES.length];
+      const line = document.createElement("div");
+      line.className = "tail-line";
+      line.innerHTML = `<span class="ts"></span><span class="lv ${cls}"></span><span class="msg"><b></b> <span class="txt"></span></span>`;
+      $(".ts", line).textContent = ts();
+      $(".lv", line).textContent = lvl;
+      $("b", line).textContent = who + " ›";
+      body.append(line);
+      while (body.children.length > 6) body.firstChild.remove();
+      const txt = $(".txt", line);
+      if (instant || reduceMotion) { txt.textContent = msg; return; }
+      const caret = document.createElement("span"); caret.className = "caret";
+      line.querySelector(".msg").append(caret);
+      let n = 0;
+      (function type() {
+        txt.textContent = msg.slice(0, ++n);
+        if (n % 3 === 0) SFX.key();
+        if (n < msg.length) setTimeout(type, 16 + Math.random() * 18); else caret.remove();
+      })();
+    }
+    for (let k = 0; k < 4; k++) add(true);
+    new IntersectionObserver(([en]) => {
+      running = en.isIntersecting;
+      clearInterval(timer);
+      if (running) timer = setInterval(() => add(false), 2600);
+    }).observe(body);
+  })();
+
+  /* ================= WORK TIMELINE ================= */
+  (function timeline() {
+    const jobs = $(".jobs"), line = $(".timeline", jobs), fill = $(".tl-fill", line), dot = $(".tl-dot", line);
+    const cards = $$(".job", jobs);
+    let queued = false;
+    function update() {
+      queued = false;
+      const r = line.getBoundingClientRect(), mark = innerHeight * .6;
+      const p = Math.max(0, Math.min(1, (mark - r.top) / r.height));
+      fill.style.transform = `scaleY(${p})`;
+      dot.style.transform = `translateY(${p * r.height - 6}px)`;
+      cards.forEach(c => c.classList.toggle("is-passed", c.getBoundingClientRect().top + 40 < mark));
+    }
+    addEventListener("scroll", () => { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
+    addEventListener("resize", debounce(update, 150));
+    update();
+  })();
+
   /* ================= HERO: TELEMETRY FLOW FIELD ================= */
   (function hero() {
     const canvas = $("#hero-canvas");
@@ -175,9 +371,12 @@
       Math.sin((x - y) * .0009 + t * .0002) * .9;
 
     const buckets = PALETTE.map(() => []);
+    let energy = 0;
 
     whileVisible(canvas, (dt, t) => {
-      const k = dt / 16.67 * (reduceMotion ? .4 : 1);
+      // With sound on, the field speeds up and the collector pulses with the audio.
+      energy += (audioEnergy() - energy) * .15;
+      const k = dt / 16.67 * (reduceMotion ? .4 : 1) * (1 + energy * 2.2);
       ctx.fillStyle = "rgba(7,8,10,0.11)";
       ctx.fillRect(0, 0, w, h);
 
@@ -231,7 +430,11 @@
       ctx.translate(cx, cy);
       ctx.rotate(t * .0008);
       ctx.strokeStyle = C.green; ctx.globalAlpha = .55; ctx.setLineDash([4, 7]);
-      ctx.beginPath(); ctx.arc(0, 0, 26, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, 0, 26 * (1 + energy * .9), 0, Math.PI * 2); ctx.stroke();
+      if (energy > .05) {
+        ctx.setLineDash([]); ctx.strokeStyle = C.orange; ctx.globalAlpha = energy * .8;
+        ctx.beginPath(); ctx.arc(0, 0, 40 + energy * 50, 0, Math.PI * 2); ctx.stroke();
+      }
       ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.fillStyle = C.orange;
       ctx.beginPath(); ctx.arc(0, 0, 3.5, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
@@ -284,12 +487,12 @@
     });
   });
 
-  /* ================= STACK GRAPH ================= */
+  /* ================= STACK SPHERE ================= */
   (function stack() {
     const canvas = $("#stack-canvas");
     const legend = $("#stack-legend");
     const list = $("#stack-list");
-    // Items are ordered so the longest labels sit at the ends of each fan (more room on phones).
+    const tip = $("#stack-tip");
     const GROUPS = [
       { name: "AWS", c: C.orange, items: ["AWS Batch", "Lambda", "EKS", "ECS", "EC2", "S3", "Kinesis", "AWS Network"] },
       { name: "Databases & Search", c: C.blue, items: ["RDS", "Aurora", "Elasticsearch", "MySQL"] },
@@ -300,7 +503,45 @@
       { name: "Scripting", c: C.bone, items: ["Python", "Shell Scripting"] }
     ];
 
-    let ctx, w, h, hubs = [], nodes = [], focus = -1, hover = null, stackSmall = false;
+    // Spread every skill evenly over the sphere (Fibonacci points), then give each
+    // group a contiguous region: points are handed out greedily to the nearest group seed.
+    const GOLD = Math.PI * (3 - Math.sqrt(5));
+    const fib = (i, n) => { const y = 1 - ((i + .5) / n) * 2, r = Math.sqrt(1 - y * y), phi = i * GOLD; return [Math.cos(phi) * r, y, Math.sin(phi) * r]; };
+    const total = GROUPS.reduce((a, g) => a + g.items.length, 0);
+    const spots = Array.from({ length: total }, (_, i) => fib(i, total));
+    const seeds = GROUPS.map((_, gi) => fib(gi, GROUPS.length));
+    const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+    // Round-robin region growing: each group in turn takes the free spot nearest its seed,
+    // which keeps every group in one compact patch.
+    const taken = new Set(), slots = GROUPS.map(() => []);
+    for (let round = 0; slots.some((sl, gi) => sl.length < GROUPS[gi].items.length); round++) {
+      GROUPS.forEach((g, gi) => {
+        if (slots[gi].length >= g.items.length) return;
+        let best = -1, bd = 9;
+        spots.forEach((p, si) => { if (!taken.has(si)) { const d = dist(p, seeds[gi]); if (d < bd) { bd = d; best = si; } } });
+        taken.add(best); slots[gi].push(spots[best]);
+      });
+    }
+    const items = [];
+    GROUPS.forEach((g, gi) => g.items.forEach((label, j) => {
+      const [x, y, z] = slots[gi][j];
+      items.push({ label, gi, x, y, z });
+    }));
+    // Link each skill to its nearest neighbour in the same group.
+    const links = [];
+    items.forEach((a, i) => {
+      let best = -1, bd = 9;
+      items.forEach((b, j) => { if (i !== j && a.gi === b.gi) { const d = dist([a.x, a.y, a.z], [b.x, b.y, b.z]); if (d < bd) { bd = d; best = j; } } });
+      if (best >= 0 && !links.some(([p, q]) => p === best && q === i)) links.push([i, best]);
+    });
+    // Three guide rings for depth.
+    const RINGS = [0, 1, 2].map(k => Array.from({ length: 72 }, (_, i) => {
+      const a = (i / 72) * Math.PI * 2;
+      return k === 0 ? [Math.cos(a), 0, Math.sin(a)] : k === 1 ? [Math.cos(a), Math.sin(a), 0] : [0, Math.sin(a), Math.cos(a)];
+    }));
+
+    let ctx, w, h, ax = -.35, ay = 0, vax = 0, vay = .004, focus = -1, hover = null, energy = 0;
+    let drag = null;
     const mouse = { x: -1e4, y: -1e4 };
 
     GROUPS.forEach((g, gi) => {
@@ -318,124 +559,120 @@
       legend.append(b);
     });
 
-    function build() {
-      // Phones get a 2-column grid of clusters; wider screens get a ring.
-      const small = canvas.parentElement.clientWidth < 640;
-      const CELL_H = 160;
-      canvas.style.height = small ? Math.ceil(GROUPS.length / 2) * CELL_H + 16 + "px" : "";
-      ({ ctx, w, h } = fitCanvas(canvas));
-      const R = small ? 62 : 92;
-      const rx = w / 2 - R - 110, ry = h / 2 - R - 30;
-      hubs = GROUPS.map((g, i) => {
-        let bx, by, lx, ly, la;
-        if (small) {
-          const cw = (w - 16) / 2, x0 = 8 + (i % 2) * cw, y0 = 8 + Math.floor(i / 2) * CELL_H;
-          bx = x0 + 16; by = y0 + CELL_H / 2 + 8; lx = x0 + 8; ly = y0 + 12; la = "left";
-        } else {
-          const a = (i / GROUPS.length) * Math.PI * 2 - Math.PI / 2;
-          bx = w / 2 + Math.cos(a) * rx; by = h / 2 + Math.sin(a) * ry; lx = 0; ly = -18; la = "center";
-        }
-        return { ...g, i, bx, by, x: bx, y: by, lx, ly, la };
-      });
-      const old = nodes;
-      nodes = [];
-      hubs.forEach(hb => hb.items.forEach((label, j) => {
-        const prev = old.find(n => n.label === label);
-        const n = hb.items.length;
-        let a, rr;
-        if (small) {
-          // Fan out to the right of the hub so labels have room.
-          a = n === 1 ? 0 : -1.2 + (j / (n - 1)) * 2.4;
-          rr = n <= 3 ? 48 : R;
-        } else {
-          // Spread items around the hub, leaving the top free for the hub label.
-          a = -Math.PI / 2 + Math.PI / 5 + (j + .5) / n * (Math.PI * 2 - Math.PI * 2 / 5);
-          rr = R * (n > 5 && j % 2 ? .62 : 1);
-        }
-        nodes.push({
-          label, hub: hb, ox: Math.cos(a) * rr, oy: Math.sin(a) * rr,
-          x: prev ? Math.min(w, prev.x) : hb.x, y: prev ? Math.min(h, prev.y) : hb.y,
-          vx: 0, vy: 0, r: j === 0 ? 5.5 : 4, phase: Math.random() * 6
-        });
-      }));
-      stackSmall = small;
-    }
-    build();
-    addEventListener("resize", debounce(build, 200));
+    function resize() { ({ ctx, w, h } = fitCanvas(canvas)); }
+    resize();
+    addEventListener("resize", debounce(resize, 200));
 
+    canvas.addEventListener("pointerdown", e => {
+      drag = { x: e.clientX, y: e.clientY, moved: false };
+      canvas.setPointerCapture(e.pointerId);
+      canvas.classList.add("is-dragging");
+    });
     canvas.addEventListener("pointermove", e => {
       const r = canvas.getBoundingClientRect();
       mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top;
+      if (!drag) return;
+      const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      drag.x = e.clientX; drag.y = e.clientY;
+      vay = dx * .006; vax = dy * .006;
+      if (Math.abs(dx) + Math.abs(dy) > 2) { drag.moved = true; focus = -1; $$("button", legend).forEach(x => x.classList.remove("is-on")); }
     });
-    canvas.addEventListener("pointerleave", () => { mouse.x = mouse.y = -1e4; });
+    const end = () => { drag = null; canvas.classList.remove("is-dragging"); };
+    canvas.addEventListener("pointerup", end);
+    canvas.addEventListener("pointercancel", end);
+    canvas.addEventListener("pointerleave", () => { if (!drag) mouse.x = mouse.y = -1e4; });
+
+    const rot = (x, y, z) => {
+      const cy = Math.cos(ay), sy = Math.sin(ay), cx = Math.cos(ax), sx = Math.sin(ax);
+      const x1 = x * cy - z * sy, z1 = x * sy + z * cy;
+      return [x1, y * cx - z1 * sx, y * sx + z1 * cx];
+    };
+    const wrapAngle = a => Math.atan2(Math.sin(a), Math.cos(a));
 
     whileVisible(canvas, (dt, t) => {
-      const k = Math.min(2, dt / 16.67);
-      const small = stackSmall;
-      const font = small ? 10.5 : 12;
+      const k = Math.min(3, dt / 16.67);
+      energy += (audioEnergy() - energy) * .12;
 
-      hubs.forEach(hb => {
-        hb.x = hb.bx + Math.sin(t * .0004 + hb.i) * 8;
-        hb.y = hb.by + Math.cos(t * .0005 + hb.i * 2) * 8;
-      });
+      if (focus >= 0 && !drag) {
+        // Turn the chosen group's centre towards the viewer.
+        let cx = 0, cy = 0, cz = 0;
+        items.forEach(it => { if (it.gi === focus) { cx += it.x; cy += it.y; cz += it.z; } });
+        const tay = Math.atan2(cx, cz), tax = Math.atan2(cy, Math.hypot(cx, cz));
+        ay += wrapAngle(tay - ay) * .08 * k; ax += (tax - ax) * .08 * k;
+        vax = vay = 0;
+      } else if (!drag) {
+        vay += ((reduceMotion ? .0008 : .003) - vay) * .02 * k;
+        vax += (0 - vax) * .04 * k;
+        ax += (-.35 - ax) * .01 * k;
+      }
+      ay += vay * k; ax += vax * k;
+      ax = Math.max(-1.3, Math.min(1.3, ax));
 
-      // Forces: spring to hub, repel each other, flee the cursor.
-      for (const n of nodes) {
-        n.vx += (n.hub.x + n.ox - n.x) * .02 * k;
-        n.vy += (n.hub.y + n.oy - n.y) * .02 * k;
-        const mx = n.x - mouse.x, my = n.y - mouse.y, md = Math.hypot(mx, my) || 1;
-        if (md < 110) { const f = (1 - md / 110) * 2.2; n.vx += mx / md * f * k; n.vy += my / md * f * k; }
-      }
-      let newHover = null;
-      for (const n of nodes) {
-        n.vx *= .86; n.vy *= .86;
-        n.x += n.vx * k + Math.sin(t * .001 + n.phase) * .08;
-        n.y += n.vy * k + Math.cos(t * .0012 + n.phase) * .08;
-        n.x = Math.max(8, Math.min(w - 8, n.x)); n.y = Math.max(8, Math.min(h - 8, n.y));
-        if (Math.hypot(n.x - mouse.x, n.y - mouse.y) < 130 && !newHover) newHover = n;
-      }
-      if (newHover !== hover) { hover = newHover; if (hover) SFX.hover(); }
+      const small = w < 640;
+      const R = Math.min(w, h) * (small ? .42 : .4) * (1 + energy * .06);
+      const ox = w / 2, oy = h / 2;
+      const proj = ([x, y, z]) => { const p = 1 / (1 - z * .25); return [ox + x * R * p, oy - y * R * p, z, p]; };
 
       ctx.clearRect(0, 0, w, h);
-      // Faint links between neighbouring hubs.
+
+      // Soft core glow.
+      const glow = ctx.createRadialGradient(ox, oy, 0, ox, oy, R * 1.2);
+      glow.addColorStop(0, `rgba(124,247,193,${.05 + energy * .12})`); glow.addColorStop(1, "rgba(124,247,193,0)");
+      ctx.fillStyle = glow; ctx.fillRect(0, 0, w, h);
+
       ctx.lineWidth = 1;
-      if (!small) {
-        ctx.strokeStyle = C.line; ctx.setLineDash([2, 6]);
-        ctx.beginPath();
-        hubs.forEach((hb, i) => { const nx = hubs[(i + 1) % hubs.length]; ctx.moveTo(hb.x, hb.y); ctx.lineTo(nx.x, nx.y); });
-        ctx.stroke(); ctx.setLineDash([]);
+      RINGS.forEach(ring => {
+        for (let i = 0; i < ring.length; i++) {
+          const a = proj(rot(...ring[i])), b = proj(rot(...ring[(i + 1) % ring.length]));
+          ctx.strokeStyle = `rgba(125,133,143,${.06 + (a[2] + 1) * .07})`;
+          ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+        }
+      });
+
+      const pts = items.map(it => { const p = proj(rot(it.x, it.y, it.z)); return { it, sx: p[0], sy: p[1], z: p[2], s: p[3] }; });
+
+      // Constellation lines inside each group.
+      links.forEach(([i, j]) => {
+        const a = pts[i], b = pts[j], dim = focus >= 0 && a.it.gi !== focus;
+        ctx.strokeStyle = GROUPS[a.it.gi].c;
+        ctx.globalAlpha = dim ? .04 : .1 + ((a.z + b.z) / 2 + 1) * .2;
+        ctx.beginPath(); ctx.moveTo(a.sx, a.sy); ctx.lineTo(b.sx, b.sy); ctx.stroke();
+      });
+      ctx.globalAlpha = 1;
+
+      let best = null, bestD = 36;
+      pts.forEach(p => {
+        if (p.z < -.1) return;
+        const d = Math.hypot(p.sx - mouse.x, p.sy - mouse.y);
+        if (d < bestD) { bestD = d; best = p; }
+      });
+      const newHover = best && best.it;
+      if (newHover !== hover) {
+        hover = newHover;
+        if (hover) { SFX.hover(); tip.innerHTML = `${GROUPS[hover.gi].name} › <b></b>`; $("b", tip).textContent = hover.label; }
+        else tip.textContent = "drag to spin";
       }
 
-      for (const n of nodes) {
-        const dim = focus >= 0 && n.hub.i !== focus;
-        ctx.globalAlpha = dim ? .08 : .35;
-        ctx.strokeStyle = n.hub.c;
-        ctx.beginPath(); ctx.moveTo(n.hub.x, n.hub.y); ctx.lineTo(n.x, n.y); ctx.stroke();
-      }
-
+      pts.sort((a, b) => a.z - b.z);
       ctx.textBaseline = "middle";
-      for (const n of nodes) {
-        const dim = focus >= 0 && n.hub.i !== focus;
-        const near = Math.max(0, 1 - Math.hypot(n.x - mouse.x, n.y - mouse.y) / 160);
-        ctx.globalAlpha = dim ? .15 : 1;
-        ctx.fillStyle = n.hub.c;
-        ctx.beginPath(); ctx.arc(n.x, n.y, n.r + near * 3, 0, Math.PI * 2); ctx.fill();
-        ctx.font = `${500} ${font + near * 2}px "Space Grotesk", sans-serif`;
-        ctx.fillStyle = dim ? C.muted : C.fg;
-        ctx.textAlign = !small && n.x < n.hub.x - 4 ? "right" : "left";
-        ctx.fillText(n.label, n.x + (ctx.textAlign === "right" ? -9 : 9), n.y);
-      }
-
-      for (const hb of hubs) {
-        const dim = focus >= 0 && hb.i !== focus;
-        ctx.globalAlpha = dim ? .2 : 1;
-        ctx.fillStyle = C.bg; ctx.strokeStyle = hb.c; ctx.lineWidth = 1.5;
-        ctx.beginPath(); ctx.arc(hb.x, hb.y, 7, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-        ctx.font = `500 ${small ? 9 : 10.5}px "JetBrains Mono", monospace`;
-        ctx.fillStyle = hb.c; ctx.textAlign = hb.la;
-        if (small) ctx.fillText(hb.name.toUpperCase(), hb.lx, hb.ly);
-        else ctx.fillText(hb.name.toUpperCase(), hb.x, hb.y + hb.ly);
-      }
+      const base = small ? 10 : 12.5;
+      pts.forEach(p => {
+        const g = GROUPS[p.it.gi];
+        const dim = focus >= 0 && p.it.gi !== focus;
+        const isHover = p.it === hover;
+        const depth = (p.z + 1) / 2;
+        ctx.globalAlpha = dim ? .08 + depth * .12 : .18 + depth * .82;
+        const size = base * Math.min(1.2, p.s) * (isHover ? 1.3 : 1);
+        ctx.fillStyle = g.c;
+        ctx.beginPath(); ctx.arc(p.sx, p.sy, (isHover ? 4.5 : 2.6) * p.s, 0, Math.PI * 2); ctx.fill();
+        if (isHover) { ctx.strokeStyle = g.c; ctx.beginPath(); ctx.arc(p.sx, p.sy, 10 + Math.sin(t * .01) * 2, 0, Math.PI * 2); ctx.stroke(); }
+        ctx.font = `${isHover || depth > .75 ? 600 : 500} ${size.toFixed(1)}px "Space Grotesk", sans-serif`;
+        ctx.fillStyle = isHover ? g.c : dim ? C.muted : C.fg;
+        // Labels on the right side of the sphere go to the left of their dot so they stay inside the canvas.
+        const left = p.sx > ox + R * .25;
+        ctx.textAlign = left ? "right" : "left";
+        ctx.fillText(p.it.label, p.sx + (left ? -7 : 7) * p.s, p.sy);
+      });
       ctx.globalAlpha = 1;
     });
   })();
@@ -481,7 +718,7 @@ modern developer workflows, and integrating AI into modern engineering practices
       stack: () => CMDS.skills(),
       impact: () => `<pre><span class="t-ok">~$250K/yr</span>  observability costs reduced (self-hosted Grafana OSS on EKS)
 <span class="t-ok">1,200+</span>     Lambda functions with centralized log ingestion (+ 50+ Batch/ECS workloads)
-<span class="t-ok">2,100</span>      projects migrated from GitLab to GitHub
+<span class="t-ok">2,100</span>      projects migrated from GitLab to GitHub, reducing user seat costs
 <span class="t-ok">80%</span>        reduction in CI/CD runner costs (GitHub ARC runners on EKS)
 <span class="t-ok">150+ / 300+</span> dashboards / alerts migrated by a custom Kiro AI agent</pre>`,
       contact: () => `<pre>email     <a href="mailto:matheenroy@gmail.com">matheenroy@gmail.com</a>
@@ -496,7 +733,7 @@ github    <a href="https://github.com/matheen-arena" target="_blank" rel="noopen
 <span class="t-acc">    ▀▀▀▀▀▀▀     </span> <span class="t-acc">GitOps</span>    Argo CD
                   <span class="t-acc">Observe</span>   Grafana OSS
                   <span class="t-acc">AI</span>        Kiro AI Agent, GitHub Copilot Agent
-                  <span class="t-acc">Study</span>     B.E. Electronics and Communication Engineering</pre>`,
+                  <span class="t-acc">Study</span>     Bachelor of Engineering</pre>`,
       ls: () => `about/  experience/  skills/  impact/  contact/  <span class="t-ok">hire-me.sh</span>`,
       "./hire-me.sh": () => CMDS["sudo hire-me"](),
       "kubectl get pods": () => `<pre><span class="t-dim">NAMESPACE: career</span>
