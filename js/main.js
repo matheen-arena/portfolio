@@ -313,11 +313,11 @@
     const list = $("#stack-list");
     // Items are ordered so the longest labels sit at the ends of each fan (more room on phones).
     const GROUPS = [
-      { name: "AWS", c: C.orange, items: ["AWS Batch", "Lambda", "EKS", "ECS", "EC2", "S3", "Kinesis", "AWS Network", "Control Tower"] },
+      { name: "AWS", c: C.orange, items: ["AWS Batch", "Lambda", "EKS", "ECS", "EC2", "S3", "Kinesis", "AWS Network", "Control Tower", "Firehose"] },
       { name: "Databases & Search", c: C.blue, items: ["RDS", "Aurora", "Elasticsearch"] },
       { name: "Observability", c: C.green, items: ["Grafana Metrics", "Grafana OSS", "Grafana Loki", "Alloy", "Logz.io", "Grafana Mimir", "Grafana Logs", "Grafana Tempo"] },
-      { name: "CI/CD & GitOps", c: C.amber, items: ["Argo Cron Workflow", "GitHub Actions", "GitLab", "JFrog", "GitHub", "Argo CD", "GitHub ARC"] },
-      { name: "Infrastructure as Code", c: C.purple, items: ["Terraform"] },
+      { name: "CI/CD & GitOps", c: C.amber, items: ["Argo Cron Workflow", "GitHub Actions", "GitLab", "JFrog", "GitHub", "Argo CD", "GitHub ARC", "GitSync"] },
+      { name: "IaC & Containers", c: C.purple, items: ["Terraform", "Docker"] },
       { name: "AI Agents", c: C.pink, items: ["Kiro AI Agent", "GitHub Copilot Agent"] },
       { name: "Scripting", c: C.bone, items: ["Python", "Shell Scripting"] }
     ];
@@ -343,7 +343,7 @@
     function build() {
       // Phones get a 2-column grid of clusters; wider screens get a ring.
       const small = canvas.parentElement.clientWidth < 640;
-      const CELL_H = 160;
+      const CELL_H = 200;
       canvas.style.height = small ? Math.ceil(GROUPS.length / 2) * CELL_H + 16 + "px" : "";
       ({ ctx, w, h } = fitCanvas(canvas));
       const R = small ? 62 : 92;
@@ -367,7 +367,7 @@
         let a, rr;
         if (small) {
           // Fan out to the right of the hub so labels have room.
-          a = n === 1 ? 0 : -1.2 + (j / (n - 1)) * 2.4;
+          a = n === 1 ? 0 : -1.35 + (j / (n - 1)) * 2.7;
           rr = n <= 3 ? 48 : R;
         } else {
           // Spread items around the hub, leaving the top free for the hub label.
@@ -495,9 +495,9 @@ modern developer workflows, and integrating AI into modern engineering practices
                              Healthcare · ETL pipeline development</pre>`,
       work: () => CMDS.experience(),
       skills: () => `<pre><span class="t-acc">iac</span>            Terraform
-<span class="t-acc">aws</span>            EKS ECS S3 Lambda EC2 RDS Aurora Elasticsearch Kinesis Batch, AWS Network, Control Tower
+<span class="t-acc">aws</span>            EKS ECS S3 Lambda EC2 RDS Aurora Elasticsearch Kinesis Firehose Batch, AWS Network, Control Tower
 <span class="t-ok">observability</span>  Grafana OSS, Grafana Logs, Grafana Metrics, Grafana Tempo, Grafana Loki, Grafana Mimir, Alloy, Logz.io
-<span class="t-blue">tools</span>          Argo Cron Workflow, Argo CD
+<span class="t-blue">tools</span>          Argo Cron Workflow, Argo CD, GitSync, Docker
 <span class="t-acc">ci/cd</span>          GitLab, GitHub, GitHub Actions, Action Runner Controller, JFrog
 <span class="t-ok">ai agents</span>      GitHub Copilot Agent, Kiro AI Agent
 <span class="t-blue">scripting</span>      Shell Scripting, Python, MySQL</pre>`,
