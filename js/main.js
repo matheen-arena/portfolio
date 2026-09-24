@@ -481,7 +481,7 @@ modern developer workflows, and integrating AI into modern engineering practices
       stack: () => CMDS.skills(),
       impact: () => `<pre><span class="t-ok">~$250K/yr</span>  observability costs reduced (self-hosted Grafana OSS on EKS)
 <span class="t-ok">1,200+</span>     Lambda functions with centralized log ingestion (+ 50+ Batch/ECS workloads)
-<span class="t-ok">2,100</span>      projects migrated from GitLab to GitHub
+<span class="t-ok">2,100</span>      projects migrated from GitLab to GitHub, reducing user seat costs
 <span class="t-ok">80%</span>        reduction in CI/CD runner costs (GitHub ARC runners on EKS)
 <span class="t-ok">150+ / 300+</span> dashboards / alerts migrated by a custom Kiro AI agent</pre>`,
       contact: () => `<pre>email     <a href="mailto:matheenroy@gmail.com">matheenroy@gmail.com</a>
@@ -496,7 +496,7 @@ github    <a href="https://github.com/matheen-arena" target="_blank" rel="noopen
 <span class="t-acc">    ▀▀▀▀▀▀▀     </span> <span class="t-acc">GitOps</span>    Argo CD
                   <span class="t-acc">Observe</span>   Grafana OSS
                   <span class="t-acc">AI</span>        Kiro AI Agent, GitHub Copilot Agent
-                  <span class="t-acc">Study</span>     B.E. Electronics and Communication Engineering</pre>`,
+                  <span class="t-acc">Study</span>     Bachelor of Engineering</pre>`,
       ls: () => `about/  experience/  skills/  impact/  contact/  <span class="t-ok">hire-me.sh</span>`,
       "./hire-me.sh": () => CMDS["sudo hire-me"](),
       "kubectl get pods": () => `<pre><span class="t-dim">NAMESPACE: career</span>
