@@ -1,7 +1,7 @@
 /* Generative sound engine — everything is synthesised with Web Audio, no files. */
 (function () {
   const Ctx = window.AudioContext || window.webkitAudioContext;
-  let ctx = null, master = null, sfxBus = null, ambBus = null, delay = null;
+  let ctx = null, master = null, analyser = null, waveBuf = null, sfxBus = null, ambBus = null, delay = null;
   let enabled = false, ambientStarted = false, pingTimer = null;
   const listeners = [];
 
@@ -12,6 +12,8 @@
     if (ctx || !Ctx) return;
     ctx = new Ctx();
     master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
+    analyser = ctx.createAnalyser(); analyser.fftSize = 256; master.connect(analyser);
+    waveBuf = new Float32Array(analyser.fftSize);
 
     const comp = ctx.createDynamicsCompressor();
     comp.threshold.value = -18; comp.ratio.value = 4;
@@ -118,7 +120,6 @@
       master.gain.setValueAtTime(master.gain.value, t);
       master.gain.linearRampToValueAtTime(enabled ? .9 : 0, t + (enabled ? 1.2 : .4));
       if (enabled) startAmbient();
-      try { localStorage.setItem("sound", enabled ? "on" : "off"); } catch (e) { /* storage unavailable */ }
       listeners.forEach(fn => fn(enabled));
     },
     toggle() { this.setEnabled(!enabled); },
@@ -136,7 +137,8 @@
     error() { tone(180, { type: "sawtooth", dur: .2, vol: .05, slide: 120 }); },
     whoosh() { noise({ dur: .5, vol: .05, filter: "bandpass", freq: 300, sweep: 3000 }); },
     note(i, vol = .05) { tone(SCALE[i % SCALE.length], { dur: .6, vol, send: .7 }); },
-    boot() { if (!enabled) return; [0, 2, 4, 7].forEach((n, i) => tone(SCALE[n] , { dur: .9, vol: .06, at: i * .09, send: .8 })); }
+    // Current output waveform (Float32Array, -1..1), or null before audio has started.
+    wave() { if (!analyser) return null; analyser.getFloatTimeDomainData(waveBuf); return waveBuf; }
   };
 
   document.addEventListener("visibilitychange", () => {
