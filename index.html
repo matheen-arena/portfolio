@@ -20,6 +20,8 @@
   <!-- ============ CHROME ============ -->
   <div class="cursor" aria-hidden="true"><div class="cursor-ring"></div></div>
   <div class="grain" aria-hidden="true"></div>
+  <div class="spot" aria-hidden="true"></div>
+  <div class="progress" aria-hidden="true"><i></i></div>
 
   <header class="nav">
     <a href="#top" class="brand" data-sfx>
@@ -57,7 +59,7 @@
         </p>
         <div class="hero-cta reveal">
           <a href="#work" class="btn btn-primary" data-sfx>See the work <span aria-hidden="true">↘</span></a>
-          <a href="mailto:matheenroy@gmail.com" class="btn btn-ghost" data-sfx>matheenroy@gmail.com</a>
+          <a href="mailto:matheenroy@gmail.com" class="btn btn-primary" data-sfx>matheenroy@gmail.com</a>
         </div>
       </div>
       <div class="hero-hud" aria-hidden="true">
@@ -71,13 +73,18 @@
 
     <!-- ============ MARQUEE ============ -->
     <div class="marquee" aria-hidden="true">
-      <div class="marquee-track">
-        <span>AWS</span><i>✦</i><span>EKS</span><i>✦</i><span>Terraform</span><i>✦</i><span>Argo CD</span><i>✦</i>
-        <span>Grafana</span><i>✦</i><span>Loki</span><i>✦</i><span>Mimir</span><i>✦</i><span>Tempo</span><i>✦</i>
-        <span>Alloy</span><i>✦</i><span>GitHub Actions</span><i>✦</i><span>Aurora</span><i>✦</i><span>Kiro AI</span><i>✦</i>
-        <span>AWS</span><i>✦</i><span>EKS</span><i>✦</i><span>Terraform</span><i>✦</i><span>Argo CD</span><i>✦</i>
-        <span>Grafana</span><i>✦</i><span>Loki</span><i>✦</i><span>Mimir</span><i>✦</i><span>Tempo</span><i>✦</i>
-        <span>Alloy</span><i>✦</i><span>GitHub Actions</span><i>✦</i><span>Aurora</span><i>✦</i><span>Kiro AI</span><i>✦</i>
+      <div class="marquee-row" data-dir="-1">
+        <div class="marquee-track">
+          <span>AWS</span><i>✦</i><span>EKS</span><i>✦</i><span>Terraform</span><i>✦</i><span>Argo CD</span><i>✦</i>
+          <span>Grafana</span><i>✦</i><span>Loki</span><i>✦</i><span>Mimir</span><i>✦</i><span>Tempo</span><i>✦</i>
+          <span>Alloy</span><i>✦</i><span>GitHub Actions</span><i>✦</i><span>Aurora</span><i>✦</i><span>Kiro AI</span><i>✦</i>
+        </div>
+      </div>
+      <div class="marquee-row is-outline" data-dir="1">
+        <div class="marquee-track">
+          <span>Cloud</span><i>／</i><span>DevOps</span><i>／</i><span>Observability</span><i>／</i><span>AI automation</span><i>／</i>
+          <span>Platform engineering</span><i>／</i><span>CI/CD</span><i>／</i><span>GitOps</span><i>／</i>
+        </div>
       </div>
     </div>
 
@@ -97,9 +104,13 @@
             <div><dt>now</dt><dd>Cloud and Platform Engineer at zeb, Chennai</dd></div>
             <div><dt>based</dt><dd>Chennai, India</dd></div>
             <div><dt>focus</dt><dd>Cloud · DevOps · Observability · AI automation</dd></div>
-            <div><dt>study</dt><dd>B.E. Electronics and Communication Engineering, Tamilnadu College of Engineering, Coimbatore (2021 – 2025)</dd></div>
+            <div><dt>study</dt><dd>Bachelor of Engineering</dd></div>
           </dl>
         </div>
+      </div>
+      <div class="tail reveal" aria-hidden="true">
+        <div class="tail-bar"><span class="live-dot"></span> tail -f ~/career.log</div>
+        <div class="tail-body" id="tail-body"></div>
       </div>
     </section>
 
@@ -125,7 +136,7 @@
           <div class="metric-top"><span class="muted">projects</span><span class="tag">migrated</span></div>
           <div class="metric-val"><span class="count" data-to="2100">0</span></div>
           <canvas class="spark"></canvas>
-          <p>GitLab to GitHub, with centralized GitHub Actions workflows.</p>
+          <p>Migrated from GitLab to GitHub, reducing user seat costs, with centralized GitHub Actions workflows.</p>
         </article>
         <article class="metric reveal" data-spark="down">
           <div class="metric-top"><span class="muted">CI/CD runner costs</span><span class="tag">reduced</span></div>
@@ -155,6 +166,7 @@
       </div>
 
       <div class="jobs">
+        <div class="timeline" aria-hidden="true"><i class="tl-fill"></i><i class="tl-dot"></i></div>
         <article class="job reveal">
           <div class="job-meta">
             <span class="job-when">May 2026 – Present</span>
@@ -219,11 +231,12 @@
     <!-- ============ STACK ============ -->
     <section id="stack" class="section stack">
       <div class="section-head reveal">
-        <span class="idx">04</span><h2>Stack graph</h2>
+        <span class="idx">04</span><h2>Stack</h2>
       </div>
-      <p class="section-intro reveal">Each cluster is a domain I work in. <span class="muted">Move your cursor through it, or tap a domain below to highlight it.</span></p>
+      <p class="section-intro reveal">Everything I work with, on one sphere. <span class="muted">Drag to spin it, hover a skill, or tap a domain below to highlight it.</span></p>
       <div class="stack-wrap reveal">
         <canvas id="stack-canvas" aria-hidden="true"></canvas>
+        <div class="stack-tip" id="stack-tip">drag to spin</div>
         <div class="stack-legend" id="stack-legend"></div>
       </div>
       <ul class="sr-only" id="stack-list"></ul>
@@ -274,7 +287,6 @@
 
   <footer class="footer">
     <span>© <span id="year"></span> Abdul Matheen</span>
-    <span class="muted">handwritten HTML · canvas · web audio — no frameworks</span>
     <a href="#top" data-sfx>back to top ↑</a>
   </footer>
 
