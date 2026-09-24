@@ -1,8 +1,10 @@
 /* Generative sound engine — everything is synthesised with Web Audio, no files. */
 (function () {
   const Ctx = window.AudioContext || window.webkitAudioContext;
-  let ctx = null, master = null, sfxBus = null, ambBus = null, delay = null;
-  let enabled = false, ambientStarted = false, pingTimer = null;
+  let ctx = null, master = null, analyser = null, waveBuf = null, sfxBus = null, ambBus = null, delay = null;
+  // Sound is on by default, but browsers only allow audio after the visitor
+  // interacts with the page, so the engine starts on the first gesture.
+  let enabled = true, unlocked = false, ambientStarted = false, pingTimer = null;
   const listeners = [];
 
   // A-minor pentatonic across a few octaves for the "data pings".
@@ -12,6 +14,8 @@
     if (ctx || !Ctx) return;
     ctx = new Ctx();
     master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
+    analyser = ctx.createAnalyser(); analyser.fftSize = 256; master.connect(analyser);
+    waveBuf = new Float32Array(analyser.fftSize);
 
     const comp = ctx.createDynamicsCompressor();
     comp.threshold.value = -18; comp.ratio.value = 4;
@@ -104,22 +108,38 @@
     src.connect(f); f.connect(g); g.connect(sfxBus); src.start(t);
   }
 
+  // Fade the master bus to match `enabled`. Only called once audio is allowed.
+  function apply() {
+    setup();
+    if (ctx.state === "suspended") ctx.resume();
+    const t = ctx.currentTime;
+    master.gain.cancelScheduledValues(t);
+    master.gain.setValueAtTime(master.gain.value, t);
+    master.gain.linearRampToValueAtTime(enabled ? .9 : 0, t + (enabled ? 1.2 : .4));
+    if (enabled) startAmbient();
+  }
+
+  const GESTURES = ["pointerdown", "keydown", "touchend"];
+  function unlock(e) {
+    if (!Ctx) return;
+    unlocked = true;
+    GESTURES.forEach(ev => window.removeEventListener(ev, unlock, true));
+    // A first click on the toggle (or pressing M) means "mute", so don't start audio for it.
+    const muting = (e.target.closest && e.target.closest("#sound-toggle")) || (e.type === "keydown" && e.key && e.key.toLowerCase() === "m");
+    if (enabled && !muting) apply();
+  }
+  GESTURES.forEach(ev => window.addEventListener(ev, unlock, true));
+
   let lastHover = 0;
   const SFX = {
     get enabled() { return enabled; },
+    get playing() { return enabled && unlocked && !!ctx && ctx.state === "running"; },
     supported: !!Ctx,
     setEnabled(on) {
       if (!Ctx) return;
-      setup();
       enabled = !!on;
-      if (ctx.state === "suspended") ctx.resume();
-      const t = ctx.currentTime;
-      master.gain.cancelScheduledValues(t);
-      master.gain.setValueAtTime(master.gain.value, t);
-      master.gain.linearRampToValueAtTime(enabled ? .9 : 0, t + (enabled ? 1.2 : .4));
-      if (enabled) startAmbient();
-      try { localStorage.setItem("sound", enabled ? "on" : "off"); } catch (e) { /* storage unavailable */ }
       listeners.forEach(fn => fn(enabled));
+      if (unlocked) apply();
     },
     toggle() { this.setEnabled(!enabled); },
     onChange(fn) { listeners.push(fn); },
@@ -136,7 +156,8 @@
     error() { tone(180, { type: "sawtooth", dur: .2, vol: .05, slide: 120 }); },
     whoosh() { noise({ dur: .5, vol: .05, filter: "bandpass", freq: 300, sweep: 3000 }); },
     note(i, vol = .05) { tone(SCALE[i % SCALE.length], { dur: .6, vol, send: .7 }); },
-    boot() { if (!enabled) return; [0, 2, 4, 7].forEach((n, i) => tone(SCALE[n] , { dur: .9, vol: .06, at: i * .09, send: .8 })); }
+    // Current output waveform (Float32Array, -1..1), or null before audio has started.
+    wave() { if (!analyser) return null; analyser.getFloatTimeDomainData(waveBuf); return waveBuf; }
   };
 
   document.addEventListener("visibilitychange", () => {

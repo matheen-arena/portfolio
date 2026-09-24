@@ -15,24 +15,10 @@
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body class="is-booting">
-
-  <!-- ============ BOOT ============ -->
-  <div id="boot" aria-live="polite">
-    <div class="boot-inner">
-      <pre id="boot-log" class="boot-log"></pre>
-      <div class="boot-actions" id="boot-actions">
-        <button class="btn btn-primary" data-enter="sound">
-          <span class="dot"></span> Enter with sound
-        </button>
-        <button class="btn btn-ghost" data-enter="silent">Enter silently</button>
-      </div>
-      <p class="boot-hint">headphones recommended · you can toggle sound anytime</p>
-    </div>
-  </div>
+<body>
 
   <!-- ============ CHROME ============ -->
-  <div class="cursor" aria-hidden="true"><div class="cursor-dot"></div><div class="cursor-ring"></div></div>
+  <div class="cursor" aria-hidden="true"><div class="cursor-ring"></div></div>
   <div class="grain" aria-hidden="true"></div>
 
   <header class="nav">
@@ -49,9 +35,9 @@
       <a href="#terminal" data-sfx>terminal</a>
       <a href="#contact" data-sfx>contact</a>
     </nav>
-    <button id="sound-toggle" class="sound-toggle" aria-pressed="false" aria-label="Toggle sound" data-sfx>
-      <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-      <span class="sound-label">sound off</span>
+    <button id="sound-toggle" class="sound-toggle" aria-pressed="true" aria-label="Sound on. Turn sound off" title="Sound (M)" data-sfx>
+      <canvas class="scope" aria-hidden="true"></canvas>
+      <span class="sound-state" aria-hidden="true">on</span>
     </button>
   </header>
 

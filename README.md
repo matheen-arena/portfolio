@@ -4,13 +4,13 @@ Personal site for **Abdul Matheen**, Cloud & Platform Engineer.
 
 Plain HTML, CSS and JavaScript with no build step and no frameworks:
 
-- **Boot screen**: choose to enter with or without sound.
+- **Sound toggle**: a small live oscilloscope in the top-right corner. Sound is on by default and starts on the visitor's first click, tap or key press (browsers block audio before that). Turn it off and the line goes flat.
 - **Hero**: a canvas "telemetry" flow field. The cursor acts as a collector that pulls signals in; click to send out a shockwave.
 - **Impact**: animated counters with sparklines.
 - **Signal path**: an animated SVG of the observability pipeline (Lambda/ECS/Batch → Kinesis → Alloy → Loki/Mimir/Tempo → Grafana).
 - **Stack graph**: an interactive force graph of skills grouped by domain.
 - **Terminal**: a working shell. Try `help`, `kubectl get pods`, `terraform plan` or `sudo hire-me`.
-- **Sound**: generated live with the Web Audio API (ambient pad, UI blips, key clicks), so there are no audio files. Toggle it from the nav or press `M`.
+- **Sound**: generated live with the Web Audio API (ambient pad, UI blips, key clicks), so there are no audio files. Toggle it from the top-right corner or press `M`.
 
 Respects `prefers-reduced-motion`, and works on phones.
 

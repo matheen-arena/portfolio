@@ -15,47 +15,6 @@
 
   $("#year").textContent = new Date().getFullYear();
 
-  /* ================= BOOT ================= */
-  const BOOT_LINES = [
-    ["[ 0.000 ] booting ", "hl", "matheen.cloud"],
-    ["[ 0.108 ] terraform apply -auto-approve ........ ", "ok", "ok"],
-    ["[ 0.214 ] kubectl rollout status deploy/portfolio  ", "ok", "ok"],
-    ["[ 0.297 ] argocd app sync experience ........... ", "ok", "synced"],
-    ["[ 0.383 ] alloy: logs · metrics · traces ....... ", "ok", "healthy"],
-    ["[ 0.462 ] grafana: 150 dashboards · 300 alerts . ", "ok", "ok"],
-    ["", "hl", "\nready. choose how to enter ↓"]
-  ];
-
-  function runBoot() {
-    const log = $("#boot-log");
-    const actions = $("#boot-actions");
-    let i = 0;
-    const step = reduceMotion ? 0 : 170;
-    function next() {
-      if (i >= BOOT_LINES.length) { actions.classList.add("is-in"); return; }
-      const [pre, cls, post] = BOOT_LINES[i++];
-      const line = document.createElement("div");
-      line.append(document.createTextNode(pre));
-      const s = document.createElement("span"); s.className = cls; s.textContent = post;
-      line.append(s);
-      log.append(line);
-      setTimeout(next, step + Math.random() * step * .6);
-    }
-    next();
-
-    $$("[data-enter]").forEach(btn => btn.addEventListener("click", () => {
-      if (btn.dataset.enter === "sound") { SFX.setEnabled(true); SFX.boot(); }
-      enterSite();
-    }));
-  }
-
-  function enterSite() {
-    $("#boot").classList.add("is-gone");
-    document.body.classList.remove("is-booting");
-    requestAnimationFrame(() => document.body.classList.add("is-ready"));
-    setTimeout(() => $("#boot").remove(), 900);
-  }
-
   /* ================= SOUND TOGGLE + UI SFX ================= */
   const toggle = $("#sound-toggle");
   if (!SFX.supported) toggle.hidden = true;
@@ -65,10 +24,41 @@
   });
   SFX.onChange(on => {
     toggle.setAttribute("aria-pressed", on ? "true" : "false");
-    $(".sound-label", toggle).textContent = on ? "sound on" : "sound off";
+    toggle.setAttribute("aria-label", on ? "Sound on. Turn sound off" : "Sound off. Turn sound on");
+    $(".sound-state", toggle).textContent = on ? "on" : "off";
   });
+
+  // Tiny oscilloscope inside the toggle: a flat line when muted, the live output waveform when on.
+  (function scope() {
+    const canvas = $(".scope", toggle);
+    const { ctx, w, h } = fitCanvas(canvas);
+    let level = 0; // eases between off (0) and on (1)
+    (function draw(t) {
+      level += ((SFX.enabled ? 1 : 0) - level) * .08;
+      ctx.clearRect(0, 0, w, h);
+      const buf = SFX.wave();
+      let peak = .02;
+      if (buf) for (let i = 0; i < buf.length; i++) peak = Math.max(peak, Math.abs(buf[i]));
+      ctx.beginPath();
+      for (let x = 0; x <= w; x++) {
+        const i = buf ? Math.floor((x / w) * (buf.length - 1)) : 0;
+        const live = buf ? buf[i] / peak : 0;
+        // Add a gentle synthetic wobble so the line stays alive between quiet notes.
+        const idle = Math.sin(x * .45 + t * .006) * .35 * Math.sin(x / w * Math.PI);
+        const off = Math.sin(x * .3 + t * .002) * .06;
+        const y = (live * .6 + idle) * level + off * (1 - level);
+        ctx.lineTo(x, h / 2 - y * (h / 2 - 2));
+      }
+      ctx.strokeStyle = level > .5 ? C.green : C.muted;
+      ctx.globalAlpha = .5 + level * .5;
+      ctx.lineWidth = 1.4; ctx.lineJoin = "round";
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(draw);
+    })(0);
+  })();
   document.addEventListener("keydown", e => {
-    if (e.key.toLowerCase() === "m" && !/input|textarea/i.test(e.target.tagName) && !document.body.classList.contains("is-booting")) toggle.click();
+    if (e.key.toLowerCase() === "m" && !/input|textarea/i.test(e.target.tagName)) toggle.click();
   });
 
   document.addEventListener("pointerover", e => {
@@ -76,19 +66,24 @@
     if (t && !t.contains(e.relatedTarget)) SFX.hover();
   });
   document.addEventListener("click", e => {
-    if (e.target.closest("[data-sfx]:not(#sound-toggle), .btn:not([data-enter])")) SFX.click();
+    if (e.target.closest("[data-sfx]:not(#sound-toggle), .btn")) SFX.click();
   });
 
   /* ================= CURSOR ================= */
   if (finePointer) {
-    const cur = $(".cursor"), dot = $(".cursor-dot"), ring = $(".cursor-ring");
+    const cur = $(".cursor"), ring = $(".cursor-ring");
     let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my;
-    addEventListener("pointermove", e => { mx = e.clientX; my = e.clientY; dot.style.transform = `translate(${mx}px,${my}px)`; });
+    addEventListener("pointermove", e => {
+      if (e.pointerType !== "mouse") return;
+      if (!cur.classList.contains("is-visible")) { rx = e.clientX; ry = e.clientY; cur.classList.add("is-visible"); }
+      mx = e.clientX; my = e.clientY;
+    });
+    document.documentElement.addEventListener("mouseleave", () => cur.classList.remove("is-visible"));
     addEventListener("pointerdown", () => cur.classList.add("is-down"));
     addEventListener("pointerup", () => cur.classList.remove("is-down"));
     document.addEventListener("pointerover", e => cur.classList.toggle("is-hover", !!e.target.closest("a, button, input, .node, #stack-canvas")));
     (function loop() {
-      rx += (mx - rx) * .18; ry += (my - ry) * .18;
+      rx += (mx - rx) * .2; ry += (my - ry) * .2;
       ring.style.transform = `translate(${rx}px,${ry}px)`;
       requestAnimationFrame(loop);
     })();
@@ -731,5 +726,5 @@ arc-runner-set-ghx7p               1/1     Running   0          3m
 
   function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 
-  runBoot();
+  requestAnimationFrame(() => document.body.classList.add("is-ready"));
 })();
