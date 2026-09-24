@@ -598,3 +598,10 @@ body.is-ready .hero-title .split { transform: none; }
   .rail.is-drag .rail-thumb { cursor: grabbing; }
   .rail.is-drag { user-select: none; }
 }
+/* header: no full-width blur; frosted pills only behind the text groups */
+.nav { background: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.brand, .nav-links { padding: 7px 14px; border-radius: 999px; background: rgba(7,8,10,.45);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+.brand { padding-left: 10px; }
+.nav-links { padding: 9px 20px; }
+.sound-toggle { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
