@@ -484,7 +484,7 @@ stellar-innovations-python-dev-intern    Completed   Bangalore   August 2024 –
   <span class="t-ok">+ resource "team_member" "abdul_matheen"</span> {
       <span class="t-ok">+</span> role     = "Cloud and Platform Engineer"
       <span class="t-ok">+</span> location = "Chennai, India"
-      <span class="t-ok">+</span> focus    = ["Cloud", "DevOps", "Observability", "AI automation"]
+      <span class="t-ok">+</span> focus    = ["Cloud", "DevOps", "AIOps", "Platform Engineering", "Observability", "AI automation"]
     }
 
 <span class="t-acc">Plan:</span> 1 to add, 0 to change, 0 to destroy.
