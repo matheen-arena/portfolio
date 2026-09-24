@@ -196,10 +196,10 @@
     /* dashboard log streaming resume facts */
     const log = $("#dash-log");
     const LINES = [
-      ["zeb", "Argo Cron Workflows on EKS"], ["zeb", "always-on EC2 eliminated for ETL"], ["zeb", "AWS data transfer costs reduced"],
-      ["avasoft", "Grafana OSS on EKS, ~$250K/yr saved"], ["avasoft", "1,200+ Lambdas → Kinesis ingestion"],
-      ["avasoft", "Kiro AI agent: 150+ dashboards"], ["avasoft", "Kiro AI agent: 300+ alerts"], ["avasoft", "GitSync dashboards in Git"],
-      ["avasoft", "2,100 projects GitLab → GitHub"], ["avasoft", "ARC runners on EKS, -80% cost"], ["stellar", "ETL pipelines → AWS S3"]
+      ["cloud", "AWS · EKS · ECS · Lambda · S3"], ["iac", "Terraform"], ["gitops", "Argo CD · Argo Cron Workflow"],
+      ["ci/cd", "GitHub Actions · ARC runners"], ["observe", "Grafana Loki · Grafana Mimir · Tempo"], ["collect", "Grafana Alloy pipelines"],
+      ["data", "RDS · Aurora · Elasticsearch"], ["ai", "Kiro AI Agent · Copilot Agent"],
+      ["status", "all systems nominal"]
     ];
     let li = 0;
     const addLine = () => {
@@ -209,7 +209,7 @@
       $("b", d).textContent = who + " ›";
       d.append(msg);
       log.append(d);
-      while (log.children.length > 7) log.firstChild.remove();
+      while (log.children.length > 6) log.firstChild.remove();
     };
     for (let k = 0; k < 6; k++) addLine();
     setInterval(() => { if (log.offsetParent && document.visibilityState === "visible") addLine(); }, 1600);
@@ -484,7 +484,7 @@ stellar-innovations-python-dev-intern    Completed   Bangalore   August 2024 –
   <span class="t-ok">+ resource "team_member" "abdul_matheen"</span> {
       <span class="t-ok">+</span> role     = "Cloud and Platform Engineer"
       <span class="t-ok">+</span> location = "Chennai, India"
-      <span class="t-ok">+</span> focus    = ["Cloud", "DevOps", "Observability", "AI automation"]
+      <span class="t-ok">+</span> focus    = ["Cloud", "DevOps", "AIOps", "Platform Engineering", "Observability", "AI automation"]
     }
 
 <span class="t-acc">Plan:</span> 1 to add, 0 to change, 0 to destroy.

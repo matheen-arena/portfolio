@@ -60,32 +60,111 @@
               <feGaussianBlur stdDeviation="4" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
             </filter>
           </defs>
-          <!-- roof and centre strut -->
-          <polygon class="cp-metal" points="0,0 1600,0 1600,40 0,40" />
-          <polygon class="cp-metal" points="560,0 1040,0 985,125 615,125" />
-          <line class="cp-edge" x1="615" y1="125" x2="985" y2="125" />
-          <rect class="cp-strip" x="790" y="0" width="20" height="95" rx="3" />
-          <!-- left pillar -->
-          <polygon class="cp-metal" points="0,40 190,40 640,690 560,745 0,300" />
-          <polygon class="cp-metal-2" points="0,300 560,745 560,900 0,900" />
-          <line class="cp-edge" x1="190" y1="40" x2="640" y2="690" />
-          <line class="cp-neon" x1="60" y1="120" x2="150" y2="250" />
-          <line class="cp-neon" x1="170" y1="280" x2="250" y2="395" />
-          <line class="cp-neon" x1="265" y1="420" x2="330" y2="515" />
-          <line class="cp-tube" x1="330" y1="330" x2="470" y2="540" />
-          <!-- right pillar -->
-          <polygon class="cp-metal" points="1600,40 1410,40 960,690 1040,745 1600,300" />
-          <polygon class="cp-metal-2" points="1600,300 1040,745 1040,900 1600,900" />
-          <line class="cp-edge" x1="1410" y1="40" x2="960" y2="690" />
-          <line class="cp-neon" x1="1540" y1="120" x2="1450" y2="250" />
-          <line class="cp-neon" x1="1430" y1="280" x2="1350" y2="395" />
-          <line class="cp-neon" x1="1335" y1="420" x2="1270" y2="515" />
-          <line class="cp-tube" x1="1270" y1="330" x2="1130" y2="540" />
+          <!-- roof and overhead panel -->
+          <polygon class="cp-metal" points="0,0 1600,0 1600,30 0,30" />
+          <polygon class="cp-metal" points="590,0 1010,0 975,82 625,82" />
+          <line class="cp-edge" x1="625" y1="82" x2="975" y2="82" />
+          <rect class="cp-strip" x="792" y="0" width="16" height="70" rx="3" />
+          <g class="cp-btns">
+            <rect class="cp-btn b0" x="640" y="14" width="19.84" height="14.3" rx="2" />
+            <rect class="cp-btn b1" x="672" y="14" width="19.84" height="14.3" rx="2" />
+            <rect class="cp-btn b2" x="704" y="14" width="19.84" height="14.3" rx="2" />
+            <rect class="cp-btn b3" x="736" y="14" width="19.84" height="14.3" rx="2" />
+            <rect class="cp-btn b4" x="648" y="40" width="19.84" height="14.3" rx="2" />
+            <rect class="cp-btn b5" x="680" y="40" width="19.84" height="14.3" rx="2" />
+            <rect class="cp-btn b6" x="712" y="40" width="19.84" height="14.3" rx="2" />
+            <rect class="cp-btn b0" x="744" y="40" width="19.84" height="14.3" rx="2" />
+            <rect class="cp-btn b0" x="852" y="14" width="19.84" height="14.3" rx="2" />
+            <rect class="cp-btn b1" x="884" y="14" width="19.84" height="14.3" rx="2" />
+            <rect class="cp-btn b2" x="916" y="14" width="19.84" height="14.3" rx="2" />
+            <rect class="cp-btn b3" x="948" y="14" width="19.84" height="14.3" rx="2" />
+            <rect class="cp-btn b4" x="844" y="40" width="19.84" height="14.3" rx="2" />
+            <rect class="cp-btn b5" x="876" y="40" width="19.84" height="14.3" rx="2" />
+            <rect class="cp-btn b6" x="908" y="40" width="19.84" height="14.3" rx="2" />
+            <rect class="cp-btn b0" x="940" y="40" width="19.84" height="14.3" rx="2" />
+          </g>
+          <!-- left pillar (slim, pushed to the edge) -->
+          <polygon class="cp-metal" points="0,30 105,30 395,770 290,815 0,430" />
+          <polygon class="cp-metal-2" points="0,430 290,815 300,900 0,900" />
+          <line class="cp-edge" x1="105" y1="30" x2="395" y2="770" />
+          <line class="cp-neon" x1="38" y1="95" x2="92" y2="225" />
+          <line class="cp-neon" x1="110" y1="270" x2="160" y2="395" />
+          <line class="cp-neon" x1="182" y1="440" x2="226" y2="552" />
+          <line class="cp-tube" x1="150" y1="210" x2="252" y2="470" />
+          <!-- left side console -->
+          <polygon class="cp-console" points="0,600 250,760 262,900 0,900" />
+          <g class="cp-btns">
+            <rect class="cp-btn b0" x="22" y="650" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b1" x="56" y="650" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b2" x="90" y="650" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b3" x="124" y="650" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b4" x="158" y="650" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b5" x="36" y="676" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b6" x="70" y="676" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b0" x="104" y="676" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b1" x="138" y="676" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b2" x="172" y="676" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b3" x="50" y="702" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b4" x="84" y="702" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b5" x="118" y="702" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b6" x="152" y="702" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b0" x="186" y="702" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b1" x="64" y="728" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b2" x="98" y="728" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b3" x="132" y="728" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b4" x="166" y="728" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b5" x="200" y="728" width="21.08" height="14.3" rx="2" />
+          </g>
+          <rect class="cp-slot" x="40" y="604" width="170" height="8" rx="4" /><rect class="cp-slot-fill f1" x="40" y="604" width="170" height="8" rx="4" />
+          <rect class="cp-slot" x="48" y="624" width="170" height="8" rx="4" /><rect class="cp-slot-fill f2" x="48" y="624" width="170" height="8" rx="4" />          <!-- right pillar (slim, pushed to the edge) -->
+          <polygon class="cp-metal" points="1600,30 1495,30 1205,770 1310,815 1600,430" />
+          <polygon class="cp-metal-2" points="1600,430 1310,815 1300,900 1600,900" />
+          <line class="cp-edge" x1="1495" y1="30" x2="1205" y2="770" />
+          <line class="cp-neon" x1="1562" y1="95" x2="1508" y2="225" />
+          <line class="cp-neon" x1="1490" y1="270" x2="1440" y2="395" />
+          <line class="cp-neon" x1="1418" y1="440" x2="1374" y2="552" />
+          <line class="cp-tube" x1="1450" y1="210" x2="1348" y2="470" />
+          <!-- right side console -->
+          <polygon class="cp-console" points="1600,600 1350,760 1338,900 1600,900" />
+          <g class="cp-btns">
+            <rect class="cp-btn b0" x="1556.92" y="650" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b1" x="1522.92" y="650" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b2" x="1488.92" y="650" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b3" x="1454.92" y="650" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b4" x="1420.92" y="650" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b5" x="1542.92" y="676" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b6" x="1508.92" y="676" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b0" x="1474.92" y="676" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b1" x="1440.92" y="676" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b2" x="1406.92" y="676" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b3" x="1528.92" y="702" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b4" x="1494.92" y="702" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b5" x="1460.92" y="702" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b6" x="1426.92" y="702" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b0" x="1392.92" y="702" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b1" x="1514.92" y="728" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b2" x="1480.92" y="728" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b3" x="1446.92" y="728" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b4" x="1412.92" y="728" width="21.08" height="14.3" rx="2" />
+            <rect class="cp-btn b5" x="1378.92" y="728" width="21.08" height="14.3" rx="2" />
+          </g>
+          <rect class="cp-slot" x="1390" y="604" width="170" height="8" rx="4" /><rect class="cp-slot-fill f1" x="1390" y="604" width="170" height="8" rx="4" />
+          <rect class="cp-slot" x="1382" y="624" width="170" height="8" rx="4" /><rect class="cp-slot-fill f2" x="1382" y="624" width="170" height="8" rx="4" />
+          <!-- flight HUD projected on the glass -->
+          <g class="cp-hud">
+            <circle cx="800" cy="430" r="22" /><line x1="760" y1="430" x2="778" y2="430" /><line x1="822" y1="430" x2="840" y2="430" /><line x1="800" y1="396" x2="800" y2="406" />
+            <g id="hud-ladder">
+              <line x1="690" y1="350" x2="760" y2="350" /><line x1="840" y1="350" x2="910" y2="350" /><text x="918" y="354">10</text>
+              <line x1="660" y1="430" x2="740" y2="430" class="hz" /><line x1="860" y1="430" x2="940" y2="430" class="hz" />
+              <line x1="690" y1="510" x2="760" y2="510" stroke-dasharray="6 6" /><line x1="840" y1="510" x2="910" y2="510" stroke-dasharray="6 6" /><text x="918" y="514">-10</text>
+            </g>
+            <rect x="420" y="300" width="58" height="260" class="tape" /><text x="449" y="292" class="cap">SPD</text><text id="hud-spd" x="449" y="436" class="big">000</text>
+            <rect x="1122" y="300" width="58" height="260" class="tape" /><text x="1151" y="292" class="cap">ALT</text><text id="hud-alt" x="1151" y="436" class="big">000</text>
+          </g>
           <!-- dashboard -->
-          <polygon fill="url(#cpDash)" points="0,900 0,815 470,735 1130,735 1600,815 1600,900" />
-          <line class="cp-edge" x1="470" y1="735" x2="1130" y2="735" />
-          <polygon class="cp-panel" points="500,760 760,760 745,900 515,900" />
-          <polygon class="cp-panel" points="840,760 1100,760 1085,900 855,900" />
+          <polygon fill="url(#cpDash)" points="0,900 0,845 330,772 1270,772 1600,845 1600,900" />
+          <line class="cp-edge" x1="330" y1="772" x2="1270" y2="772" />
+          <line class="cp-dash-glow" x1="360" y1="774" x2="1240" y2="774" />
         </svg>
         <div class="crt" aria-hidden="true"></div>
 
@@ -100,22 +179,17 @@
             </div>
           </div>
           <div class="stage" data-stage="1">
-            <p class="stage-kicker">stage 01 // observability</p>
-            <h2 class="stage-title">Logz.io → Grafana OSS</h2>
-            <ul class="stage-facts">
-              <li><b>~$250K</b> observability costs reduced per year</li>
-              <li><b>1,200+</b> Lambda functions with centralized log ingestion</li>
-              <li><b>150+ / 300+</b> dashboards / alerts migrated by a Kiro AI agent</li>
-            </ul>
+            <p class="stage-kicker">transmission 01</p>
+            <h2 class="stage-title stage-q">Want to build and maintain <span class="hl">secure cloud solutions</span> in the age of AI?</h2>
+            <p class="stage-sub">AWS · Terraform · EKS · Observability · AI agents</p>
           </div>
           <div class="stage" data-stage="2">
-            <p class="stage-kicker">stage 02 // platform &amp; ci/cd</p>
-            <h2 class="stage-title">GitLab → GitHub</h2>
-            <ul class="stage-facts">
-              <li><b>2,100</b> projects migrated, reducing user seat costs</li>
-              <li><b>80%</b> lower CI/CD runner costs with GitHub ARC on EKS</li>
-              <li><b>Argo Cron Workflows</b> on EKS replacing always-on EC2</li>
-            </ul>
+            <p class="stage-kicker">transmission 02</p>
+            <h2 class="stage-title stage-q">Need modern <s class="strike">DevOps</s> <span class="hl">AIOps / Platform Engineering</span> for your team?</h2>
+            <div class="hero-cta">
+              <a href="mailto:matheenroy@gmail.com" class="btn btn-primary" data-sfx>Let's talk <span aria-hidden="true">↗</span></a>
+              <a href="#about" class="btn btn-ghost" data-sfx>Explore the site ↓</a>
+            </div>
           </div>
         </div>
 
@@ -124,11 +198,26 @@
             <div class="dash-title">scan // stack</div>
             <canvas id="radar"></canvas>
           </div>
+          <div class="dash-screen dash-sys">
+            <div class="dash-title">systems</div>
+            <div class="sys"><span>cloud</span><i style="--d:0s"></i></div>
+            <div class="sys"><span>gitops</span><i style="--d:-.7s"></i></div>
+            <div class="sys"><span>observe</span><i style="--d:-1.3s"></i></div>
+            <div class="sys"><span>ci/cd</span><i style="--d:-.4s"></i></div>
+            <div class="sys"><span>ai ops</span><i style="--d:-1.9s"></i></div>
+          </div>
           <a href="#about" class="dash-center" aria-label="Scroll down" data-sfx>
             <span class="mouse"><i></i></span>
             <span class="dash-label" id="dash-label">scroll down</span>
             <span class="stage-dots"><i class="is-on"></i><i></i><i></i></span>
           </a>
+          <div class="dash-screen dash-nav">
+            <div class="dash-title">nav // flight</div>
+            <div class="nav-row"><span>spd</span><b id="nav-spd">000</b></div>
+            <div class="nav-row"><span>alt</span><b id="nav-alt">000</b></div>
+            <div class="nav-row"><span>wpt</span><b id="nav-wpt">1 / 3</b></div>
+            <div class="nav-row"><span>sys</span><b class="ok">nominal</b></div>
+          </div>
           <div class="dash-screen dash-right">
             <div class="dash-title">telemetry // log</div>
             <div class="dash-log" id="dash-log"></div>
@@ -164,7 +253,7 @@
           <dl class="kv">
             <div><dt>now</dt><dd>Cloud and Platform Engineer at zeb, Chennai</dd></div>
             <div><dt>based</dt><dd>Chennai, India</dd></div>
-            <div><dt>focus</dt><dd>Cloud · DevOps · Observability · AI automation</dd></div>
+            <div><dt>focus</dt><dd>Cloud · DevOps · AIOps · Platform Engineering · Observability · AI automation</dd></div>
             <div><dt>study</dt><dd>Bachelor of Engineering</dd></div>
           </dl>
         </div>
