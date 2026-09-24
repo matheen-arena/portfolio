@@ -172,6 +172,14 @@
     const fitRadar = () => { if (rc.offsetParent) radar = fitCanvas(rc); };
     fitRadar();
     addEventListener("resize", debounce(fitRadar, 200));
+    // Live bar chart beside the log.
+    const lc = $("#log-chart");
+    let lchart = null;
+    const lvals = Array.from({ length: 14 }, () => Math.random());
+    const fitLc = () => { if (lc.offsetParent) lchart = fitCanvas(lc); };
+    fitLc();
+    addEventListener("resize", debounce(fitLc, 200));
+    let lcAcc = 0;
     const sc = $("#dc-scope");
     let scope = null;
     const fitScope = () => { if (sc.offsetParent) scope = fitCanvas(sc); };
@@ -192,6 +200,22 @@
           x ? g.lineTo(x, sh / 2 - v * (sh / 2 - 2)) : g.moveTo(x, sh / 2 - v * (sh / 2 - 2));
         }
         g.strokeStyle = "#ff5a68"; g.lineWidth = 1.4; g.shadowColor = "#ff3b4e"; g.shadowBlur = 6; g.stroke(); g.shadowBlur = 0;
+      }
+      if (lchart && lc.offsetParent) {
+        lcAcc += dt;
+        if (lcAcc > 260) { lcAcc = 0; lvals.shift(); lvals.push(.15 + Math.random() * .7 + (SFX.playing ? .2 : 0)); }
+        const { ctx: g, w: lw, h: lh } = lchart, bw = lw / lvals.length;
+        g.clearRect(0, 0, lw, lh);
+        g.strokeStyle = "rgba(255,80,90,.15)"; g.lineWidth = 1;
+        [.25, .5, .75].forEach(q => { g.beginPath(); g.moveTo(0, lh * q); g.lineTo(lw, lh * q); g.stroke(); });
+        lvals.forEach((v, i) => {
+          const bh = Math.min(1, v) * (lh - 2);
+          g.fillStyle = i === lvals.length - 1 ? "#ffd0d4" : `rgba(255,${80 + v * 60},${90 + v * 40},${.35 + v * .5})`;
+          g.fillRect(i * bw + 1, lh - bh, bw - 2, bh);
+        });
+        g.beginPath();
+        lvals.forEach((v, i) => { const x = i * bw + bw / 2, y = lh - Math.min(1, v) * (lh - 2); i ? g.lineTo(x, y) : g.moveTo(x, y); });
+        g.strokeStyle = "#ff8a95"; g.lineWidth = 1; g.stroke();
       }
       if (!radar || !rc.offsetParent) return;
       const { ctx: r, w: rw, h: rh } = radar, c = rw / 2, cy = rh / 2, rr = Math.min(c, cy) - 3;
