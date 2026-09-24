@@ -7,7 +7,6 @@ Plain HTML, CSS and JavaScript with no build step and no frameworks:
 - **Sound toggle**: a small live oscilloscope in the top-right corner. Sound is on by default and starts on the visitor's first click, tap or key press (browsers block audio before that). Turn it off and the line goes flat.
 - **Hero**: a canvas "telemetry" flow field. The cursor acts as a collector that pulls signals in; click to send out a shockwave.
 - **Impact**: animated counters with sparklines.
-- **Project map**: an animated SVG of the Logz.io → Grafana OSS migration (Lambda, Batch & ECS → Kinesis → Grafana OSS on EKS; Logz.io → Kiro AI agent → Grafana; GitSync → Git repository).
 - **Stack graph**: an interactive force graph of skills grouped by domain.
 - **Terminal**: a working shell. Try `help`, `kubectl get pods`, `terraform plan` or `sudo hire-me`.
 - **Sound**: generated live with the Web Audio API (ambient pad, UI blips, key clicks), so there are no audio files. Toggle it from the top-right corner or press `M`.

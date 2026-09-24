@@ -191,25 +191,6 @@ body.is-ready .hero-title .split { transform: none; }
 @media (max-width: 960px) { .metrics { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 600px) { .metrics { grid-template-columns: 1fr; } }
 
-/* ---------- pipeline ---------- */
-.pipe-wrap { position: relative; border: 1px solid var(--line); border-radius: 18px; background:
-  radial-gradient(circle at 1px 1px, #1a1e24 1px, transparent 0) 0 0 / 22px 22px, var(--bg-2);
-  padding: clamp(12px, 3vw, 32px); }
-#pipe-svg { display: block; width: 100%; height: auto; overflow: visible; }
-#pipe-svg .edge { fill: none; stroke: var(--line-2); stroke-width: 1.5; }
-#pipe-svg .edge.is-hot { stroke: #3b4450; }
-#pipe-svg .node { cursor: pointer; }
-#pipe-svg .node rect { fill: var(--panel); stroke: var(--line-2); stroke-width: 1; transition: stroke .25s, fill .25s; }
-#pipe-svg .node:hover rect, #pipe-svg .node.is-active rect { stroke: var(--c); fill: #151a20; }
-#pipe-svg .node .n-title { font-family: var(--sans); font-size: 15px; font-weight: 600; fill: var(--fg); }
-#pipe-svg.is-vertical .node .n-title { font-size: 13px; }
-#pipe-svg .node .n-sub { font-family: var(--mono); font-size: 10.5px; fill: var(--muted); }
-#pipe-svg .node .n-dot { fill: var(--c); }
-#pipe-svg .col-label { font-family: var(--mono); font-size: 10.5px; fill: var(--muted); letter-spacing: .12em; text-transform: uppercase; }
-.pipe-info { margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--line-2); font-family: var(--mono); font-size: 13px; min-height: 64px; }
-.pipe-info b { color: var(--accent-2); margin-left: 6px; }
-.pipe-info p { margin: 6px 0 0; font-family: var(--sans); font-size: 15px; color: #cfcbc2; }
-
 /* ---------- work ---------- */
 .jobs { display: flex; flex-direction: column; }
 .job { display: grid; grid-template-columns: 220px 1fr; gap: clamp(20px, 4vw, 64px); padding: 40px 0; border-bottom: 1px solid var(--line); }
