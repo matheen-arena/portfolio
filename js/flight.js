@@ -96,6 +96,7 @@ if (renderer) {
   /* ---------- city layout: dense downtown ahead, low sprawl out to the horizon ---------- */
   const boxes = [];
   const DT = { x: 0, z: -1150 }; // downtown centre
+  const DT_W = 900;               // downtown half-width
   const place = (x0, x1, z0, z1, step, keep, farJitter = 0) => {
     for (let x = x0; x <= x1; x += step) {
       for (let z = z0; z >= z1; z -= step) {
@@ -103,7 +104,7 @@ if (renderer) {
         if (Math.abs(x) < 34 && z > -2600) continue;        // the avenue straight ahead
         if (ix % 4 === 0 || iz % 5 === 0) continue;          // cross streets
         if (Math.random() > keep) continue;
-        const d = Math.hypot((x - DT.x) / 520, (z - DT.z) / 620);
+        const d = Math.hypot((x - DT.x) / DT_W, (z - DT.z) / 620);
         const downtown = Math.exp(-d * d);
         const hgt = 12 + Math.pow(Math.random(), 2) * 55 + downtown * (60 + Math.pow(Math.random(), 1.4) * 330) + Math.pow(Math.random(), 3) * farJitter;
         const wdt = step * (.6 + Math.random() * .3), dpt = step * (.6 + Math.random() * .3);
@@ -112,10 +113,10 @@ if (renderer) {
     }
   };
   const far = small ? 150 : 110;
-  place(-1500, 1500, 600, -2600, small ? 62 : 48, .92);   // near city
-  place(-5200, 5200, -2650, -8200, far, .8, 260);          // sprawl to the skyline (jagged silhouette)
-  place(-5200, -1560, 600, -2600, far, .8);                // sides
-  place(1560, 5200, 600, -2600, far, .8);
+  place(-2600, 2600, 600, -2600, small ? 66 : 50, .92);   // near city
+  place(-6500, 6500, -2650, -8200, far, .8, 260);          // sprawl to the skyline (jagged silhouette)
+  place(-6500, -2660, 600, -2600, far, .8);                // sides
+  place(2660, 6500, 600, -2600, far, .8);
 
   const geo = new THREE.BoxGeometry(1, 1, 1);
   geo.translate(0, .5, 0);
@@ -194,7 +195,7 @@ if (renderer) {
     const w = canvas.clientWidth, h = canvas.clientHeight;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
-    camera.fov = w / h < 1 ? 74 : 58;
+    camera.fov = w / h < 1 ? 80 : 66;
     camera.updateProjectionMatrix();
   }
   resize();
