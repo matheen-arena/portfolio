@@ -462,3 +462,22 @@ body.is-ready .hero-title .split { transform: none; }
 }
 .pod-l { grid-column: 1; } .hood-l { grid-column: 2; } .console .dash-center { grid-column: 3; } .hood-r { grid-column: 4; } .pod-r { grid-column: 5; }
 @media (max-width: 760px) { .console .dash-center { grid-column: 1; } }
+
+/* ---------- centre control: glowing mouse with scroll arrows, clean SCROLL DOWN label ---------- */
+.dc-mark { width: 84px; height: 54px; }
+.dc-chev path { fill: #e8394a; filter: drop-shadow(0 0 8px rgba(255,50,70,.75)); animation: chevGlow 2.4s ease-in-out infinite; }
+@keyframes chevGlow { 50% { filter: drop-shadow(0 0 16px rgba(255,50,70,.95)); } }
+.dc-mouse { position: relative; width: 24px; height: 36px; display: block; filter: drop-shadow(0 0 5px rgba(255,255,255,.55)); }
+.dc-mouse svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.dc-mouse .m-body { fill: #0e0f12; stroke: #f2f3f6; stroke-width: 2.4; }
+.dc-mouse .m-arrow { fill: none; stroke: #f2f3f6; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; animation: mArrow 1.6s ease-in-out infinite; }
+@keyframes mArrow { 0%, 100% { transform: translateY(-1.5px); } 50% { transform: translateY(1.5px); } }
+.dash-center .dash-label { font-family: "Space Grotesk", var(--sans); font-weight: 700; font-size: 16px; letter-spacing: .06em; color: #eceef2;
+  background: none; border: 0; padding: 2px 0 0;
+  text-shadow: 0 0 10px rgba(255,255,255,.35), 1px 0 rgba(255,70,90,.45), -1px 0 rgba(120,170,255,.4); }
+.dash-center:hover .dash-label { color: #fff; text-shadow: 0 0 14px rgba(255,255,255,.6), 1px 0 rgba(255,70,90,.6), -1px 0 rgba(120,170,255,.55); }
+.dash-center:hover .dc-mouse { filter: drop-shadow(0 0 9px rgba(255,255,255,.8)); }
+@media (prefers-reduced-motion: reduce) { .dc-chev path, .dc-mouse .m-arrow { animation: none; } }
+.dc-chev { overflow: visible; }
+.dc-chev path { filter: none; animation: none; }
+.dc-chev { filter: drop-shadow(0 0 8px rgba(255,50,70,.75)); animation: chevGlow 2.4s ease-in-out infinite; }

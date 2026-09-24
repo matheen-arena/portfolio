@@ -131,7 +131,7 @@
   (function flightHud() {
     const section = $("#flight");
     const stages = $$(".stage", section), dots = $$(".stage-dots i", section), label = $("#dash-label");
-    const LABELS = ["scroll down", "keep scrolling", "enter the site"];
+    const LABELS = ["scroll down", "scroll down", "scroll down"];
     let current = 0;
 
     // Scroll progress through the pinned section (0 → 1), shared with the 3D scene.
