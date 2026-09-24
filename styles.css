@@ -558,3 +558,23 @@ body.is-ready .hero-title .split { transform: none; }
 .brand-text { display: flex; flex-direction: column; line-height: 1.15; }
 .brand-region { display: flex; align-items: center; gap: 5px; font-size: 9.5px; font-weight: 400; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
 .brand-region i { width: 5px; height: 5px; border-radius: 50%; background: var(--accent-2); box-shadow: 0 0 6px var(--accent-2); animation: blink 2s infinite; }
+/* pilot pods: smooth rounded outer corner instead of a sharp chamfer */
+.pod-l, .pod-r { clip-path: none; }
+.pod-l { border-radius: 26px 6px 0 0; }
+.pod-r { border-radius: 6px 26px 0 0; }
+.pod { box-shadow: inset 0 1px 0 rgba(255,255,255,.1); }
+.pod-screen { border-radius: 10px; }
+.pod-l .pod-screen { border-top-left-radius: 16px; }
+.pod-r .pod-screen { border-top-right-radius: 16px; }
+/* console: smooth rounded corners everywhere instead of chamfered cuts */
+.hood-l, .hood-r, .bezel, .console .dash-center { clip-path: none; }
+.hood-l { border-radius: 28px 10px 0 0; }
+.hood-r { border-radius: 10px 28px 0 0; }
+.hood { overflow: hidden; }
+.bezel { border-radius: 18px 18px 6px 6px; }
+.hood .dash-screen { border-radius: 12px; }
+.hood .dash-screen::after { border-radius: 12px; }
+.glow-bar { border-radius: 6px; }
+.console .dash-center { border-radius: 18px 18px 0 0; overflow: hidden; }
+.dc-scope { border-radius: 8px; }
+.dc-meter, .dc-bracket i { border-radius: 6px; }
