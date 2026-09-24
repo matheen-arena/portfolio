@@ -4,7 +4,7 @@ Personal site for **Abdul Matheen**, Cloud & Platform Engineer.
 
 Plain HTML, CSS and JavaScript with no build step and no frameworks:
 
-- **Sound toggle**: a small live oscilloscope in the top-right corner. Sound is off by default; turn it on and the line becomes the real audio waveform.
+- **Sound toggle**: a small live oscilloscope in the top-right corner. Sound is on by default and starts on the visitor's first click, tap or key press (browsers block audio before that). Turn it off and the line goes flat.
 - **Hero**: a canvas "telemetry" flow field. The cursor acts as a collector that pulls signals in; click to send out a shockwave.
 - **Impact**: animated counters with sparklines.
 - **Signal path**: an animated SVG of the observability pipeline (Lambda/ECS/Batch → Kinesis → Alloy → Loki/Mimir/Tempo → Grafana).
