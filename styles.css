@@ -558,3 +558,50 @@ body.is-ready .hero-title .split { transform: none; }
 .brand-text { display: flex; flex-direction: column; line-height: 1.15; }
 .brand-region { display: flex; align-items: center; gap: 5px; font-size: 9.5px; font-weight: 400; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
 .brand-region i { width: 5px; height: 5px; border-radius: 50%; background: var(--accent-2); box-shadow: 0 0 6px var(--accent-2); animation: blink 2s infinite; }
+/* pilot pods: smooth rounded outer corner instead of a sharp chamfer */
+.pod-l, .pod-r { clip-path: none; }
+.pod-l { border-radius: 26px 6px 0 0; }
+.pod-r { border-radius: 6px 26px 0 0; }
+.pod { box-shadow: inset 0 1px 0 rgba(255,255,255,.1); }
+.pod-screen { border-radius: 10px; }
+.pod-l .pod-screen { border-top-left-radius: 16px; }
+.pod-r .pod-screen { border-top-right-radius: 16px; }
+/* console: smooth rounded corners everywhere instead of chamfered cuts */
+.hood-l, .hood-r, .bezel, .console .dash-center { clip-path: none; }
+.hood-l { border-radius: 28px 10px 0 0; }
+.hood-r { border-radius: 10px 28px 0 0; }
+.hood { overflow: hidden; }
+.bezel { border-radius: 18px 18px 6px 6px; }
+.hood .dash-screen { border-radius: 12px; }
+.hood .dash-screen::after { border-radius: 12px; }
+.glow-bar { border-radius: 6px; }
+.console .dash-center { border-radius: 18px 18px 0 0; overflow: hidden; }
+.dc-scope { border-radius: 8px; }
+.dc-meter, .dc-bracket i { border-radius: 6px; }
+
+/* ================= CUSTOM SCROLL RAIL (replaces the native scrollbar on mouse devices) ================= */
+.rail { display: none; }
+@media (hover: hover) and (pointer: fine) {
+  html { scrollbar-width: none; }
+  html::-webkit-scrollbar, body::-webkit-scrollbar { width: 0; height: 0; }
+  .rail { display: block; position: fixed; top: 0; right: 0; bottom: 0; width: 16px; z-index: 95;
+    background: linear-gradient(90deg, #d8102c, #ff2340 40%, #e0142f); box-shadow: -2px 0 12px rgba(255,20,50,.35); }
+  .rail::before, .rail::after { content: ""; position: absolute; left: 0; right: 0; height: 18px; background: #ff2340; }
+  .rail::before { top: 0; } .rail::after { bottom: 0; }
+  .rail-track { position: absolute; left: 3px; right: 3px; top: 22px; bottom: 22px; border-radius: 8px; cursor: pointer;
+    background: repeating-linear-gradient(to bottom, #a3001b 0 2px, #6e0011 2px 4px);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.35), inset 0 2px 6px rgba(0,0,0,.5); }
+  .rail-thumb { position: absolute; left: 0; right: 0; top: 0; height: 40px; border-radius: 6px; cursor: grab;
+    background: linear-gradient(90deg, #d9dbe0, #ffffff 45%, #e3e5ea); box-shadow: 0 0 10px rgba(255,255,255,.55), 0 2px 4px rgba(0,0,0,.4);
+    will-change: transform; transition: box-shadow .2s; }
+  .rail-thumb:hover, .rail.is-drag .rail-thumb { box-shadow: 0 0 16px rgba(255,255,255,.85), 0 2px 4px rgba(0,0,0,.4); }
+  .rail.is-drag .rail-thumb { cursor: grabbing; }
+  .rail.is-drag { user-select: none; }
+}
+/* header: no full-width blur; frosted pills only behind the text groups */
+.nav { background: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.brand, .nav-links { padding: 7px 14px; border-radius: 999px; background: rgba(7,8,10,.45);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+.brand { padding-left: 10px; }
+.nav-links { padding: 9px 20px; }
+.sound-toggle { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }

@@ -578,6 +578,46 @@ stellar-innovations-python-dev-intern    Completed   Bangalore   August 2024 –
     body.addEventListener("click", () => { if (!getSelection().toString()) input.focus({ preventScroll: true }); });
   })();
 
+
+  /* ================= CUSTOM SCROLL RAIL ================= */
+  (function rail() {
+    const rail = $(".rail");
+    if (!rail || !finePointer) return;
+    const track = $(".rail-track", rail), thumb = $(".rail-thumb", rail);
+    let dragging = null;
+    const metrics = () => {
+      const max = document.documentElement.scrollHeight - innerHeight, th = track.clientHeight;
+      const h = Math.max(36, th * innerHeight / Math.max(innerHeight, document.documentElement.scrollHeight));
+      return { max, th, h };
+    };
+    const paint = () => {
+      const { max, th, h } = metrics();
+      thumb.style.height = h + "px";
+      thumb.style.transform = `translateY(${max > 0 ? (scrollY / max) * (th - h) : 0}px)`;
+    };
+    addEventListener("scroll", paint, { passive: true });
+    addEventListener("resize", paint);
+    new ResizeObserver(paint).observe(document.body);
+    paint();
+    const jumpTo = clientY => {
+      const r = track.getBoundingClientRect(), { max, th, h } = metrics();
+      const p = Math.max(0, Math.min(1, (clientY - r.top - h / 2) / (th - h)));
+      scrollTo({ top: p * max, behavior: "instant" });
+    };
+    thumb.addEventListener("pointerdown", e => {
+      e.preventDefault(); e.stopPropagation();
+      const r = thumb.getBoundingClientRect();
+      dragging = { off: e.clientY - r.top - r.height / 2 };
+      rail.classList.add("is-drag");
+      thumb.setPointerCapture(e.pointerId);
+    });
+    thumb.addEventListener("pointermove", e => { if (dragging) jumpTo(e.clientY - dragging.off); });
+    const end = () => { dragging = null; rail.classList.remove("is-drag"); };
+    thumb.addEventListener("pointerup", end);
+    thumb.addEventListener("pointercancel", end);
+    track.addEventListener("pointerdown", e => { if (e.target === track) jumpTo(e.clientY); });
+  })();
+
   function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 
   requestAnimationFrame(() => document.body.classList.add("is-ready"));
