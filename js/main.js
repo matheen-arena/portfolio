@@ -292,8 +292,8 @@
     // Items are ordered so the longest labels sit at the ends of each fan (more room on phones).
     const GROUPS = [
       { name: "AWS", c: C.orange, items: ["AWS Batch", "Lambda", "EKS", "ECS", "EC2", "S3", "Kinesis", "AWS Network"] },
-      { name: "Databases & Search", c: C.blue, items: ["RDS", "Aurora", "Elasticsearch", "MySQL"] },
-      { name: "Observability", c: C.green, items: ["Grafana Metrics", "Grafana OSS", "Loki", "Mimir", "Alloy", "Logz.io", "Grafana Logs", "Grafana Tempo"] },
+      { name: "Databases & Search", c: C.blue, items: ["RDS", "Aurora", "Elasticsearch"] },
+      { name: "Observability", c: C.green, items: ["Grafana Metrics", "Grafana OSS", "Grafana Loki", "Alloy", "Logz.io", "Grafana Mimir", "Grafana Logs", "Grafana Tempo"] },
       { name: "CI/CD & GitOps", c: C.amber, items: ["Argo Cron Workflow", "GitHub Actions", "GitLab", "JFrog", "GitHub", "Argo CD", "GitHub ARC"] },
       { name: "Infrastructure as Code", c: C.purple, items: ["Terraform"] },
       { name: "AI Agents", c: C.pink, items: ["Kiro AI Agent", "GitHub Copilot Agent"] },
@@ -473,7 +473,7 @@ modern developer workflows, and integrating AI into modern engineering practices
       work: () => CMDS.experience(),
       skills: () => `<pre><span class="t-acc">iac</span>            Terraform
 <span class="t-acc">aws</span>            EKS ECS S3 Lambda EC2 RDS Aurora Elasticsearch Kinesis Batch, AWS Network
-<span class="t-ok">observability</span>  Grafana OSS, Grafana Logs, Grafana Metrics, Grafana Tempo, Loki, Mimir, Alloy, Logz.io
+<span class="t-ok">observability</span>  Grafana OSS, Grafana Logs, Grafana Metrics, Grafana Tempo, Grafana Loki, Grafana Mimir, Alloy, Logz.io
 <span class="t-blue">tools</span>          Argo Cron Workflow, Argo CD
 <span class="t-acc">ci/cd</span>          GitLab, GitHub, GitHub Actions, Action Runner Controller, JFrog
 <span class="t-ok">ai agents</span>      GitHub Copilot Agent, Kiro AI Agent
