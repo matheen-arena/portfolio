@@ -231,10 +231,17 @@
     const wrap = $(".marquee");
     const rows = $$(".marquee-row", wrap).map(row => {
       const tr = $(".marquee-track", row);
-      tr.innerHTML += tr.innerHTML; // two copies so it can loop seamlessly
-      return { tr, dir: +row.dataset.dir, x: 0, w: 0 };
+      return { tr, unit: tr.innerHTML, dir: +row.dataset.dir, x: 0, w: 0 };
     });
-    const measure = () => rows.forEach(r => { r.w = r.tr.scrollWidth / 2; r.x = r.dir < 0 ? 0 : -r.w; });
+    // Repeat the content until one copy-set covers the screen twice over, so the loop never shows a gap.
+    const measure = () => rows.forEach(r => {
+      r.tr.innerHTML = r.unit;
+      const one = r.tr.scrollWidth || 1;
+      const copies = Math.max(2, Math.ceil(innerWidth / one) + 1) * 2;
+      r.tr.innerHTML = r.unit.repeat(copies);
+      r.w = one * copies / 2;
+      r.x = r.dir < 0 ? 0 : -r.w;
+    });
     measure();
     addEventListener("resize", debounce(measure, 200));
     if (document.fonts) document.fonts.ready.then(measure);
@@ -323,123 +330,292 @@
     update();
   })();
 
-  /* ================= HERO: TELEMETRY FLOW FIELD ================= */
-  (function hero() {
-    const canvas = $("#hero-canvas");
-    const section = $(".hero");
-    const hud = $("#hud-rate");
-    let ctx, w, h, parts = [], ingested = 0;
-    const mouse = { x: -1e4, y: -1e4, lastMove: -1e4 };
-    const shocks = [];
-    const PALETTE = [C.bone, C.bone, C.bone, C.bone, C.green, C.orange, C.blue, C.amber];
+  /* ================= HERO: COCKPIT ================= */
+  (function cockpit() {
+    const section = $(".cockpit"), canvas = $("#hero-canvas");
+    const reticle = $(".reticle"), rlabel = $("#rlabel"), clock = $("#hud-clock");
+    const radarCanvas = $("#radar"), radarRead = $("#radar-read"), tapeCanvas = $("#tape");
+    const thrustBar = $("#thrust"), thrustVal = $("#thrust-val"), cursorEl = $(".cursor");
+    let ctx, w, h, radar, tape;
+    const mouse = { nx: 0, ny: 0, tx: 0, ty: 0 };
+    let warp = 0, energy = 0, lastScroll = scrollY, scrollVel = 0;
 
-    function spawn(p, anywhere) {
-      p.x = anywhere ? Math.random() * w : (Math.random() < .5 ? -5 : Math.random() * w);
-      p.y = Math.random() * h;
-      p.px = p.x; p.py = p.y;
-      p.s = .6 + Math.random() * 1.4;
-      p.life = 200 + Math.random() * 400;
-      p.c = (Math.random() * PALETTE.length) | 0;
-      return p;
-    }
+    /* --- scene data --- */
+    const newStar = any => ({ x: Math.random() * 2 - 1, y: Math.random() * 2 - 1, z: any ? Math.random() : 1,
+      c: Math.random() < .14 ? (Math.random() < .5 ? C.green : C.orange) : "#cfd6de" });
+    const stars = Array.from({ length: reduceMotion ? 220 : 720 }, () => newStar(true));
 
+    const sph = (lat, lon) => { const a = lat * Math.PI / 180, b = lon * Math.PI / 180; return [Math.cos(a) * Math.cos(b), Math.sin(a), Math.cos(a) * Math.sin(b)]; };
+    const globe = [];
+    for (let lat = -75; lat <= 75; lat += 15) for (let lon = 0; lon < 360; lon += 5) globe.push(sph(lat, lon));
+    for (let lon = 0; lon < 360; lon += 30) for (let lat = -85; lat <= 85; lat += 5) globe.push(sph(lat, lon));
+
+    const ORBITS = [{ r: 1.42, tilt: .55, yaw: .3 }, { r: 1.72, tilt: -.4, yaw: 1.3 }, { r: 2.02, tilt: .18, yaw: 2.4 }];
+    const SATS = [
+      { label: "EKS", o: 0, v: .00032, p: 0, c: C.orange },
+      { label: "TERRAFORM", o: 0, v: .00032, p: Math.PI, c: C.purple },
+      { label: "GRAFANA", o: 1, v: -.00024, p: 1, c: C.green },
+      { label: "ARGO CD", o: 1, v: -.00024, p: 1 + Math.PI, c: C.amber },
+      { label: "GITHUB ACTIONS", o: 2, v: .00018, p: 2.2, c: C.blue },
+      { label: "KIRO AI", o: 2, v: .00018, p: 2.2 + Math.PI, c: C.pink }
+    ];
+    const arcs = [];
+    let arcTimer = 0;
+
+    const DOMAINS = [
+      { name: "AWS", items: "EKS · ECS · Lambda · S3 · Kinesis", a: .4, r: .72, c: C.orange },
+      { name: "Observability", items: "Grafana · Loki · Mimir · Tempo · Alloy", a: 1.3, r: .5, c: C.green },
+      { name: "CI/CD & GitOps", items: "GitHub Actions · ARC · Argo CD", a: 2.2, r: .8, c: C.amber },
+      { name: "Databases & Search", items: "RDS · Aurora · Elasticsearch · MySQL", a: 3.1, r: .62, c: C.blue },
+      { name: "IaC", items: "Terraform", a: 3.9, r: .38, c: C.purple },
+      { name: "AI Agents", items: "Kiro AI Agent · GitHub Copilot Agent", a: 4.8, r: .7, c: C.pink },
+      { name: "Scripting", items: "Python · Shell Scripting", a: 5.6, r: .55, c: C.bone }
+    ].map(d => ({ ...d, glow: 0 }));
+
+    /* --- gauges (values straight from the resume) --- */
+    const GAUGES = [
+      { num: "~$250K", cap: "observability cost saved / yr", pct: 1, c: C.orange },
+      { num: "80%", cap: "ci/cd runner cost cut", pct: .8, c: C.green },
+      { num: "1,200+", cap: "lambdas, centralized logs", pct: 1, c: C.amber },
+      { num: "2,100", cap: "projects migrated", pct: 1, c: C.blue }
+    ];
+    const gWrap = $("#gauges");
+    const RAD = 34, CIRC = 2 * Math.PI * RAD, ARC = CIRC * .75;
+    GAUGES.forEach(g => {
+      const d = document.createElement("div");
+      d.className = "gauge";
+      d.innerHTML = `<svg viewBox="0 0 90 80"><g transform="rotate(135 45 42)">
+          <circle class="g-ticks" cx="45" cy="42" r="${RAD + 7}" stroke-dasharray="1 5.3" />
+          <circle class="g-track" cx="45" cy="42" r="${RAD}" stroke-dasharray="${ARC} ${CIRC}" />
+          <circle class="g-val" cx="45" cy="42" r="${RAD}" stroke="${g.c}" stroke-dasharray="${ARC} ${CIRC}" stroke-dashoffset="${ARC}" />
+        </g><text class="g-num" x="45" y="47"></text></svg><div class="g-cap"></div>`;
+      $("text", d).textContent = g.num;
+      if (g.num.length > 5) $("text", d).style.fontSize = "12.5px";
+      $(".g-cap", d).textContent = g.cap;
+      gWrap.append(d);
+      g.el = $(".g-val", d);
+      d.addEventListener("pointerenter", () => SFX.note(GAUGES.indexOf(g) + 4, .04));
+    });
+    setTimeout(() => GAUGES.forEach(g => g.el.setAttribute("stroke-dashoffset", ARC * (1 - g.pct))), 700);
+
+    /* --- sizing --- */
     function resize() {
       ({ ctx, w, h } = fitCanvas(canvas, 1.5));
-      ctx.fillStyle = C.bg; ctx.fillRect(0, 0, w, h);
-      const target = Math.round(Math.min(1500, (w * h) / 750) * (reduceMotion ? .3 : 1));
-      while (parts.length < target) parts.push(spawn({}, true));
-      parts.length = target;
+      if (radarCanvas.offsetParent) radar = fitCanvas(radarCanvas);
+      if (tapeCanvas.offsetParent) tape = fitCanvas(tapeCanvas);
     }
     resize();
     addEventListener("resize", debounce(resize, 150));
 
+    function layout() {
+      if (w >= 1180) return { gx: w * .635, gy: h * .52, R: Math.min(w, h) * .19, a: 1 };
+      if (w > 760) return { gx: w * .74, gy: h * .5, R: Math.min(w, h) * .22, a: .9 };
+      return { gx: w * .78, gy: h * .17, R: w * .2, a: .55 };
+    }
+
+    /* --- input --- */
     section.addEventListener("pointermove", e => {
-      const r = canvas.getBoundingClientRect();
-      mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; mouse.lastMove = performance.now();
+      const r = section.getBoundingClientRect();
+      const x = e.clientX - r.left, y = e.clientY - r.top;
+      mouse.tx = x / r.width * 2 - 1; mouse.ty = y / r.height * 2 - 1;
+      if (e.pointerType === "mouse") {
+        $(".rx", reticle).style.transform = `translateY(${y}px)`;
+        $(".ry", reticle).style.transform = `translateX(${x}px)`;
+        $(".rbox", reticle).style.left = x + "px"; $(".rbox", reticle).style.top = y + "px";
+        rlabel.style.left = x + "px"; rlabel.style.top = y + "px";
+        rlabel.textContent = `BRG ${((mouse.tx + 1) * 180).toFixed(1).padStart(5, "0")} · ELV ${(-mouse.ty * 45).toFixed(1)}`;
+        cursorEl.classList.add("is-hidden");
+      }
     });
-    section.addEventListener("pointerleave", () => { mouse.lastMove = -1e4; });
+    section.addEventListener("pointerleave", () => { mouse.tx = mouse.ty = 0; cursorEl.classList.remove("is-hidden"); });
     section.addEventListener("pointerdown", e => {
       if (e.target.closest("a, button")) return;
-      const r = canvas.getBoundingClientRect();
-      shocks.push({ x: e.clientX - r.left, y: e.clientY - r.top, r: 0 });
+      warp = 1;
       SFX.whoosh();
     });
+    setInterval(() => { clock.textContent = new Date().toTimeString().slice(0, 8); }, 1000);
 
-    const field = (x, y, t) =>
-      Math.sin(x * .0018 + t * .00015) * 1.3 +
-      Math.cos(y * .0024 - t * .0001) * 1.3 +
-      Math.sin((x - y) * .0009 + t * .0002) * .9;
-
-    const buckets = PALETTE.map(() => []);
-    let energy = 0;
+    /* --- math helpers --- */
+    const rotY = ([x, y, z], a) => [x * Math.cos(a) - z * Math.sin(a), y, x * Math.sin(a) + z * Math.cos(a)];
+    const rotX = ([x, y, z], a) => [x, y * Math.cos(a) - z * Math.sin(a), y * Math.sin(a) + z * Math.cos(a)];
+    const slerp = (a, b, u) => {
+      const d = Math.acos(Math.max(-1, Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2]))) || 1e-4;
+      const s1 = Math.sin((1 - u) * d) / Math.sin(d), s2 = Math.sin(u * d) / Math.sin(d);
+      return [a[0] * s1 + b[0] * s2, a[1] * s1 + b[1] * s2, a[2] * s1 + b[2] * s2];
+    };
 
     whileVisible(canvas, (dt, t) => {
-      // With sound on, the field speeds up and the collector pulses with the audio.
+      const k = Math.min(3, dt / 16.67);
       energy += (audioEnergy() - energy) * .15;
-      const k = dt / 16.67 * (reduceMotion ? .4 : 1) * (1 + energy * 2.2);
-      ctx.fillStyle = "rgba(7,8,10,0.11)";
-      ctx.fillRect(0, 0, w, h);
+      const d = scrollY - lastScroll; lastScroll = scrollY;
+      scrollVel += (d - scrollVel) * .1;
+      warp *= Math.pow(.965, k);
+      mouse.nx += (mouse.tx - mouse.nx) * .06 * k; mouse.ny += (mouse.ty - mouse.ny) * .06 * k;
 
-      // Collector follows the cursor; with no cursor it drifts on its own.
-      let cx = mouse.x, cy = mouse.y;
-      if (t - mouse.lastMove > 2500) {
-        cx = w * (.62 + .22 * Math.sin(t * .00023));
-        cy = h * (.5 + .28 * Math.sin(t * .00031 + 1));
-      }
-      const R = Math.min(220, Math.max(140, w * .14)), R2 = R * R;
+      const { gx, gy, R, a: sceneAlpha } = layout();
+      const spin = t * .00012 + mouse.nx * .5, tilt = .38 + mouse.ny * .22;
+      const P = v => { const s = 1 / (1 - v[2] * .16); return [gx + v[0] * R * s, gy - v[1] * R * s, v[2], s]; };
 
-      for (const s of shocks) s.r += 14 * k;
-      while (shocks.length && shocks[0].r > Math.max(w, h)) shocks.shift();
+      ctx.fillStyle = C.bg; ctx.fillRect(0, 0, w, h);
 
-      buckets.forEach(b => (b.length = 0));
-      for (const p of parts) {
-        const a = field(p.x, p.y, t);
-        let vx = Math.cos(a) * p.s, vy = Math.sin(a) * p.s;
-        const dx = cx - p.x, dy = cy - p.y, d2 = dx * dx + dy * dy;
-        if (d2 < R2) {
-          const d = Math.sqrt(d2) || 1, f = 1 - d / R;
-          vx += (-dy / d) * f * 3.2 + (dx / d) * f * 1.6;
-          vy += (dx / d) * f * 3.2 + (dy / d) * f * 1.6;
-          if (d < 10) { ingested++; spawn(p); continue; }
-        }
-        for (const s of shocks) {
-          const sx = p.x - s.x, sy = p.y - s.y, sd = Math.sqrt(sx * sx + sy * sy) || 1;
-          if (Math.abs(sd - s.r) < 40) { vx += sx / sd * 6; vy += sy / sd * 6; }
-        }
-        p.px = p.x; p.py = p.y;
-        p.x += vx * k; p.y += vy * k;
-        p.life -= k;
-        if (p.life < 0 || p.x < -10 || p.x > w + 10 || p.y < -10 || p.y > h + 10) { spawn(p); continue; }
-        buckets[p.c].push(p);
-      }
-
-      ctx.lineWidth = 1.2;
+      /* starfield: stars fly toward the viewer; warp, sound and scroll speed them up */
+      const speed = (.0018 + warp * .045 + energy * .012 + Math.min(.02, Math.abs(scrollVel) * .0006)) * k * (reduceMotion ? .3 : 1);
+      const vx = w / 2 - mouse.nx * 60, vy = h / 2 - mouse.ny * 40, f = Math.max(w, h) * .55;
       ctx.lineCap = "round";
-      buckets.forEach((b, i) => {
-        if (!b.length) return;
-        ctx.strokeStyle = PALETTE[i];
-        ctx.globalAlpha = PALETTE[i] === C.bone ? .45 : .85;
+      for (const st of stars) {
+        const pz = st.z;
+        st.z -= speed;
+        if (st.z <= .03) { Object.assign(st, newStar(false)); continue; }
+        const x1 = vx + st.x / pz * f * .5, y1 = vy + st.y / pz * f * .5;
+        const x2 = vx + st.x / st.z * f * .5, y2 = vy + st.y / st.z * f * .5;
+        if (x2 < -20 || x2 > w + 20 || y2 < -20 || y2 > h + 20) { Object.assign(st, newStar(false)); continue; }
+        ctx.globalAlpha = Math.min(1, (1 - st.z) * 1.3);
+        ctx.strokeStyle = st.c; ctx.lineWidth = (1 - st.z) * 2;
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 + .01, y2); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+
+      /* atmosphere */
+      const atm = ctx.createRadialGradient(gx, gy, R * .7, gx, gy, R * 1.6);
+      atm.addColorStop(0, `rgba(124,247,193,${(.1 + energy * .15) * sceneAlpha})`); atm.addColorStop(1, "rgba(124,247,193,0)");
+      ctx.fillStyle = atm; ctx.beginPath(); ctx.arc(gx, gy, R * 1.6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "rgba(7,8,10,.85)"; ctx.beginPath(); ctx.arc(gx, gy, R * 1.02, 0, Math.PI * 2); ctx.fill();
+
+      /* orbits (back halves first) */
+      const orbitPt = (o, ang) => rotX(rotY(rotX([Math.cos(ang) * o.r, 0, Math.sin(ang) * o.r], o.tilt), o.yaw), tilt);
+      const drawOrbits = front => {
+        ORBITS.forEach(o => {
+          ctx.beginPath();
+          let pen = false;
+          for (let i = 0; i <= 120; i++) {
+            const v = orbitPt(o, i / 120 * Math.PI * 2), pp = P(v);
+            if ((v[2] >= 0) === front) { pen ? ctx.lineTo(pp[0], pp[1]) : ctx.moveTo(pp[0], pp[1]); pen = true; } else pen = false;
+          }
+          ctx.strokeStyle = `rgba(125,133,143,${(front ? .35 : .12) * sceneAlpha})`; ctx.lineWidth = 1;
+          ctx.setLineDash([3, 6]); ctx.stroke(); ctx.setLineDash([]);
+        });
+      };
+      drawOrbits(false);
+
+      /* globe dots with a scanning band */
+      const scanY = Math.sin(t * .0006);
+      for (const g of globe) {
+        const v = rotX(rotY(g, spin), tilt);
+        const pp = P(v);
+        const band = Math.abs(g[1] - scanY) < .05;
+        ctx.globalAlpha = (v[2] > 0 ? .25 + v[2] * .7 : .06) * sceneAlpha * (band ? 1.4 : 1);
+        ctx.fillStyle = band ? C.orange : C.green;
+        const sz = (band ? 1.8 : 1.2) * pp[3];
+        ctx.fillRect(pp[0] - sz / 2, pp[1] - sz / 2, sz, sz);
+      }
+      ctx.globalAlpha = 1;
+
+      /* traffic arcs between random points on the globe */
+      arcTimer += dt;
+      if (arcTimer > (reduceMotion ? 2400 : 650)) {
+        arcTimer = 0;
+        arcs.push({ a: sph(Math.random() * 140 - 70, Math.random() * 360), b: sph(Math.random() * 140 - 70, Math.random() * 360), t0: t, c: [C.orange, C.green, C.blue, C.amber][(Math.random() * 4) | 0] });
+      }
+      for (let i = arcs.length - 1; i >= 0; i--) {
+        const A = arcs[i], life = (t - A.t0) / 2200;
+        if (life > 1) { arcs.splice(i, 1); continue; }
+        const head = Math.min(1, life * 1.6), tailU = Math.max(0, life * 1.6 - .6);
+        ctx.strokeStyle = A.c; ctx.lineWidth = 1.4;
         ctx.beginPath();
-        for (const p of b) { ctx.moveTo(p.px, p.py); ctx.lineTo(p.x, p.y); }
+        let last = null;
+        for (let s2 = 0; s2 <= 24; s2++) {
+          const u = tailU + (head - tailU) * s2 / 24;
+          const base = slerp(A.a, A.b, u), lift = 1 + .28 * Math.sin(Math.PI * u);
+          const v = rotX(rotY([base[0] * lift, base[1] * lift, base[2] * lift], spin), tilt), pp = P(v);
+          ctx.globalAlpha = (v[2] > -.2 ? .9 : .15) * (1 - life * .6) * sceneAlpha;
+          s2 ? ctx.lineTo(pp[0], pp[1]) : ctx.moveTo(pp[0], pp[1]);
+          last = [pp, v];
+        }
         ctx.stroke();
+        if (last && head < 1) { ctx.fillStyle = A.c; ctx.beginPath(); ctx.arc(last[0][0], last[0][1], 2.4, 0, Math.PI * 2); ctx.fill(); }
+      }
+      ctx.globalAlpha = 1;
+
+      drawOrbits(true);
+
+      /* satellites carrying skill names */
+      ctx.font = `500 ${w < 760 ? 9 : 10.5}px "JetBrains Mono", monospace`;
+      ctx.textBaseline = "middle";
+      SATS.forEach(sat => {
+        const v = orbitPt(ORBITS[sat.o], sat.p + t * sat.v), pp = P(v);
+        const front = v[2] > -.15;
+        ctx.globalAlpha = (front ? 1 : .25) * sceneAlpha;
+        ctx.fillStyle = sat.c;
+        ctx.beginPath(); ctx.arc(pp[0], pp[1], 3.2 * pp[3], 0, Math.PI * 2); ctx.fill();
+        if (front) {
+          ctx.strokeStyle = sat.c; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(pp[0], pp[1]); ctx.lineTo(pp[0] + 14, pp[1] - 14); ctx.lineTo(pp[0] + 22, pp[1] - 14); ctx.stroke();
+          ctx.fillText(sat.label, pp[0] + 26, pp[1] - 14);
+        }
       });
       ctx.globalAlpha = 1;
 
-      // Collector ring.
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(t * .0008);
-      ctx.strokeStyle = C.green; ctx.globalAlpha = .55; ctx.setLineDash([4, 7]);
-      ctx.beginPath(); ctx.arc(0, 0, 26 * (1 + energy * .9), 0, Math.PI * 2); ctx.stroke();
-      if (energy > .05) {
-        ctx.setLineDash([]); ctx.strokeStyle = C.orange; ctx.globalAlpha = energy * .8;
-        ctx.beginPath(); ctx.arc(0, 0, 40 + energy * 50, 0, Math.PI * 2); ctx.stroke();
+      /* radar */
+      if (radar && radarCanvas.offsetParent) {
+        const { ctx: r, w: rw } = radar, c = rw / 2, rr = c - 4;
+        const sweep = (t * .0016) % (Math.PI * 2);
+        r.clearRect(0, 0, rw, rw);
+        r.strokeStyle = "rgba(124,247,193,.18)"; r.lineWidth = 1;
+        [1, .66, .33].forEach(q => { r.beginPath(); r.arc(c, c, rr * q, 0, Math.PI * 2); r.stroke(); });
+        r.beginPath(); r.moveTo(c - rr, c); r.lineTo(c + rr, c); r.moveTo(c, c - rr); r.lineTo(c, c + rr); r.stroke();
+        for (let i = 0; i < 28; i++) {
+          const a0 = sweep - i * .03;
+          r.fillStyle = `rgba(124,247,193,${.28 * (1 - i / 28)})`;
+          r.beginPath(); r.moveTo(c, c); r.arc(c, c, rr, a0 - .03, a0); r.closePath(); r.fill();
+        }
+        r.strokeStyle = C.green; r.beginPath(); r.moveTo(c, c); r.lineTo(c + Math.cos(sweep) * rr, c + Math.sin(sweep) * rr); r.stroke();
+        r.font = '500 9px "JetBrains Mono", monospace'; r.textBaseline = "middle";
+        DOMAINS.forEach(dm => {
+          const diff = (sweep - dm.a + Math.PI * 4) % (Math.PI * 2);
+          if (diff < .08 && dm.glow < .5) {
+            dm.glow = 1;
+            radarRead.innerHTML = `contact › <b></b> <span></span>`;
+            $("b", radarRead).textContent = dm.name; $("span", radarRead).textContent = dm.items;
+          }
+          dm.glow = Math.max(.15, dm.glow - dt * .0005);
+          const x = c + Math.cos(dm.a) * rr * dm.r, y = c + Math.sin(dm.a) * rr * dm.r;
+          r.globalAlpha = dm.glow;
+          r.fillStyle = dm.c; r.beginPath(); r.arc(x, y, 3, 0, Math.PI * 2); r.fill();
+          r.strokeStyle = dm.c; r.beginPath(); r.arc(x, y, 3 + (1 - dm.glow) * 8, 0, Math.PI * 2); r.stroke();
+          r.fillStyle = C.fg; r.textAlign = x > c ? "right" : "left";
+          r.fillText(dm.name.split(" ")[0].toUpperCase(), x + (x > c ? -7 : 7), y - 8);
+          r.globalAlpha = 1;
+        });
       }
-      ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.fillStyle = C.orange;
-      ctx.beginPath(); ctx.arc(0, 0, 3.5, 0, Math.PI * 2); ctx.fill();
-      ctx.restore();
 
-      hud.textContent = ingested.toLocaleString();
+      /* heading tape follows the globe's spin */
+      if (tape && tapeCanvas.offsetParent) {
+        const { ctx: tc, w: tw, h: th } = tape;
+        const heading = ((spin * 180 / Math.PI) % 360 + 360) % 360, pxPerDeg = 4;
+        tc.clearRect(0, 0, tw, th);
+        tc.font = '500 9px "JetBrains Mono", monospace'; tc.textAlign = "center"; tc.textBaseline = "top";
+        const from = Math.floor((heading - tw / 2 / pxPerDeg) / 5) * 5;
+        for (let deg = from; deg < heading + tw / 2 / pxPerDeg; deg += 5) {
+          const x = tw / 2 + (deg - heading) * pxPerDeg, major = deg % 30 === 0;
+          const fade = 1 - Math.abs(x - tw / 2) / (tw / 2);
+          tc.globalAlpha = Math.max(0, fade);
+          tc.strokeStyle = major ? C.fg : C.muted;
+          tc.beginPath(); tc.moveTo(x, 0); tc.lineTo(x, major ? 10 : 5); tc.stroke();
+          if (major) {
+            const n = ((deg % 360) + 360) % 360;
+            tc.fillStyle = C.muted;
+            tc.fillText({ 0: "N", 90: "E", 180: "S", 270: "W" }[n] || String(n).padStart(3, "0"), x, 14);
+          }
+        }
+        tc.globalAlpha = 1; tc.fillStyle = C.orange;
+        tc.beginPath(); tc.moveTo(tw / 2 - 5, th); tc.lineTo(tw / 2 + 5, th); tc.lineTo(tw / 2, th - 7); tc.fill();
+        tc.fillStyle = C.fg; tc.fillText(heading.toFixed(0).padStart(3, "0") + "°", tw / 2, 24);
+      }
+
+      /* thrust meter */
+      const thrust = Math.min(1, .08 + warp * .9 + energy * .7 + Math.min(.4, Math.abs(scrollVel) * .01));
+      thrustBar.style.transform = `scaleX(${thrust.toFixed(3)})`;
+      thrustVal.textContent = String(Math.round(thrust * 100)).padStart(3, "0");
     });
   })();
 
