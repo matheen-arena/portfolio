@@ -32,3 +32,11 @@ python3 -m http.server 8000
 - Text content (about, jobs, contact) is in `index.html`.
 - The signal-path nodes, skill groups and terminal commands are data arrays in `js/main.js` (search for `NODES`, `GROUPS` and `CMDS`).
 - Colours and fonts are CSS variables at the top of `styles.css`.
+
+## Deploying changes
+
+`index.html` loads `styles.css` and the scripts with a `?v=` version tag, so visitors never get a new page with an old cached stylesheet (GitHub Pages caches assets for about 10 minutes). When you change CSS or JS, bump the tag, for example:
+
+```bash
+V=$(git rev-parse --short HEAD); sed -i -E "s/\?v=[a-z0-9]+/?v=$V/g" index.html
+```
