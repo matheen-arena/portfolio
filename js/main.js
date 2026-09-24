@@ -209,7 +209,7 @@
       $("b", d).textContent = who + " ›";
       d.append(msg);
       log.append(d);
-      while (log.children.length > 7) log.firstChild.remove();
+      while (log.children.length > 6) log.firstChild.remove();
     };
     for (let k = 0; k < 6; k++) addLine();
     setInterval(() => { if (log.offsetParent && document.visibilityState === "visible") addLine(); }, 1600);

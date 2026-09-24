@@ -183,6 +183,9 @@ if (renderer) {
   };
 
   /* ---------- loop (only while the hero is on screen) ---------- */
+  const $id = id => document.getElementById(id);
+  const hud = { spd: $id("hud-spd"), alt: $id("hud-alt"), nspd: $id("nav-spd"), nalt: $id("nav-alt"), wpt: $id("nav-wpt"), ladder: $id("hud-ladder") };
+  let lastHud = 0;
   let visible = true, raf = 0, last = performance.now(), eased = 0, boost = 0, glide = 0;
   const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
@@ -220,6 +223,20 @@ if (renderer) {
       }
     }
     carGeo.attributes.position.needsUpdate = true;
+
+    // Cockpit instruments follow the flight.
+    if (now - lastHud > 90) {
+      lastHud = now;
+      const spd = Math.round(420 + (target - eased) * 9000 + boost * 120 + Math.sin(t * 1.3) * 6);
+      const alt = Math.round(camera.position.y * 10);
+      const wpt = (target < .3 ? 1 : target < .66 ? 2 : 3) + " / 3";
+      if (hud.spd) hud.spd.textContent = String(spd).padStart(3, "0");
+      if (hud.alt) hud.alt.textContent = String(alt).padStart(4, "0");
+      if (hud.nspd) hud.nspd.textContent = spd + " kt";
+      if (hud.nalt) hud.nalt.textContent = alt + " m";
+      if (hud.wpt) hud.wpt.textContent = wpt;
+      if (hud.ladder) hud.ladder.setAttribute("transform", `translate(0 ${(look.y * 30 + Math.sin(t * .6) * 4).toFixed(1)}) rotate(${(look.x * 4).toFixed(2)} 800 430)`);
+    }
 
     renderer.render(scene, camera);
     if (visible) raf = requestAnimationFrame(frame);
