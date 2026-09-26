@@ -914,3 +914,7 @@ main { position: relative; isolation: isolate; }
 .dash-mid .scr-foot b { color: #fff; font-weight: 500; }
 @media (prefers-reduced-motion: reduce) { .nav-scroll { animation: none; } }
 .dash-mid .dash-title, .dash-mid .scr-foot { white-space: nowrap; } .dash-mid .scr-foot { gap: 6px; }
+/* centre housing: rounded like the side housings, soft inner corners where they meet */
+.hood-c { clip-path: none; border-radius: 20px 20px 0 0; overflow: hidden; }
+.hood-l { border-radius: 28px 20px 0 0; }
+.hood-r { border-radius: 20px 28px 0 0; }
