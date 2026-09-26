@@ -116,11 +116,11 @@ color: purple
 
 ## After editing
 
-1. Preview locally (the page loads these files, so it needs a small web server and won't work by double-clicking `index.html`):
-   ```bash
-   python3 -m http.server 8000
-   # open http://localhost:8000
-   ```
+1. Preview locally. The page loads these files, so it must be served, not double-clicked. Double-clicking `index.html` shows a note in place of the work log.
+   - **Windows:** double-click `preview.bat`
+   - **macOS / Linux:** run `./preview.sh`
+
+   Either one starts a local server and opens http://localhost:8000. Refresh after each edit. This needs Python installed.
 2. Commit and push. GitHub Pages publishes the change within a minute or two.
 
 The files are fetched fresh on every visit, so content edits don't need the `?v=` cache tag in `index.html` to be bumped. That tag is only needed when you change CSS or JavaScript.

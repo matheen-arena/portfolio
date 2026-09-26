@@ -15,10 +15,7 @@ Respects `prefers-reduced-motion`, and works on phones.
 
 ## Run locally
 
-```bash
-python3 -m http.server 8000
-# open http://localhost:8000
-```
+Double-click `preview.bat` (Windows) or run `./preview.sh` (macOS / Linux). Either one starts a local server and opens http://localhost:8000. Opening `index.html` directly won't load the work log, stack graph or 3D cockpit, because browsers block that for local files.
 
 ## Publish on GitHub Pages
 
