@@ -5,15 +5,14 @@
   // below (reveal animations, timeline, stack graph, terminal) sees the finished page.
   const CONTENT = await window.loadContent();
   document.getElementById("jobs").insertAdjacentHTML("beforeend", CONTENT.renderWorklog(CONTENT.jobs));
-  document.getElementById("patches").insertAdjacentHTML("beforeend", CONTENT.renderMissions(CONTENT.missions));
   // Opened straight from disk (file://), browsers block reading the content files. Say so instead of showing a blank gap.
-  if (!CONTENT.jobs.length || !CONTENT.groups.length || !CONTENT.missions.length) {
+  if (!CONTENT.jobs.length || !CONTENT.groups.length) {
     const note = location.protocol === "file:"
       ? "This section is loaded from <code>content/*.md</code>, which browsers block when the page is opened as a file. Preview it with <code>preview.bat</code> (Windows) or <code>./preview.sh</code> (macOS / Linux), then open <code>http://localhost:8000</code>."
       : "This section couldn't be loaded. Please refresh the page.";
-    ["jobs", "stack-legend", "patches"].forEach(id => {
+    ["jobs", "stack-legend"].forEach(id => {
       const el = document.getElementById(id);
-      if (el && !el.querySelector(".job, button, .patch")) el.insertAdjacentHTML("beforeend", `<p class="load-note">${note}</p>`);
+      if (el && !el.querySelector(".pcard, button")) el.insertAdjacentHTML("beforeend", `<p class="load-note">${note}</p>`);
     });
   }
 
@@ -116,17 +115,109 @@
   }, { threshold: .15, rootMargin: "0px 0px -40px 0px" });
   $$(".reveal").forEach(el => revealIO.observe(el));
 
-  /* ================= MISSION PATCHES: flip on hover (desktop), tap / Enter (everywhere) ================= */
-  $$(".patch").forEach(p => {
-    const flip = on => { p.classList.toggle("is-flipped", on); p.setAttribute("aria-pressed", on ? "true" : "false"); };
-    // With a mouse, hover does the flipping, so a mouse click shouldn't undo it. Taps and Enter/Space still toggle.
-    p.addEventListener("click", e => { if (finePointer && e.detail > 0) return; flip(!p.classList.contains("is-flipped")); SFX.click(); });
-    p.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); p.click(); } });
-    if (finePointer) {
-      p.addEventListener("pointerenter", () => { flip(true); SFX.hover(); });
-      p.addEventListener("pointerleave", () => flip(false));
+  /* ================= WORK LOG CARDS: dithered night-city screens + "Read more" panel ================= */
+  (function workCards() {
+    // Tiny seeded RNG so each project always gets the same scene.
+    const rng = seed => { let h = 2166136261; for (const ch of seed) h = Math.imul(h ^ ch.charCodeAt(0), 16777619); return () => ((h = Math.imul(h ^ (h >>> 15), 2246822507) ^ Math.imul(h ^ (h >>> 13), 3266489909)) >>> 0) / 4294967296; };
+    const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map(v => (v + .5) / 16);
+
+    function paint(cv) {
+      const W = 176, H = 110, R = rng(cv.dataset.seed || "x"), L = new Float32Array(W * H);
+      const px = (x, y, v) => { x |= 0; y |= 0; if (x >= 0 && y >= 0 && x < W && y < H) L[y * W + x] = v; };
+      const rect = (x, y, w, h, v) => { for (let j = Math.max(0, y | 0); j < Math.min(H, y + h); j++) for (let i = Math.max(0, x | 0); i < Math.min(W, x + w); i++) L[j * W + i] = v; };
+      const line = (x0, y0, x1, y1, v) => { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)) | 0; for (let k = 0; k <= n; k++) px(x0 + (x1 - x0) * k / n, y0 + (y1 - y0) * k / n, v); };
+      const hz = H * (.52 + R() * .1);
+      // sky: dark at the top, hazy toward the horizon, with a few stars
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) L[y * W + x] = .08 + .32 * Math.pow(Math.min(1, y / hz), 1.6);
+      for (let k = 0; k < 40; k++) px(R() * W, R() * hz * .7, .7);
+      // far skyline
+      for (let x = 0; x < W;) { const w = 3 + R() * 7, h = 6 + R() * 18; rect(x, hz - h, w, h + 2, .2 + R() * .05); x += w; }
+      const scene = +cv.dataset.scene || 0;
+      const tower = (tx, th, v) => { for (let k = 0; k < th; k += 3) { const w = 1 + (th - k) * .08; line(tx - w, hz - k, tx + w, hz - k - 3, v); line(tx + w, hz - k, tx - w, hz - k - 3, v); } line(tx, hz - th, tx, hz - th - 10, .5); };
+      const blocks = (maxH, lit) => { for (let x = -4; x < W;) {
+          const w = 8 + R() * 16, h = 14 + R() * maxH, top = H - h, v = .28 + R() * .14;
+          rect(x, top, w, h, v); rect(x, top, 1, h, v + .08);
+          for (let j = top + 3; j < H - 2; j += 3) for (let i = x + 2; i < x + w - 1; i += 3) if (R() < lit) px(i, j, .85);
+          x += w + (R() < .3 ? 3 : 0); } };
+      const ellipse = (cx, cy, rx, ry, v) => { for (let y = -ry; y <= ry; y++) { const w = rx * Math.sqrt(1 - (y * y) / (ry * ry)); rect(cx - w, cy + y, w * 2, 1, v); } };
+
+      if (scene === 0) {                         // skyline with a lattice tower
+        tower(W * (.25 + R() * .5), 40 + R() * 30, .16); blocks(40, .18);
+      } else if (scene === 1) {                  // a mech walking through the city
+        blocks(22, .12);
+        const mx = W * (.3 + R() * .35), my = hz - 16;
+        ellipse(mx, my, 16, 7, .12); rect(mx + 10, my - 3, 8, 4, .1); px(mx + 17, my - 2, .95);
+        [[-14, -26], [-6, -18], [6, 18], [14, 28]].forEach(([k, f]) => { const kx = mx + k + f * .3, ky = my - 8; line(mx + k * .5, my, kx, ky, .1); line(kx, ky, mx + f, H - 6, .1); line(kx + 1, ky, mx + f + 1, H - 6, .1); });
+        line(W * .78, 14, W * .9, 14, .12); rect(W * .82, 12, 5, 4, .12);
+      } else if (scene === 2) {                  // suspension bridge over water
+        for (let y = hz | 0; y < H; y++) for (let x = 0; x < W; x++) L[y * W + x] = .18 + (R() < .04 ? .25 : 0) + Math.sin(y * 1.7 + x * .05) * .02;
+        const d = hz + 8, t1 = W * .25, t2 = W * .75;
+        rect(0, d, W, 2, .12); [t1, t2].forEach(t => { rect(t - 2, d - 34, 4, 44, .1); rect(t - 4, d - 36, 8, 2, .1); });
+        for (let x = 0; x < W; x++) { const u = x < t1 ? (t1 - x) / t1 : x > t2 ? (x - t2) / (W - t2) : Math.abs(x - W / 2) / (W / 2 - t1);
+          const cy = x < t1 || x > t2 ? d - 34 + u * 30 : d - 6 - (1 - u * u) * 0 - (u * u) * 28; px(x, cy, .45); if (x % 4 === 0) line(x, cy, x, d, .3); }
+        for (let x = 0; x < W; x += 2) if (R() < .5) px(x, d + 4 + (R() * (H - d - 6)) | 0, .5);
+      } else if (scene === 3) {                  // server hall interior
+        for (let i = 0; i < W * H; i++) L[i] = .07;
+        const vx = W / 2, vy = H * .42;
+        for (let k = -6; k <= 6; k++) line(vx, vy, vx + k * 40, H, .16);
+        for (let r = 0; r < 5; r++) { const z = 1 - r * .18, w = 22 * z, h = 46 * z, y = vy - h * .25;
+          [-1, 1].forEach(sd => { const x = vx + sd * (18 + r * 14) * (2.6 - z * 1.6) - w / 2;
+            rect(x, y, w, h, .2 + r * .02); for (let j = y + 3; j < y + h - 2; j += 4) for (let i = x + 2; i < x + w - 2; i += 3) if (R() < .35) px(i, j, R() < .2 ? .95 : .6); }); }
+        for (let k = 0; k < 5; k++) rect(vx - 30 + k * 13, 6, 8, 2, .8);
+      } else if (scene === 4) {                  // airship with a searchlight over the city
+        const ax = W * (.3 + R() * .4), ay = hz * .45;
+        for (let y = ay + 6; y < H; y++) { const half = (y - ay) * .35; for (let x = ax - half; x < ax + half; x++) if (x >= 0 && x < W) L[(y | 0) * W + (x | 0)] += .1; }
+        ellipse(ax, ay, 30, 9, .14); rect(ax - 8, ay + 8, 16, 4, .12); line(ax + 28, ay, ax + 36, ay - 6, .14); line(ax + 28, ay, ax + 36, ay + 6, .14);
+        for (let k = -24; k < 24; k += 5) px(ax + k, ay + 3, .8);
+        blocks(34, .2);
+      } else if (scene === 5) {                  // radar dish on a hill
+        for (let x = 0; x < W; x++) { const hy = hz + 8 - Math.sin(x / W * Math.PI) * 26; rect(x, hy, 1, H - hy, .13); }
+        const dx = W * .5, dy = hz - 22;
+        rect(dx - 1.5, dy, 3, 16, .3); for (let a = -2.3; a < -.8; a += .01) for (let r = 16; r < 22; r++) px(dx + Math.cos(a) * r, dy + 6 + Math.sin(a) * r * .8, .38);
+        line(dx, dy - 4, dx + 6, dy - 16, .5); px(dx + 6, dy - 16, .95);
+        blocks(12, .25);
+      } else {                                   // wind turbines above the city
+        for (let x = 0; x < W; x++) { const hy = hz + Math.sin(x * .05) * 4; rect(x, hy, 1, H - hy, .12); }
+        [[.2, 44], [.52, 56], [.8, 38]].forEach(([fx, h], k) => { const x = W * fx, top = hz - h, ang = R() * 6.28;
+          line(x, hz, x, top, .42); for (let b = 0; b < 3; b++) { const a = ang + b * 2.094; line(x, top, x + Math.cos(a) * h * .45, top + Math.sin(a) * h * .45, .42); } px(x, top, .95); });
+        blocks(14, .22);
+      }
+      // haze band, then grain
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        const i = y * W + x, fog = Math.exp(-Math.pow((y - hz) / 10, 2)) * .12;
+        L[i] = Math.min(1, L[i] + fog + (R() - .5) * .06);
+      }
+      // ordered dither to a few grey levels
+      cv.width = W; cv.height = H;
+      const ctx = cv.getContext("2d"), img = ctx.createImageData(W, H), LEVELS = [14, 46, 92, 150, 215];
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        const v = L[y * W + x] * (LEVELS.length - 1), lo = Math.floor(v), t = BAYER[(y & 3) * 4 + (x & 3)];
+        const g = LEVELS[Math.min(LEVELS.length - 1, lo + (v - lo > t ? 1 : 0))], o = (y * W + x) * 4;
+        img.data[o] = g; img.data[o + 1] = g; img.data[o + 2] = g + 4; img.data[o + 3] = 255;
+      }
+      ctx.putImageData(img, 0, 0);
     }
-  });
+    $$(".pcard-canvas").forEach(paint);
+
+    const dlg = $("#pdlg"), body = $("#pdlg-body");
+    if (!dlg) return;
+    const open = btn => {
+      const j = CONTENT.jobs[+btn.dataset.job], p = j && j.projects[+btn.dataset.proj];
+      if (!p) return;
+      body.innerHTML = CONTENT.renderProject(j, p, btn.dataset.n);
+      $(".pd-title", body).id = "pdlg-title";
+      $$(".log li", body).forEach(li => li.classList.add("is-in"));
+      if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
+      document.body.classList.add("is-modal");
+      $(".pdlg-close", dlg).focus();
+    };
+    const close = () => { if (dlg.close) dlg.close(); else dlg.removeAttribute("open"); };
+    dlg.addEventListener("close", () => document.body.classList.remove("is-modal"));
+    $$(".pf-more").forEach(b => b.addEventListener("click", () => open(b)));
+    $(".pdlg-close", dlg).addEventListener("click", close);
+    dlg.addEventListener("click", e => { if (e.target === dlg) close(); });   // backdrop click
+  })();
+
 
   const navLinks = $$(".nav-links a");
   const navIO = new IntersectionObserver(entries => {
