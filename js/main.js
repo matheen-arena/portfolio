@@ -132,24 +132,55 @@
       for (let k = 0; k < 40; k++) px(R() * W, R() * hz * .7, .7);
       // far skyline
       for (let x = 0; x < W;) { const w = 3 + R() * 7, h = 6 + R() * 18; rect(x, hz - h, w, h + 2, .2 + R() * .05); x += w; }
-      // lattice tower or mast
-      const tx = W * (.25 + R() * .5), th = 40 + R() * 30;
-      for (let k = 0; k < th; k += 3) { const w = 1 + (th - k) * .08; line(tx - w, hz - k, tx + w, hz - k - 3, .16); line(tx + w, hz - k, tx - w, hz - k - 3, .16); }
-      line(tx, hz - th, tx, hz - th - 10, .5);
-      // near buildings with sparse lit windows
-      for (let x = -4; x < W;) {
-        const w = 8 + R() * 16, h = 14 + R() * 40, top = H - h, v = .28 + R() * .14;
-        rect(x, top, w, h, v); rect(x, top, 1, h, v + .08);
-        for (let j = top + 3; j < H - 2; j += 3) for (let i = x + 2; i < x + w - 1; i += 3) if (R() < .18) px(i, j, .85);
-        x += w + (R() < .3 ? 3 : 0);
-      }
-      // a walking mech for the "monster" variant
-      if (cv.dataset.mech === "1") {
+      const scene = +cv.dataset.scene || 0;
+      const tower = (tx, th, v) => { for (let k = 0; k < th; k += 3) { const w = 1 + (th - k) * .08; line(tx - w, hz - k, tx + w, hz - k - 3, v); line(tx + w, hz - k, tx - w, hz - k - 3, v); } line(tx, hz - th, tx, hz - th - 10, .5); };
+      const blocks = (maxH, lit) => { for (let x = -4; x < W;) {
+          const w = 8 + R() * 16, h = 14 + R() * maxH, top = H - h, v = .28 + R() * .14;
+          rect(x, top, w, h, v); rect(x, top, 1, h, v + .08);
+          for (let j = top + 3; j < H - 2; j += 3) for (let i = x + 2; i < x + w - 1; i += 3) if (R() < lit) px(i, j, .85);
+          x += w + (R() < .3 ? 3 : 0); } };
+      const ellipse = (cx, cy, rx, ry, v) => { for (let y = -ry; y <= ry; y++) { const w = rx * Math.sqrt(1 - (y * y) / (ry * ry)); rect(cx - w, cy + y, w * 2, 1, v); } };
+
+      if (scene === 0) {                         // skyline with a lattice tower
+        tower(W * (.25 + R() * .5), 40 + R() * 30, .16); blocks(40, .18);
+      } else if (scene === 1) {                  // a mech walking through the city
+        blocks(22, .12);
         const mx = W * (.3 + R() * .35), my = hz - 16;
-        for (let a = 0; a < Math.PI * 2; a += .02) for (let r = 0; r < 1; r += .08) px(mx + Math.cos(a) * 16 * r, my + Math.sin(a) * 7 * r, .12);
-        rect(mx + 10, my - 3, 8, 4, .1); px(mx + 17, my - 2, .95);
+        ellipse(mx, my, 16, 7, .12); rect(mx + 10, my - 3, 8, 4, .1); px(mx + 17, my - 2, .95);
         [[-14, -26], [-6, -18], [6, 18], [14, 28]].forEach(([k, f]) => { const kx = mx + k + f * .3, ky = my - 8; line(mx + k * .5, my, kx, ky, .1); line(kx, ky, mx + f, H - 6, .1); line(kx + 1, ky, mx + f + 1, H - 6, .1); });
         line(W * .78, 14, W * .9, 14, .12); rect(W * .82, 12, 5, 4, .12);
+      } else if (scene === 2) {                  // suspension bridge over water
+        for (let y = hz | 0; y < H; y++) for (let x = 0; x < W; x++) L[y * W + x] = .18 + (R() < .04 ? .25 : 0) + Math.sin(y * 1.7 + x * .05) * .02;
+        const d = hz + 8, t1 = W * .25, t2 = W * .75;
+        rect(0, d, W, 2, .12); [t1, t2].forEach(t => { rect(t - 2, d - 34, 4, 44, .1); rect(t - 4, d - 36, 8, 2, .1); });
+        for (let x = 0; x < W; x++) { const u = x < t1 ? (t1 - x) / t1 : x > t2 ? (x - t2) / (W - t2) : Math.abs(x - W / 2) / (W / 2 - t1);
+          const cy = x < t1 || x > t2 ? d - 34 + u * 30 : d - 6 - (1 - u * u) * 0 - (u * u) * 28; px(x, cy, .45); if (x % 4 === 0) line(x, cy, x, d, .3); }
+        for (let x = 0; x < W; x += 2) if (R() < .5) px(x, d + 4 + (R() * (H - d - 6)) | 0, .5);
+      } else if (scene === 3) {                  // server hall interior
+        for (let i = 0; i < W * H; i++) L[i] = .07;
+        const vx = W / 2, vy = H * .42;
+        for (let k = -6; k <= 6; k++) line(vx, vy, vx + k * 40, H, .16);
+        for (let r = 0; r < 5; r++) { const z = 1 - r * .18, w = 22 * z, h = 46 * z, y = vy - h * .25;
+          [-1, 1].forEach(sd => { const x = vx + sd * (18 + r * 14) * (2.6 - z * 1.6) - w / 2;
+            rect(x, y, w, h, .2 + r * .02); for (let j = y + 3; j < y + h - 2; j += 4) for (let i = x + 2; i < x + w - 2; i += 3) if (R() < .35) px(i, j, R() < .2 ? .95 : .6); }); }
+        for (let k = 0; k < 5; k++) rect(vx - 30 + k * 13, 6, 8, 2, .8);
+      } else if (scene === 4) {                  // airship with a searchlight over the city
+        const ax = W * (.3 + R() * .4), ay = hz * .45;
+        for (let y = ay + 6; y < H; y++) { const half = (y - ay) * .35; for (let x = ax - half; x < ax + half; x++) if (x >= 0 && x < W) L[(y | 0) * W + (x | 0)] += .1; }
+        ellipse(ax, ay, 30, 9, .14); rect(ax - 8, ay + 8, 16, 4, .12); line(ax + 28, ay, ax + 36, ay - 6, .14); line(ax + 28, ay, ax + 36, ay + 6, .14);
+        for (let k = -24; k < 24; k += 5) px(ax + k, ay + 3, .8);
+        blocks(34, .2);
+      } else if (scene === 5) {                  // radar dish on a hill
+        for (let x = 0; x < W; x++) { const hy = hz + 8 - Math.sin(x / W * Math.PI) * 26; rect(x, hy, 1, H - hy, .13); }
+        const dx = W * .5, dy = hz - 22;
+        rect(dx - 1.5, dy, 3, 16, .3); for (let a = -2.3; a < -.8; a += .01) for (let r = 16; r < 22; r++) px(dx + Math.cos(a) * r, dy + 6 + Math.sin(a) * r * .8, .38);
+        line(dx, dy - 4, dx + 6, dy - 16, .5); px(dx + 6, dy - 16, .95);
+        blocks(12, .25);
+      } else {                                   // wind turbines above the city
+        for (let x = 0; x < W; x++) { const hy = hz + Math.sin(x * .05) * 4; rect(x, hy, 1, H - hy, .12); }
+        [[.2, 44], [.52, 56], [.8, 38]].forEach(([fx, h], k) => { const x = W * fx, top = hz - h, ang = R() * 6.28;
+          line(x, hz, x, top, .42); for (let b = 0; b < 3; b++) { const a = ang + b * 2.094; line(x, top, x + Math.cos(a) * h * .45, top + Math.sin(a) * h * .45, .42); } px(x, top, .95); });
+        blocks(14, .22);
       }
       // haze band, then grain
       for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {

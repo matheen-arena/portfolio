@@ -733,3 +733,53 @@ body.is-ready .hero-title .split { transform: none; }
 body.is-modal { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) { .pdlg[open] { animation: none; } }
 .ovl-code { top: 32%; bottom: auto; }
+
+/* ---- unique overlays ---- */
+.ovl-panel { position: absolute; background: rgba(12,12,14,.88); border: 1px solid rgba(255,59,78,.5); box-shadow: 0 0 14px rgba(255,30,60,.2); font-size: 9px; }
+/* observability: log stream + latency sparkline */
+.ovl-logs { left: 5%; top: 7%; width: 64%; }
+.ol-head { padding: 4px 8px; background: rgba(217,20,47,.25); color: #fff; border-bottom: 1px solid rgba(255,59,78,.4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ol-head em { font-style: normal; float: right; color: #ff6b78; }
+.ovl-logs > div:not(.ol-head) { padding: 2px 8px; color: #d6d9df; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ovl-logs b { display: inline-block; width: 34px; color: #7cf7c1; font-weight: 500; } .ovl-logs b.warn { color: #ff4b5c; }
+.ovl-spark { right: 5%; bottom: 8%; width: 40%; height: 28%; padding: 4px 6px; box-sizing: border-box; }
+.ovl-spark span { color: #ff8a95; } .ovl-spark svg { width: 100%; height: 70%; } .ovl-spark polyline { fill: none; stroke: #ff3b4e; stroke-width: 1.4; vector-effect: non-scaling-stroke; }
+/* governance: account tree + policy list */
+.ovl-tree { position: absolute; left: 3%; top: 4%; width: 60%; height: 70%; }
+.ovl-tree rect { fill: rgba(12,12,14,.9); stroke: #ff3b4e; } .ovl-tree path { fill: none; stroke: #ff3b4e; opacity: .8; }
+.ovl-tree circle { fill: #ff3b4e; filter: drop-shadow(0 0 3px #ff3b4e); } .ovl-tree text { fill: #f3c9ce; font-size: 7px; text-anchor: middle; font-family: var(--mono); }
+.ovl-policy { right: 4%; bottom: 8%; padding: 4px 8px; display: grid; gap: 3px; }
+.ovl-policy div { color: #e3e5ea; letter-spacing: .06em; } .ovl-policy i { font-style: normal; margin-right: 6px; filter: grayscale(1) brightness(1.6); }
+/* blue/green deployment switch */
+.ovl-bg { position: absolute; left: 8%; right: 8%; top: 12%; display: grid; grid-template-columns: 1fr 1fr; gap: 8%; }
+.bg-slot { padding: 8px; background: rgba(12,12,14,.88); border: 1px solid rgba(255,255,255,.18); font-size: 9px; color: #c9ccd3; }
+.bg-slot b { display: block; font-size: 11px; letter-spacing: .12em; margin-bottom: 3px; color: #fff; }
+.bg-slot.green { border-color: #ff3b4e; box-shadow: 0 0 14px rgba(255,30,60,.35); } .bg-slot.green b { color: #ff4b5c; }
+.bg-traffic { grid-column: 1 / -1; height: 6px; background: rgba(255,255,255,.12); border-radius: 3px; overflow: hidden; }
+.bg-traffic i { display: block; height: 100%; background: #ff3b4e; box-shadow: 0 0 8px #ff3b4e; animation: shift 4s ease-in-out infinite; }
+@keyframes shift { 0% { width: 0; margin-left: 0; } 50% { width: 100%; } 100% { width: 0; margin-left: 100%; } }
+.bg-label { grid-column: 1 / -1; font-size: 8.5px; letter-spacing: .1em; text-transform: uppercase; color: #f3c9ce; }
+/* workflow DAG */
+.ovl-dag { position: absolute; left: 4%; top: 6%; width: 92%; height: 70%; }
+.ovl-dag path { fill: none; stroke: #ff3b4e; stroke-width: 1.2; stroke-dasharray: 3 3; }
+.ovl-dag circle { fill: rgba(12,12,14,.9); stroke: #ff3b4e; stroke-width: 2; filter: drop-shadow(0 0 4px #ff3b4e); }
+.ovl-dag text { fill: #f3c9ce; font-size: 8px; text-anchor: middle; font-family: var(--mono); }
+.ovl-dag .ovl-chip, .ovl-dag + .ovl-chip { top: auto; bottom: 7%; }
+/* cost bars */
+.ovl-cost { left: 6%; right: 6%; top: 10%; bottom: 10%; padding: 6px 10px; display: grid; grid-template-rows: auto 1fr auto; }
+.oc-title { color: #ff8a95; letter-spacing: .1em; text-transform: uppercase; }
+.ovl-cost .bars { display: flex; align-items: flex-end; gap: 6%; padding: 6px 0; }
+.ovl-cost .bars i { flex: 1; background: rgba(255,255,255,.35); } .ovl-cost .bars i.low { background: #ff3b4e; box-shadow: 0 0 8px rgba(255,59,78,.6); }
+.oc-mark { font-family: "Anton", var(--sans); font-size: 18px; color: #fff; letter-spacing: .03em; }
+/* git branch graph */
+.ovl-git { position: absolute; left: 3%; top: 10%; width: 94%; height: 76%; }
+.ovl-git path { fill: none; stroke-width: 2.5; } .ovl-git .main { stroke: rgba(255,255,255,.6); } .ovl-git .mig { stroke: #ff3b4e; filter: drop-shadow(0 0 3px #ff3b4e); }
+.ovl-git circle { fill: #0c0c0e; stroke: rgba(255,255,255,.8); stroke-width: 2; } .ovl-git circle.m { stroke: #ff3b4e; }
+.ovl-git text { fill: #f3c9ce; font-size: 9px; font-family: var(--mono); }
+/* terminal */
+.ovl-term { left: 8%; right: 20%; top: 12%; padding-bottom: 6px; color: #d6d9df; font-size: 9.5px; }
+.ot-bar { padding: 4px 8px; margin-bottom: 4px; background: rgba(40,41,46,.95); color: #9aa0aa; border-bottom: 1px solid rgba(255,255,255,.08); }
+.ot-bar i { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #ff3b4e; margin-right: 3px; }
+.ovl-term > div:not(.ot-bar) { padding: 1px 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ovl-term span { color: #ff6b78; } .ovl-term b { color: #7cf7c1; font-weight: 500; } .ovl-term u { text-decoration: none; animation: blink 1s steps(1) infinite; }
+@media (prefers-reduced-motion: reduce) { .bg-traffic i, .ovl-term u { animation: none; } }
