@@ -13,7 +13,7 @@ color: orange
 - ECR
 
 ## AWS Data & Network
-color: orange
+color: green
 - DataSync
 - S3
 - EFS
@@ -39,7 +39,7 @@ color: blue
 - Aurora
 
 ## Observability
-color: green
+color: orange
 - Grafana OSS
 - Grafana Loki
 - Grafana Alloy
