@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Anton&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=0458504" />
+  <link rel="stylesheet" href="styles.css?v=0459441" />
 </head>
 <body>
 
@@ -29,7 +29,6 @@
     </a>
     <nav class="nav-links" aria-label="Sections">
       <a href="#about" data-sfx>about</a>
-      <a href="#missions" data-sfx>missions</a>
       <a href="#work" data-sfx>work</a>
       <a href="#stack" data-sfx>stack</a>
       <a href="#terminal" data-sfx>terminal</a>
@@ -204,20 +203,11 @@
     </section>
 
     <!-- ============ IMPACT ============ -->
-    <section id="missions" class="section missions">
-      <div class="section-head reveal">
-        <span class="idx">02</span><h2>Missions</h2>
-      </div>
-      <p class="section-intro reveal">Every project is a mission. <span class="muted">Hover or tap a patch to flip it.</span></p>
-      <ul class="patches" id="patches">
-        <!-- Filled from content/missions.md by js/content.js -->
-      </ul>
-    </section>
 
     <!-- ============ WORK ============ -->
     <section id="work" class="section work">
       <div class="section-head reveal">
-        <span class="idx">03</span><h2>Work log</h2>
+        <span class="idx">02</span><h2>Work log</h2>
       </div>
 
       <div class="jobs" id="jobs">
@@ -228,7 +218,7 @@
     <!-- ============ STACK ============ -->
     <section id="stack" class="section stack">
       <div class="section-head reveal">
-        <span class="idx">04</span><h2>Stack graph</h2>
+        <span class="idx">03</span><h2>Stack graph</h2>
       </div>
       <p class="section-intro reveal">Each cluster is a domain I work in. <span class="muted">Move your cursor through it, or tap a domain below to highlight it.</span></p>
       <div class="stack-wrap reveal">
@@ -241,7 +231,7 @@
     <!-- ============ TERMINAL ============ -->
     <section id="terminal" class="section term-section">
       <div class="section-head reveal">
-        <span class="idx">05</span><h2>Terminal</h2>
+        <span class="idx">04</span><h2>Terminal</h2>
       </div>
       <p class="section-intro reveal">Prefer a shell? Type <code>help</code> to see the commands.</p>
       <div class="term reveal" id="term">
@@ -262,7 +252,7 @@
     <!-- ============ CONTACT ============ -->
     <section id="contact" class="section contact">
       <div class="section-head reveal">
-        <span class="idx">06</span><h2>Contact</h2>
+        <span class="idx">05</span><h2>Contact</h2>
       </div>
       <h2 class="contact-title reveal">
         Let's build something<br /><em class="serif">reliable.</em>
@@ -286,9 +276,16 @@
     <a href="#top" data-sfx>back to top ↑</a>
   </footer>
 
-  <script src="js/audio.js?v=0458504"></script>
-  <script src="js/content.js?v=0458504"></script>
-  <script src="js/main.js?v=0458504"></script>
-  <script type="module" src="js/flight.js?v=0458504"></script>
+  <dialog class="pdlg" id="pdlg" aria-labelledby="pdlg-title">
+    <div class="pdlg-bezel">
+      <button type="button" class="pdlg-close" aria-label="Close" data-sfx>✕</button>
+      <div class="pdlg-body" id="pdlg-body"></div>
+    </div>
+  </dialog>
+
+  <script src="js/audio.js?v=0459441"></script>
+  <script src="js/content.js?v=0459441"></script>
+  <script src="js/main.js?v=0459441"></script>
+  <script type="module" src="js/flight.js?v=0459441"></script>
 </body>
 </html>
