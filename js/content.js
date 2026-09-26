@@ -170,7 +170,6 @@
       <h3 class="pd-title">${esc(p.name)}</h3>
       <dl class="pd-meta">
         <div><dt>role</dt><dd>${esc(j.title)}</dd></div>
-        <div><dt>when</dt><dd>${esc(j.when)}</dd></div>
         <div><dt>where</dt><dd>${esc(j.where)}</dd></div>
         <div><dt>domain</dt><dd>${esc(p.domain)}</dd></div>
       </dl>
