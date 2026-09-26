@@ -190,41 +190,56 @@ if (renderer) {
   cars.forEach((c, i) => carCol.set(c.v > 0 ? [1, .25, .3] : [1, .9, .8], i * 3));
   scene.add(new THREE.Points(carGeo, new THREE.PointsMaterial({ size: 2.5, sizeAttenuation: false, vertexColors: true, transparent: true, opacity: .8 })));
 
-  /* ---------- red alert: walking mechs, searchlights, drones ---------- */
-  const DARK = new THREE.MeshBasicMaterial({ color: 0x07080d });
-  const RED = new THREE.MeshBasicMaterial({ color: 0xff2a3c });
-  const glowTex = (() => { const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d");
-    const r = g.createRadialGradient(32, 32, 0, 32, 32, 32); r.addColorStop(0, "rgba(255,255,255,1)"); r.addColorStop(.25, "rgba(255,60,80,.9)"); r.addColorStop(1, "rgba(255,0,30,0)");
-    g.fillStyle = r; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();
-  const makeGlow = size => { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); sp.scale.setScalar(size); return sp; };
+  /* ---------- hostile skies: wingmen, a capital ship, interceptor fly-bys ---------- */
+  const HULL = new THREE.MeshBasicMaterial({ color: 0x0a0c14 });
+  const RIM = new THREE.LineBasicMaterial({ color: 0x8a93b8, transparent: true, opacity: .35 });
+  const glowTex = (mid, edge) => { const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d");
+    const r = g.createRadialGradient(32, 32, 0, 32, 32, 32); r.addColorStop(0, "rgba(255,255,255,1)"); r.addColorStop(.25, mid); r.addColorStop(1, edge);
+    g.fillStyle = r; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); };
+  const RED_T = glowTex("rgba(255,60,80,.9)", "rgba(255,0,30,0)"), HOT_T = glowTex("rgba(255,140,90,.85)", "rgba(255,40,20,0)"), WHITE_T = glowTex("rgba(210,225,255,.8)", "rgba(150,170,255,0)");
+  const makeGlow = (size, tex = RED_T) => { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false })); sp.scale.setScalar(size); return sp; };
+  const withRim = (geo, g) => { g.add(new THREE.Mesh(geo, HULL)); g.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 20), RIM)); };
 
-  // A four-legged walker built from boxes; legs swing in pairs as it walks.
-  function makeMech(scale) {
-    const g = new THREE.Group(), legs = [];
-    const body = new THREE.Mesh(new THREE.BoxGeometry(70, 26, 44), DARK); body.position.y = 92; g.add(body);
-    const head = new THREE.Mesh(new THREE.BoxGeometry(28, 14, 20), DARK); head.position.set(44, 96, 0); g.add(head);
-    const gun = new THREE.Mesh(new THREE.BoxGeometry(40, 4, 4), DARK); gun.position.set(62, 88, 12); g.add(gun);
-    const eye = new THREE.Mesh(new THREE.BoxGeometry(4, 4, 12), RED); eye.position.set(58, 97, 0); g.add(eye);
-    const eyeGlow = makeGlow(46); eyeGlow.position.copy(eye.position); g.add(eyeGlow);
-    // red running lights along the hull so the silhouette reads against the city
-    [[-30, 100, 23], [0, 100, 23], [30, 100, 23], [-30, 100, -23], [30, 100, -23], [0, 80, 23]].forEach(([x, y, z]) => { const l = makeGlow(18); l.position.set(x, y, z); g.add(l); });
-    const rim = new THREE.LineSegments(new THREE.EdgesGeometry(body.geometry), new THREE.LineBasicMaterial({ color: 0xff2a3c, transparent: true, opacity: .55 }));
-    rim.position.copy(body.position); g.add(rim);
-    [[-26, -18], [-26, 18], [26, -18], [26, 18]].forEach(([x, z], i) => {
-      const hip = new THREE.Group(); hip.position.set(x, 86, z); g.add(hip);
-      const thigh = new THREE.Mesh(new THREE.BoxGeometry(6, 50, 6), DARK); thigh.position.set(0, -10, z > 0 ? 18 : -18); thigh.rotation.x = z > 0 ? -.7 : .7; hip.add(thigh);
-      const knee = new THREE.Group(); knee.position.set(0, -30, z > 0 ? 34 : -34); hip.add(knee);
-      const shin = new THREE.Mesh(new THREE.BoxGeometry(5, 64, 5), DARK); shin.position.y = -30; knee.add(shin);
-      legs.push({ hip, phase: i === 0 || i === 3 ? 0 : Math.PI });
-    });
-    g.scale.setScalar(scale);
-    return { g, legs, eyeGlow, head };
+  // Delta-wing fighter, nose along -Z, twin engines glowing at the tail.
+  function makeFighter() {
+    const g = new THREE.Group(), sh = new THREE.Shape();
+    sh.moveTo(0, 62); sh.lineTo(12, 10); sh.lineTo(44, -18); sh.lineTo(40, -26); sh.lineTo(12, -20); sh.lineTo(-12, -20); sh.lineTo(-40, -26); sh.lineTo(-44, -18); sh.lineTo(-12, 10); sh.closePath();
+    const wing = new THREE.ExtrudeGeometry(sh, { depth: 5, bevelEnabled: false }); wing.rotateX(-Math.PI / 2); withRim(wing, g);
+    const canopy = new THREE.ConeGeometry(6, 40, 4); canopy.rotateX(-Math.PI / 2); canopy.translate(0, 7, -12); withRim(canopy, g);
+    [-10, 10].forEach(x => { const f = new THREE.BoxGeometry(3, 12, 16); f.translate(x, 12, 14); withRim(f, g); });
+    const engines = [-7, 7].map(x => { const e = makeGlow(26, HOT_T); e.position.set(x, 3, 22); g.add(e); return e; });
+    const nav = [[-44, 3, -18, RED_T], [44, 3, -18, WHITE_T]].map(([x, y, z, tx]) => { const n = makeGlow(12, tx); n.position.set(x, y, z); g.add(n); return n; });
+    return { g, engines, nav };
   }
-  const mechs = [
-    { m: makeMech(3.2), x: -1200, z: -1050, v: .06, dir: 1 },
-    { m: makeMech(4.2), x: 1500, z: -2000, v: .045, dir: -1 }
-  ];
-  mechs.forEach(o => { o.m.g.rotation.y = o.dir > 0 ? 0 : Math.PI; scene.add(o.m.g); });
+  const wingmen = [makeFighter(), makeFighter()];
+  wingmen.forEach(w => { if (!small) w.g.scale.setScalar(1.5); scene.add(w.g); });
+  const wingOff = new THREE.Vector3(), camQ = new THREE.Quaternion(), bankQ = new THREE.Quaternion(), eul = new THREE.Euler();
+
+  // Capital ship: a vast dark wedge hanging over the far city, lit from below, sweeping a scan beam.
+  const mother = new THREE.Group();
+  {
+    const sh = new THREE.Shape(); sh.moveTo(0, 1500); sh.lineTo(620, -700); sh.lineTo(380, -900); sh.lineTo(-380, -900); sh.lineTo(-620, -700); sh.closePath();
+    const hull = new THREE.ExtrudeGeometry(sh, { depth: 180, bevelEnabled: false }); hull.rotateX(-Math.PI / 2); withRim(hull, mother);
+    [[0, 150, 650, 360, 70, 260], [0, 250, 780, 160, 80, 120], [-260, 130, 500, 120, 50, 200], [260, 130, 500, 120, 50, 200]].forEach(([x, y, z, w, h, d]) => {
+      const b = new THREE.BoxGeometry(w, h, d); b.translate(x, y, z); withRim(b, mother); });
+    // belly lights: rows of cold white pinpoints plus a red keel strip
+    const pts = [];
+    for (let i = 0; i < 260; i++) {
+      const zz = 880 - Math.random() * 2300, y = -zz, lim = y < -700 ? 400 : 620 * (1500 - y) / 2200;
+      pts.push((Math.random() * 2 - 1) * lim * .9, -2, zz);
+    }
+    const lg = new THREE.BufferGeometry(); lg.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
+    mother.add(new THREE.Points(lg, new THREE.PointsMaterial({ color: 0xcfd8ff, size: 1.6, sizeAttenuation: false, transparent: true, opacity: .8, fog: false })));
+    for (let i = 0; i < 7; i++) { const k = makeGlow(60); k.position.set(0, -6, 700 - i * 260); mother.add(k); }
+    [[-600, 690], [600, 690], [0, -1480]].forEach(([x, z]) => { const k = makeGlow(90); k.position.set(x, 0, z); k.userData.blink = 1; mother.add(k); });
+    [-240, -80, 80, 240].forEach(x => { const e = makeGlow(170, HOT_T); e.position.set(x, 60, 910); mother.add(e); });
+  }
+  mother.rotation.set(0, Math.PI / 2 + .45, -.38, "YXZ");   // nose to the left, belly tipped toward us
+  mother.scale.setScalar(1.7);
+  scene.add(mother);
+  const scanMat = new THREE.MeshBasicMaterial({ color: 0xff2a3c, transparent: true, opacity: .06, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false });
+  const scanGeo = new THREE.ConeGeometry(260, 1, 32, 1, true); scanGeo.translate(0, -.5, 0);
+  const scan = new THREE.Mesh(scanGeo, scanMat); scene.add(scan);
 
   // Red searchlights sweeping up from the city.
   const beamMat = new THREE.MeshBasicMaterial({ color: 0xff2a3c, transparent: true, opacity: .09, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
@@ -235,16 +250,19 @@ if (renderer) {
   // Drones: small red lights orbiting above the towers.
   const drones = Array.from({ length: small ? 5 : 9 }, (_, i) => { const d = makeGlow(22); d.userData = { r: 220 + i * 60, h: 260 + (i % 3) * 70, sp: .12 + (i % 4) * .04, ph: i * 1.3, cz: -1200 - (i % 3) * 500 }; scene.add(d); return d; });
 
-  /* ---------- HUD target lock (DOM overlay tracking the nearest mech) ---------- */
-  const hud = document.createElement("div");
-  hud.className = "lock"; hud.setAttribute("aria-hidden", "true");
-  hud.innerHTML = '<i class="lk tl"></i><i class="lk tr"></i><i class="lk bl"></i><i class="lk br"></i><span class="lock-tag">TARGET LOCK · <b>MECH-01</b> · <em>0.0 KM</em></span>';
-  const alertEl = document.createElement("div");
-  alertEl.className = "red-alert"; alertEl.setAttribute("aria-hidden", "true");
-  alertEl.innerHTML = '<i></i>RED ALERT · HOSTILE WALKERS DETECTED<i></i>';
-  const host = section.querySelector(".flight-sticky");
-  host.appendChild(hud); host.appendChild(alertEl);
-  const v3 = new THREE.Vector3();
+  // Interceptors: a pair streaks across the sky every few seconds, leaving hot trails.
+  const TRAIL = 36;
+  const bandits = [0, 1].map(() => {
+    const f = makeFighter(); f.g.scale.setScalar(1.6); f.g.visible = false; scene.add(f.g);
+    const pos = new Float32Array(TRAIL * 3), col = new Float32Array(TRAIL * 3), tg = new THREE.BufferGeometry();
+    tg.setAttribute("position", new THREE.BufferAttribute(pos, 3)); tg.setAttribute("color", new THREE.BufferAttribute(col, 3));
+    for (let i = 0; i < TRAIL; i++) { const k = 1 - i / TRAIL; col.set([k, k * .35, k * .25], i * 3); }
+    const trail = new THREE.Points(tg, new THREE.PointsMaterial({ size: 3, sizeAttenuation: false, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+    trail.frustumCulled = false; scene.add(trail);
+    return { f, pos, tg, trail, hist: [] };
+  });
+  let raid = { t0: -7, dir: 1, y: 700, z: -900 };
+  const tmp = new THREE.Vector3();
 
   /* ---------- sizing ---------- */
   function resize() {
@@ -296,32 +314,53 @@ if (renderer) {
     );
     camera.rotation.set(-.3 + p * .08 - look.y * .06, yawS, -(yaw - yawS) * .9 - yawS * .12 + Math.sin(t * .25) * .006);
 
-    // walkers
-    mechs.forEach((o, k) => {
-      o.x += o.v * dt * o.dir;
-      if (o.x > 1900) o.x = -1900; if (o.x < -1900) o.x = 1900;
-      o.m.g.position.set(o.x, Math.abs(Math.sin(t * 2.4 + k)) * 6, o.z);
-      o.m.legs.forEach(l => { l.hip.rotation.z = Math.sin(t * 2.4 + k + l.phase) * .35; });
-      o.m.eyeGlow.material.opacity = .6 + .4 * Math.sin(t * 6 + k);
+    camera.updateMatrixWorld();
+
+    // wingmen hold formation off the nose, drifting wide as the view banks
+    const tf = Math.tan(camera.fov * Math.PI / 360), dz = 560;
+    wingmen.forEach((w, k) => {
+      const side = k ? 1 : -1;
+      wingOff.set(side * dz * tf * camera.aspect * (camera.aspect > 1 ? .44 : .6) + (yaw - yawS) * side * -60 + Math.sin(t * .6 + k * 2) * 10,
+        -dz * tf * .32 + Math.sin(t * .9 + k) * 8 - k * 18, -dz - k * 90);
+      w.g.position.copy(wingOff).applyMatrix4(camera.matrixWorld);
+      camQ.copy(camera.quaternion);
+      bankQ.setFromEuler(eul.set(Math.sin(t * .7 + k) * .04, 0, (yawS - yaw) * 1.4 + Math.sin(t * .5 + k) * .06));
+      w.g.quaternion.copy(camQ).multiply(bankQ);
+      w.engines.forEach(e => e.scale.setScalar(22 + 6 * Math.random() + boost * 16));
+      w.nav.forEach((n, j) => { n.material.opacity = Math.sin(t * 4 + j * Math.PI + k) > .6 ? 1 : .15; });
     });
+
+    // capital ship drifts slowly; its scan beam sweeps the streets below
+    mother.position.set(600 - Math.sin(t * .02) * 400, 1250, -6000 + p * 900);
+    mother.children.forEach(c => { if (c.userData.blink) c.material.opacity = Math.sin(t * 2.2) > .3 ? 1 : .2; });
+    tmp.set(mother.position.x - 200 + Math.sin(t * .4) * 700, 0, mother.position.z + 1400 + Math.cos(t * .3) * 500);
+    scan.position.copy(mother.position).setY(mother.position.y - 40);
+    scan.scale.set(1, scan.position.distanceTo(tmp), 1);
+    scan.lookAt(tmp); scan.rotateX(-Math.PI / 2);
+    scanMat.opacity = .05 + .03 * Math.sin(t * 2.5) + boost * .05;
+
     beams.forEach(b => { b.rotation.z = Math.sin(t * .35 + b.userData.ph) * .5; b.rotation.x = Math.cos(t * .27 + b.userData.ph) * .25; });
     beamMat.opacity = .07 + boost * .06 + .02 * Math.sin(t * 3);
     drones.forEach(d => { const u = d.userData, a = t * u.sp + u.ph; d.position.set(Math.cos(a) * u.r, u.h + Math.sin(t * 1.3 + u.ph) * 12, u.cz + Math.sin(a) * u.r * .5);
       d.material.opacity = Math.sin(t * 5 + u.ph) > .2 ? 1 : .25; });
 
-    // target lock follows whichever walker is closest to the centre of the view
-    let best = null, bd = 9;
-    mechs.forEach(o => { o.m.head.getWorldPosition(v3); const d0 = camera.position.distanceTo(v3); v3.project(camera);
-      // only lock on when the walker is on screen and clear of the centred headline text
-      if (v3.z < 1 && Math.abs(v3.x) < .9 && Math.abs(v3.y) < .85 && (Math.abs(v3.x) > .42 || v3.y < -.25)) { const c = Math.abs(v3.x); if (c < bd) { bd = c; best = { x: v3.x, y: v3.y, d: d0, k: mechs.indexOf(o) }; } } });
-    if (best) {
-      const W = canvas.clientWidth, H = canvas.clientHeight, sz = Math.min(170, Math.max(56, 380000 / best.d));
-      hud.style.transform = `translate(${((best.x + 1) / 2 * W - sz / 2).toFixed(1)}px, ${((1 - best.y) / 2 * H - sz / 2).toFixed(1)}px)`;
-      hud.style.width = hud.style.height = sz.toFixed(0) + "px";
-      hud.querySelector("b").textContent = "MECH-0" + (best.k + 1);
-      hud.querySelector("em").textContent = (best.d / 1000).toFixed(1) + " KM";
-      hud.classList.add("on"); hud.classList.toggle("left-side", best.x > .3);
-    } else hud.classList.remove("on");
+    // interceptor raid: two bandits cut across in front of the ship, then the sky goes quiet again
+    if (!reduceMotion && t - raid.t0 > 9 + (raid.t0 % 3)) raid = { t0: t, dir: Math.random() < .5 ? 1 : -1, y: 560 + Math.random() * 260, z: camera.position.z - 1300 - Math.random() * 900 };
+    const rt = t - raid.t0;
+    bandits.forEach((bd, k) => {
+      const u = rt * .42 - k * .07, on = u > 0 && u < 1.1;
+      bd.f.g.visible = on;
+      if (on) {
+        const x = (u * 2 - 1.05) * 2600 * raid.dir, y = raid.y + k * 40 - u * 120, z = raid.z - k * 120 + Math.sin(u * 3) * 200;
+        bd.f.g.position.set(x, y, z);
+        bd.f.g.rotation.set(0, raid.dir > 0 ? -Math.PI / 2 : Math.PI / 2, -raid.dir * (.5 + Math.sin(u * 4) * .25), "YXZ");
+        bd.hist.unshift(x - raid.dir * 30, y, z); bd.hist.length = Math.min(bd.hist.length, TRAIL * 3);
+      } else bd.hist.length = 0;
+      for (let i = 0; i < TRAIL; i++) { const j = Math.min(i, bd.hist.length / 3 - 1); if (j < 0) { bd.pos.set([0, -999, 0], i * 3); continue; }
+        bd.pos.set([bd.hist[j * 3], bd.hist[j * 3 + 1], bd.hist[j * 3 + 2]], i * 3); }
+      bd.tg.attributes.position.needsUpdate = true;
+      bd.f.engines.forEach(e => e.scale.setScalar(34 + 10 * Math.random()));
+    });
 
     uniforms.uTime.value = t;
     uniforms.uBoost.value = boost;
