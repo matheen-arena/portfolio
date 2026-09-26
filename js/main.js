@@ -312,7 +312,7 @@
   /* ================= HERO: COCKPIT FLIGHT (stages, radar, log) ================= */
   (function flightHud() {
     const section = $("#flight");
-    const stages = $$(".stage", section), dots = $$(".stage-dots i", section), label = $("#dash-label");
+    const stages = $$(".stage", section), dots = $$(".nav-dots i", section), label = $("#dash-label"), navStage = $("#nav-stage");
     const LABELS = ["scroll down", "scroll down", "scroll down"];
     let current = 0;
 
@@ -334,13 +334,14 @@
       stages.forEach((st, i) => st.classList.toggle("is-on", i === next));
       dots.forEach((d, i) => d.classList.toggle("is-on", i <= next));
       if (label) label.textContent = LABELS[next];
+      if (navStage) navStage.textContent = `stage ${next + 1}/3`;
       SFX.whoosh();
     }
     addEventListener("scroll", update, { passive: true });
     update();
 
     // Center console jumps to the next stage, then into the page.
-    $(".dash-center", section)?.addEventListener("click", e => {
+    $(".hood-c", section)?.addEventListener("click", e => {
       e.preventDefault();
       const span = section.offsetHeight - innerHeight;
       const target = current < 2 ? section.offsetTop + span * (current === 0 ? .45 : .82) : $("#about").offsetTop;
@@ -367,7 +368,51 @@
     const fitScope = () => { if (sc && sc.offsetParent) scope = fitCanvas(sc); };
     fitScope();
     addEventListener("resize", debounce(fitScope, 200));
+    // Artificial horizon in the centre screen, driven by the 3D camera's bank and heading.
+    const hc = $("#horizon"), hdgEl = $("#nav-hdg");
+    let hz = null;
+    const fitHz = () => { if (hc && hc.offsetParent) hz = fitCanvas(hc); };
+    fitHz();
+    addEventListener("resize", debounce(fitHz, 200));
+    const drawHorizon = t => {
+      const { ctx: g, w, h } = hz, A = window.flightAttitude || { roll: 0, yaw: 0, pitch: 0 };
+      const roll = A.roll, pitchPx = (A.pitch + .3) * h * 1.6, cx = w / 2, cy = h / 2;
+      g.clearRect(0, 0, w, h);
+      g.save(); g.translate(cx, cy); g.rotate(roll); g.translate(0, pitchPx);
+      const sky = g.createLinearGradient(0, -h, 0, 0); sky.addColorStop(0, "rgba(90,8,16,.15)"); sky.addColorStop(1, "rgba(200,30,45,.35)");
+      g.fillStyle = sky; g.fillRect(-w * 2, -h * 2, w * 4, h * 2);
+      g.fillStyle = "rgba(20,2,5,.55)"; g.fillRect(-w * 2, 0, w * 4, h * 2);
+      g.strokeStyle = "#ffb3ba"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(-w * 2, 0); g.lineTo(w * 2, 0); g.stroke();
+      g.font = '500 7px "JetBrains Mono", monospace'; g.fillStyle = "rgba(255,190,196,.8)"; g.textBaseline = "middle";
+      for (let k = -3; k <= 3; k++) {
+        if (!k) continue;
+        const y = -k * h * .16, half = k % 2 ? w * .08 : w * .14;
+        g.strokeStyle = "rgba(255,160,170,.55)"; g.lineWidth = 1; g.beginPath();
+        if (k < 0) g.setLineDash([3, 3]);
+        g.moveTo(-half, y); g.lineTo(half, y); g.stroke(); g.setLineDash([]);
+        if (!(k % 2)) { g.textAlign = "right"; g.fillText(Math.abs(k * 5), -half - 3, y); g.textAlign = "left"; g.fillText(Math.abs(k * 5), half + 3, y); }
+      }
+      g.restore();
+      // roll scale + pointer
+      const R = Math.min(w * .3, h * .6);
+      g.strokeStyle = "rgba(255,160,170,.6)"; g.lineWidth = 1;
+      g.beginPath(); g.arc(cx, cy, R, -Math.PI * .8, -Math.PI * .2); g.stroke();
+      [-60, -45, -30, -15, 0, 15, 30, 45, 60].forEach(d => { const a = -Math.PI / 2 + d * Math.PI / 180, l = d % 30 ? 3 : 6;
+        g.beginPath(); g.moveTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R); g.lineTo(cx + Math.cos(a) * (R + l), cy + Math.sin(a) * (R + l)); g.stroke(); });
+      const pa = -Math.PI / 2 + roll;
+      g.fillStyle = "#ffd0d4"; g.beginPath();
+      g.moveTo(cx + Math.cos(pa) * (R - 1), cy + Math.sin(pa) * (R - 1));
+      g.lineTo(cx + Math.cos(pa - .07) * (R - 8), cy + Math.sin(pa - .07) * (R - 8));
+      g.lineTo(cx + Math.cos(pa + .07) * (R - 8), cy + Math.sin(pa + .07) * (R - 8)); g.fill();
+      // fixed aircraft symbol
+      g.strokeStyle = "#fff"; g.lineWidth = 2; g.shadowColor = "#ff3b4e"; g.shadowBlur = 6;
+      g.beginPath(); g.moveTo(cx - w * .2, cy); g.lineTo(cx - w * .07, cy); g.lineTo(cx - w * .035, cy + 6); g.lineTo(cx, cy);
+      g.lineTo(cx + w * .035, cy + 6); g.lineTo(cx + w * .07, cy); g.lineTo(cx + w * .2, cy); g.stroke();
+      g.shadowBlur = 0; g.fillStyle = "#fff"; g.fillRect(cx - 1.5, cy - 1.5, 3, 3);
+      if (hdgEl) hdgEl.textContent = String(Math.round(((-A.yaw * 180 / Math.PI) % 360 + 360) % 360)).padStart(3, "0");
+    };
     whileVisible(section, (dt, t) => {
+      if (hz && hc.offsetParent) drawHorizon(t);
       if (scope && sc && sc.offsetParent) {
         const { ctx: g, w: sw, h: sh } = scope, buf = SFX.playing ? SFX.wave() : null;
         g.clearRect(0, 0, sw, sh);

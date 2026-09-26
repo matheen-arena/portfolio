@@ -239,6 +239,7 @@ if (renderer) {
       820 - p * 950 - drift
     );
     camera.rotation.set(-.3 + p * .08 - look.y * .06, yawS, -(yaw - yawS) * .9 - yawS * .12 + Math.sin(t * .25) * .006);
+    window.flightAttitude = { roll: camera.rotation.z, yaw: yawS, pitch: camera.rotation.x };
 
     uniforms.uTime.value = t;
     uniforms.uBoost.value = boost;
