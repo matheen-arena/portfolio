@@ -1,11 +1,12 @@
 # Editing the portfolio content
 
-The **Work log** and **Stack graph** sections are generated from two Markdown files. Edit those files and commit. You don't need to touch any HTML or JavaScript.
+The **Missions**, **Work log** and **Stack graph** sections are generated from Markdown files. Edit those files and commit. You don't need to touch any HTML or JavaScript.
 
 | File | Controls | Also feeds |
 | --- | --- | --- |
 | `content/worklog.md` | The **Work log** section (roles, projects, bullets) | Terminal command `experience` |
 | `content/stack.md` | The **Stack graph** section (clusters and skills) | Terminal command `skills` |
+| `content/missions.md` | The **Missions** section (the round flip-over patches) | nothing else |
 
 Order matters: things appear on the site in the same order as in the file (top to bottom).
 
@@ -114,9 +115,49 @@ color: purple
 
 ---
 
+## `missions.md`
+
+### Pattern
+
+```markdown
+## <CODE>
+- title: <Mission name>
+- org: <Company · Domain>
+- stat: <Big number or word>
+- label: <Small text under the stat>
+- color: <orange | blue | green | amber | purple | pink | grey>
+- <Outcome line 1>
+- <Outcome line 2>
+- <Outcome line 3>
+```
+
+### What each line becomes
+
+| Line in the file | Where it shows on the patch |
+| --- | --- |
+| `## LOGZ` | Short code in the middle of the front, between ✦ stars. Keep it to about 4–6 letters. |
+| `- title: Logz to Grafana OSS` | Curved text along the top of the front, and the heading on the back |
+| `- org: Avasoft · Retail` | Curved text along the bottom of the front, and the footer on the back |
+| `- stat: $250K` | The big number in the centre. Keep it short (about 6 characters). |
+| `- label: saved per year` | Small caps under the number |
+| `- color: orange` | Colour of the rim, stitching, glow and back border |
+| `- 1,200+ Lambdas and …` | One outcome line on the back. Use 2–3 short lines (about 45 characters each). `**bold**` works. |
+
+### Rules
+
+- Patches appear in file order (left to right, top to bottom).
+- Lines with a `key:` are settings, and plain `- ` lines are the outcomes on the back.
+- Long titles still fit on the curve, but anything much longer than "Cloud Modernization" gets tight.
+
+### Common edits
+
+**Add a mission:** copy a block, change the `##` code and the values. **Remove** one by deleting its block.
+
+---
+
 ## After editing
 
-1. Preview locally. The page loads these files, so it must be served, not double-clicked. Double-clicking `index.html` shows a note in place of the work log.
+1. Preview locally. The page loads these files, so it must be served, not double-clicked. Double-clicking `index.html` shows a note in place of these sections.
    - **Windows:** double-click `preview.bat`
    - **macOS / Linux:** run `./preview.sh`
 
