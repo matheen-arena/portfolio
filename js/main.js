@@ -5,6 +5,16 @@
   // below (reveal animations, timeline, stack graph, terminal) sees the finished page.
   const CONTENT = await window.loadContent();
   document.getElementById("jobs").insertAdjacentHTML("beforeend", CONTENT.renderWorklog(CONTENT.jobs));
+  // Opened straight from disk (file://), browsers block reading the content files. Say so instead of showing a blank gap.
+  if (!CONTENT.jobs.length || !CONTENT.groups.length) {
+    const note = location.protocol === "file:"
+      ? "This section is loaded from <code>content/*.md</code>, which browsers block when the page is opened as a file. Preview it with <code>preview.bat</code> (Windows) or <code>./preview.sh</code> (macOS / Linux), then open <code>http://localhost:8000</code>."
+      : "This section couldn't be loaded. Please refresh the page.";
+    ["jobs", "stack-legend"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !el.querySelector(".job, button")) el.insertAdjacentHTML("beforeend", `<p class="load-note">${note}</p>`);
+    });
+  }
 
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));

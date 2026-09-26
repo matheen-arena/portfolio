@@ -635,3 +635,6 @@ body.is-ready .hero-title .split { transform: none; }
 .job.is-in .log li:nth-child(7) { transition-delay: .48s, .48s, 0s; }
 .job.is-in .log li:nth-child(8) { transition-delay: .56s, .56s, 0s; }
 @media (max-width: 760px) { .log li { padding-left: 0; } .log li::before { width: auto; } }
+
+.load-note { font-family: var(--mono); font-size: 13px; line-height: 1.7; color: var(--muted); border: 1px dashed var(--line-2); border-radius: 10px; padding: 16px 18px; margin: 0; }
+.load-note code { color: var(--accent-2); }
