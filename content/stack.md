@@ -10,7 +10,6 @@ color: orange
 - EKS
 - ECS
 - EC2
-- ECR
 
 ## AWS Data & Network
 color: green
@@ -23,6 +22,7 @@ color: green
 - Opensearch
 - AWS VPC
 - API Gateway
+- ECR
 
 ## Governance & Security
 color: pink
@@ -54,7 +54,6 @@ color: amber
 - GitLab
 - JFrog
 - GitHub
-- Jenkins
 - CodeCommit
 - Argo CD
 - ServiceNow
