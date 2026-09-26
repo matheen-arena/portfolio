@@ -805,3 +805,22 @@ body.is-modal { overflow: hidden; }
 .contact .big-link:last-child { border-bottom-color: rgba(255,80,100,.22); }
 .contact .big-link .muted { color: #c9a3a9; }
 .contact .big-link:hover { color: #ff4b5c; }
+/* shorter cockpit console */
+.dash { height: clamp(112px, 15.5vh, 160px); }
+.hood { padding: 7px 8px 0; }
+.bezel { padding: 15px 12px 7px; }
+.glow-bar { top: 5px; height: 7px; }
+.hood .dash-screen { padding: 4px 8px; }
+.hood .dash-title { margin-bottom: 2px; font-size: 8px; }
+.scr-foot { margin-top: 2px; padding-top: 2px; font-size: 6.5px; }
+.scr-list li:nth-child(n+4) { display: none; }
+.hood .dash-log div:nth-last-child(n+4) { display: none; }
+.console .dash-center { height: 94%; padding: 30px 16px 6px; gap: 3px; }
+.dc-scope { top: 7px; height: 18px; }
+.dc-mark { width: 64px; height: 40px; }
+.dc-mouse { width: 20px; height: 30px; }
+.dash-center .dash-label { font-size: 14px; }
+.dc-meter, .dc-bracket { top: 8px; bottom: 14px; }
+.pod { padding: 9px 8px 0; }
+.pod-screen { height: 74%; }
+.pod-screen .pilot { display: none; }
