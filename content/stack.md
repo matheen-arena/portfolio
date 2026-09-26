@@ -11,7 +11,6 @@ color: orange
 - ECS
 - EC2
 - ECR
-- API Gateway
 
 ## AWS Data & Network
 color: orange
@@ -21,14 +20,15 @@ color: orange
 - Kinesis
 - Firehose
 - CloudFront
-- ElastiCache
-- AWS Network
+- Opensearch
+- AWS VPC
+- API Gateway
 
 ## Governance & Security
 color: pink
-- IAM Identity Center
+- AWS IAM Identity Center
 - Control Tower
-- Organizations
+- AWS Organizations
 - AWS Config
 - SCPs
 - AWS WAF
@@ -37,20 +37,15 @@ color: pink
 color: blue
 - RDS
 - Aurora
-- Elasticsearch
-- MongoDB Atlas
 
 ## Observability
 color: green
-- Grafana Metrics
 - Grafana OSS
 - Grafana Loki
-- Alloy
-- OpenTelemetry
+- Grafana Alloy
 - Logz.io
 - Grafana Mimir
-- Grafana Logs
-- Grafana Tempo
+- Grafana GitSync
 
 ## CI/CD & GitOps
 color: amber
@@ -64,7 +59,7 @@ color: amber
 - Argo CD
 - ServiceNow
 - GitHub ARC
-- GitSync
+- Nexus
 
 ## IaC & Containers
 color: purple
@@ -73,10 +68,11 @@ color: purple
 
 ## AI Agents
 color: grey
-- Kiro AI Agent
-- GitHub Copilot Agent
+- Kiro
+- GitHub Copilot
+- Claude Code
 
 ## Scripting
-color: grey
+color: red
 - Python
 - Shell Scripting
