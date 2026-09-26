@@ -12,7 +12,7 @@
 - domain: Retail
 - stack: AWS, Amazon EKS, Grafana OSS, Grafana Alloy, Grafana Loki, Grafana Mimir, Grafana Alloy Proxy, Terraform
 
-- [OBSERVABILITY] Designed and deployed a centralized **OpenTelemetry observability architecture** using **Grafana Alloy**, deploying Alloy Edge instances across existing AWS EKS clusters and an Alloy Proxy in a centralized AWS observability account to consolidate log ingestion from multiple AWS accounts.
+- [OBSERVABILITY] Designed and deployed a centralized **OpenTelemetry observability architecture** using **Grafana Alloy**, deploying Alloy Edge instances across existing workload AWS EKS clusters and an Alloy Proxy in a centralized AWS observability account to consolidate log ingestion from multiple AWS accounts.
 - [GRAFANA] Deployed and configured **Grafana Loki** for centralized log storage and querying, and **Grafana Mimir** for scalable metrics storage and querying.
 - [COLLABORATION] Collaborated with engineering teams on Grafana and OpenTelemetry adoption, providing technical guidance and mentoring on observability architecture, configuration, and operational best practices.
 
