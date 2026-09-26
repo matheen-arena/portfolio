@@ -245,7 +245,7 @@
     const LINES = [
       ["cloud", "AWS · EKS · ECS · Lambda · S3"], ["iac", "Terraform"], ["gitops", "Argo CD · Argo Cron Workflow"],
       ["ci/cd", "GitHub Actions · ARC runners"], ["observe", "Grafana Loki · Grafana Mimir · Tempo"], ["collect", "Grafana Alloy pipelines"],
-      ["data", "RDS · Aurora · Elasticsearch"], ["gov", "AWS Control Tower · DevSecOps"], ["ai", "Kiro AI Agent · Copilot Agent"],
+      ["data", "RDS · Aurora · Elasticsearch"], ["gov", "Control Tower · SCPs · IAM Identity Center"], ["otel", "Grafana Alloy · OpenTelemetry"], ["ai", "Kiro AI Agent · Copilot Agent"],
       ["status", "all systems nominal"]
     ];
     let li = 0;
@@ -313,12 +313,14 @@
     const list = $("#stack-list");
     // Items are ordered so the longest labels sit at the ends of each fan (more room on phones).
     const GROUPS = [
-      { name: "AWS", c: C.orange, items: ["AWS Batch", "Lambda", "EKS", "ECS", "EC2", "S3", "Kinesis", "AWS Network", "Control Tower", "Firehose"] },
-      { name: "Databases & Search", c: C.blue, items: ["RDS", "Aurora", "Elasticsearch"] },
-      { name: "Observability", c: C.green, items: ["Grafana Metrics", "Grafana OSS", "Grafana Loki", "Alloy", "Logz.io", "Grafana Mimir", "Grafana Logs", "Grafana Tempo"] },
-      { name: "CI/CD & GitOps", c: C.amber, items: ["Argo Cron Workflow", "GitHub Actions", "GitLab", "JFrog", "GitHub", "Argo CD", "GitHub ARC", "GitSync"] },
+      { name: "AWS Compute", c: C.orange, items: ["AWS Batch", "Lambda", "EKS", "ECS", "EC2", "ECR", "API Gateway"] },
+      { name: "AWS Data & Network", c: C.orange, items: ["DataSync", "S3", "EFS", "Kinesis", "Firehose", "CloudFront", "ElastiCache", "AWS Network"] },
+      { name: "Governance & Security", c: C.pink, items: ["IAM Identity Center", "Control Tower", "Organizations", "AWS Config", "SCPs", "AWS WAF"] },
+      { name: "Databases & Search", c: C.blue, items: ["RDS", "Aurora", "Elasticsearch", "MongoDB Atlas"] },
+      { name: "Observability", c: C.green, items: ["Grafana Metrics", "Grafana OSS", "Grafana Loki", "Alloy", "OpenTelemetry", "Logz.io", "Grafana Mimir", "Grafana Logs", "Grafana Tempo"] },
+      { name: "CI/CD & GitOps", c: C.amber, items: ["Argo Cron Workflow", "GitHub Actions", "GitLab", "JFrog", "GitHub", "Jenkins", "CodeCommit", "Argo CD", "ServiceNow", "GitHub ARC", "GitSync"] },
       { name: "IaC & Containers", c: C.purple, items: ["Terraform", "Docker"] },
-      { name: "AI Agents", c: C.pink, items: ["Kiro AI Agent", "GitHub Copilot Agent"] },
+      { name: "AI Agents", c: C.bone, items: ["Kiro AI Agent", "GitHub Copilot Agent"] },
       { name: "Scripting", c: C.bone, items: ["Python", "Shell Scripting"] }
     ];
 
@@ -341,46 +343,34 @@
     });
 
     function build() {
-      // Phones get a 2-column grid of clusters; wider screens get a ring.
+      // A grid of clusters (3 columns on desktop, 2 on phones). Each hub sits on the left of its
+      // cell and its skills fan out to the right, one per evenly spaced row, so labels never collide.
       const small = canvas.parentElement.clientWidth < 640;
-      const CELL_H = 200;
-      canvas.style.height = small ? Math.ceil(GROUPS.length / 2) * CELL_H + 16 + "px" : "";
+      const COLS = small ? 2 : 3, CELL_H = small ? 230 : 250, PAD = small ? 8 : 24;
+      canvas.style.height = Math.ceil(GROUPS.length / COLS) * CELL_H + PAD * 2 + "px";
       ({ ctx, w, h } = fitCanvas(canvas));
-      const R = small ? 62 : 92;
-      const rx = w / 2 - R - 110, ry = h / 2 - R - 30;
+      const cw = (w - PAD * 2) / COLS;
       hubs = GROUPS.map((g, i) => {
-        let bx, by, lx, ly, la;
-        if (small) {
-          const cw = (w - 16) / 2, x0 = 8 + (i % 2) * cw, y0 = 8 + Math.floor(i / 2) * CELL_H;
-          bx = x0 + 16; by = y0 + CELL_H / 2 + 8; lx = x0 + 8; ly = y0 + 12; la = "left";
-        } else {
-          const a = (i / GROUPS.length) * Math.PI * 2 - Math.PI / 2;
-          bx = w / 2 + Math.cos(a) * rx; by = h / 2 + Math.sin(a) * ry; lx = 0; ly = -18; la = "center";
-        }
-        return { ...g, i, bx, by, x: bx, y: by, lx, ly, la };
+        const x0 = PAD + (i % COLS) * cw, y0 = PAD + Math.floor(i / COLS) * CELL_H;
+        const bx = x0 + (small ? 10 : 34), by = y0 + CELL_H / 2 + 10;
+        return { ...g, i, bx, by, x: bx, y: by, lx: x0 + (small ? 8 : 14), ly: y0 + 16, la: "left" };
       });
       const old = nodes;
       nodes = [];
       hubs.forEach(hb => hb.items.forEach((label, j) => {
         const prev = old.find(n => n.label === label);
         const n = hb.items.length;
-        let a, rr;
-        if (small) {
-          // Fan out to the right of the hub so labels have room.
-          a = n === 1 ? 0 : -1.35 + (j / (n - 1)) * 2.7;
-          rr = n <= 3 ? 48 : R;
-        } else {
-          // Spread items around the hub, leaving the top free for the hub label.
-          a = -Math.PI / 2 + Math.PI / 5 + (j + .5) / n * (Math.PI * 2 - Math.PI * 2 / 5);
-          rr = R * (n > 5 && j % 2 ? .62 : 1);
-        }
+        const span = Math.min(CELL_H - 64, (n - 1) * (small ? 17 : 19));
+        const oy = n === 1 ? 0 : -span / 2 + (j / (n - 1)) * span;
+        const reach = small ? 30 : 70;
+        const ox = reach + (small ? 10 : 30) * Math.cos((oy / (span / 2 || 1)) * 1.1);
         nodes.push({
-          label, hub: hb, ox: Math.cos(a) * rr, oy: Math.sin(a) * rr,
+          label, hub: hb, ox, oy,
           x: prev ? Math.min(w, prev.x) : hb.x, y: prev ? Math.min(h, prev.y) : hb.y,
           vx: 0, vy: 0, r: j === 0 ? 5.5 : 4, phase: Math.random() * 6
         });
       }));
-      stackSmall = small;
+      stackSmall = true; // grid drawing mode (left-aligned labels, cell captions)
     }
     build();
     addEventListener("resize", debounce(build, 200));
@@ -394,7 +384,7 @@
     whileVisible(canvas, (dt, t) => {
       const k = Math.min(2, dt / 16.67);
       const small = stackSmall;
-      const font = small ? 10.5 : 12;
+      const font = w < 640 ? 10 : 12.5;
 
       hubs.forEach(hb => {
         hb.x = hb.bx + Math.sin(t * .0004 + hb.i) * 8;
@@ -453,7 +443,7 @@
         ctx.globalAlpha = dim ? .2 : 1;
         ctx.fillStyle = C.bg; ctx.strokeStyle = hb.c; ctx.lineWidth = 1.5;
         ctx.beginPath(); ctx.arc(hb.x, hb.y, 7, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-        ctx.font = `500 ${small ? 9 : 10.5}px "JetBrains Mono", monospace`;
+        ctx.font = `500 ${w < 640 ? 9 : 10.5}px "JetBrains Mono", monospace`;
         ctx.fillStyle = hb.c; ctx.textAlign = hb.la;
         if (small) ctx.fillText(hb.name.toUpperCase(), hb.lx, hb.ly);
         else ctx.fillText(hb.name.toUpperCase(), hb.x, hb.y + hb.ly);
@@ -486,8 +476,10 @@ Expertise in Cloud, DevOps, Observability and AI automation. Focused on building
 modern developer workflows, and integrating AI into modern engineering practices.`,
       about: () => CMDS.whoami(),
       experience: () => `<pre><span class="t-ok">May 2026 – Present</span>           Cloud and Platform Engineer, <span class="t-acc">zeb</span>, Chennai
-                             Education · Cloud-Native University Athletics Platform
-                             Retail · Unified Customer Data Portal
+                             Retail · Grafana OTEL
+                             Finance · AWS Enterprise Cloud Modernization
+                             Education · University Athletics Cloud Platform
+                             Retail · ETL Data Portal
 <span class="t-ok">May 2025 – April 2026</span>        Cloud and DevOps Engineer, <span class="t-acc">Avasoft</span>, Chennai
                              Retail · Logz to Grafana OSS Migration
                              Retail · GitLab to GitHub Migration
@@ -495,16 +487,18 @@ modern developer workflows, and integrating AI into modern engineering practices
                              Healthcare · ETL pipeline development</pre>`,
       work: () => CMDS.experience(),
       skills: () => `<pre><span class="t-acc">iac</span>            Terraform
-<span class="t-acc">aws</span>            EKS ECS S3 Lambda EC2 RDS Aurora Elasticsearch Kinesis Firehose Batch, AWS Network, Control Tower
-<span class="t-ok">observability</span>  Grafana OSS, Grafana Logs, Grafana Metrics, Grafana Tempo, Grafana Loki, Grafana Mimir, Alloy, Logz.io
+<span class="t-acc">aws</span>            EKS ECS ECR Lambda EC2 Batch API Gateway S3 EFS Kinesis Firehose DataSync CloudFront ElastiCache, AWS Network
+<span class="t-acc">governance</span>     Control Tower, Organizations, AWS Config, IAM Identity Center (SSO), SCPs, AWS WAF
+<span class="t-blue">data</span>           RDS, Aurora, Elasticsearch, MongoDB Atlas
+<span class="t-ok">observability</span>  Grafana OSS, Grafana Logs, Grafana Metrics, Grafana Tempo, Grafana Loki, Grafana Mimir, Grafana Alloy, OpenTelemetry, Logz.io
 <span class="t-blue">tools</span>          Argo Cron Workflow, Argo CD, GitSync, Docker
-<span class="t-acc">ci/cd</span>          GitLab, GitHub, GitHub Actions, Action Runner Controller, JFrog
+<span class="t-acc">ci/cd</span>          GitLab, GitHub, GitHub Actions, Action Runner Controller, Jenkins, CodeCommit, ServiceNow, JFrog
 <span class="t-ok">ai agents</span>      GitHub Copilot Agent, Kiro AI Agent
 <span class="t-blue">scripting</span>      Shell Scripting, Python, MySQL</pre>`,
       stack: () => CMDS.skills(),
       impact: () => `<pre><span class="t-ok">~$250K/yr</span>  observability costs reduced (self-hosted Grafana OSS on EKS)
 <span class="t-ok">1,200+</span>     Lambda functions with centralized log ingestion (+ 50+ Batch/ECS workloads)
-<span class="t-ok">2,100</span>      projects migrated from GitLab to GitHub, reducing user seat costs
+<span class="t-ok">2,100+</span>     projects migrated from GitLab to GitHub, reducing user seat costs
 <span class="t-ok">80%</span>        reduction in CI/CD runner costs (GitHub ARC runners on EKS)
 <span class="t-ok">150+ / 300+</span> dashboards / alerts migrated by a custom Kiro AI agent</pre>`,
       contact: () => `<pre>email     <a href="mailto:matheenroy@gmail.com">matheenroy@gmail.com</a>

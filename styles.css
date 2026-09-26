@@ -623,3 +623,15 @@ body.is-ready .hero-title .split { transform: none; }
 .job.is-in .log li:nth-child(7) { transition-delay: .48s, .48s, 0s; }
 
 .log li[data-lvl="OBSERVABILITY"]::before { font-size: 9px; letter-spacing: .02em; }
+/* work log: wider tag column; long tags wrap onto two lines */
+.log li { padding-left: 132px; }
+.log li::before { width: 108px; white-space: normal; font-size: 9.5px; line-height: 1.35; letter-spacing: .05em; top: 15px; }
+.log li[data-lvl="OBSERVABILITY"]::before { font-size: 9.5px; letter-spacing: .05em; }
+.log li[data-lvl="COST"]::before, .log li[data-lvl="OBSERVABILITY & COST"]::before { color: var(--accent-4); }
+.log li[data-lvl="AI AGENTS"]::before, .log li[data-lvl="SECURITY"]::before { color: var(--accent); }
+.log li[data-lvl="ARGO"]::before, .log li[data-lvl="SCM"]::before, .log li[data-lvl="AWS"]::before, .log li[data-lvl="AWS NETWORKING"]::before { color: var(--accent-3); }
+.job.is-in .log li:nth-child(5) { transition-delay: .32s, .32s, 0s; }
+.job.is-in .log li:nth-child(6) { transition-delay: .4s, .4s, 0s; }
+.job.is-in .log li:nth-child(7) { transition-delay: .48s, .48s, 0s; }
+.job.is-in .log li:nth-child(8) { transition-delay: .56s, .56s, 0s; }
+@media (max-width: 760px) { .log li { padding-left: 0; } .log li::before { width: auto; } }
