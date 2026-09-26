@@ -29,8 +29,9 @@ python3 -m http.server 8000
 
 ## Editing content
 
-- Text content (about, jobs, contact) is in `index.html`.
-- The signal-path nodes, skill groups and terminal commands are data arrays in `js/main.js` (search for `NODES`, `GROUPS` and `CMDS`).
+- **Work log** and **Stack graph** content lives in `content/worklog.md` and `content/stack.md`. See [`content/USAGE.md`](content/USAGE.md) for the format.
+- Other text (about, impact, contact) is in `index.html`.
+- Terminal commands are in `js/main.js` (search for `CMDS`).
 - Colours and fonts are CSS variables at the top of `styles.css`.
 
 ## Deploying changes

@@ -1,5 +1,10 @@
-(function () {
+(async function () {
   "use strict";
+
+  // Editable content (content/worklog.md, content/stack.md) is loaded first, so everything
+  // below (reveal animations, timeline, stack graph, terminal) sees the finished page.
+  const CONTENT = await window.loadContent();
+  document.getElementById("jobs").insertAdjacentHTML("beforeend", CONTENT.renderWorklog(CONTENT.jobs));
 
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -312,17 +317,7 @@
     const legend = $("#stack-legend");
     const list = $("#stack-list");
     // Items are ordered so the longest labels sit at the ends of each fan (more room on phones).
-    const GROUPS = [
-      { name: "AWS Compute", c: C.orange, items: ["AWS Batch", "Lambda", "EKS", "ECS", "EC2", "ECR", "API Gateway"] },
-      { name: "AWS Data & Network", c: C.orange, items: ["DataSync", "S3", "EFS", "Kinesis", "Firehose", "CloudFront", "ElastiCache", "AWS Network"] },
-      { name: "Governance & Security", c: C.pink, items: ["IAM Identity Center", "Control Tower", "Organizations", "AWS Config", "SCPs", "AWS WAF"] },
-      { name: "Databases & Search", c: C.blue, items: ["RDS", "Aurora", "Elasticsearch", "MongoDB Atlas"] },
-      { name: "Observability", c: C.green, items: ["Grafana Metrics", "Grafana OSS", "Grafana Loki", "Alloy", "OpenTelemetry", "Logz.io", "Grafana Mimir", "Grafana Logs", "Grafana Tempo"] },
-      { name: "CI/CD & GitOps", c: C.amber, items: ["Argo Cron Workflow", "GitHub Actions", "GitLab", "JFrog", "GitHub", "Jenkins", "CodeCommit", "Argo CD", "ServiceNow", "GitHub ARC", "GitSync"] },
-      { name: "IaC & Containers", c: C.purple, items: ["Terraform", "Docker"] },
-      { name: "AI Agents", c: C.bone, items: ["Kiro AI Agent", "GitHub Copilot Agent"] },
-      { name: "Scripting", c: C.bone, items: ["Python", "Shell Scripting"] }
-    ];
+    const GROUPS = CONTENT.groups; // from content/stack.md
 
     let ctx, w, h, hubs = [], nodes = [], focus = -1, hover = null, stackSmall = false;
     const mouse = { x: -1e4, y: -1e4 };
@@ -475,26 +470,12 @@ tip: ↑/↓ for history, tab to autocomplete</span></pre>`,
 Expertise in Cloud, DevOps, Observability and AI automation. Focused on building reliable cloud platforms,
 modern developer workflows, and integrating AI into modern engineering practices.`,
       about: () => CMDS.whoami(),
-      experience: () => `<pre><span class="t-ok">May 2026 – Present</span>           Cloud and Platform Engineer, <span class="t-acc">zeb</span>, Chennai
-                             Retail · Grafana OTEL
-                             Finance · AWS Enterprise Cloud Modernization
-                             Education · University Athletics Cloud Platform
-                             Retail · ETL Data Portal
-<span class="t-ok">May 2025 – April 2026</span>        Cloud and DevOps Engineer, <span class="t-acc">Avasoft</span>, Chennai
-                             Retail · Logz to Grafana OSS Migration
-                             Retail · GitLab to GitHub Migration
-<span class="t-ok">August 2024 – November 2024</span>  Python Developer – Intern, <span class="t-acc">Stellar Innovations</span>, Bangalore
-                             Healthcare · ETL pipeline development</pre>`,
+      experience: () => "<pre>" + CONTENT.jobs.map(j =>
+        `<span class="t-ok">${esc(j.when)}</span>${" ".repeat(Math.max(2, 29 - j.when.length))}${esc(j.title)}, <span class="t-acc">${esc(j.company)}</span>, ${esc(j.where.split(",")[0])}\n` +
+        j.projects.map(p => " ".repeat(29) + esc(p.domain + " · " + p.name)).join("\n")).join("\n") + "</pre>",
       work: () => CMDS.experience(),
-      skills: () => `<pre><span class="t-acc">iac</span>            Terraform
-<span class="t-acc">aws</span>            EKS ECS ECR Lambda EC2 Batch API Gateway S3 EFS Kinesis Firehose DataSync CloudFront ElastiCache, AWS Network
-<span class="t-acc">governance</span>     Control Tower, Organizations, AWS Config, IAM Identity Center (SSO), SCPs, AWS WAF
-<span class="t-blue">data</span>           RDS, Aurora, Elasticsearch, MongoDB Atlas
-<span class="t-ok">observability</span>  Grafana OSS, Grafana Logs, Grafana Metrics, Grafana Tempo, Grafana Loki, Grafana Mimir, Grafana Alloy, OpenTelemetry, Logz.io
-<span class="t-blue">tools</span>          Argo Cron Workflow, Argo CD, GitSync, Docker
-<span class="t-acc">ci/cd</span>          GitLab, GitHub, GitHub Actions, Action Runner Controller, Jenkins, CodeCommit, ServiceNow, JFrog
-<span class="t-ok">ai agents</span>      GitHub Copilot Agent, Kiro AI Agent
-<span class="t-blue">scripting</span>      Shell Scripting, Python, MySQL</pre>`,
+      skills: () => "<pre>" + CONTENT.groups.map((g, i) =>
+        `<span class="${["t-acc", "t-ok", "t-blue"][i % 3]}">${esc(g.name.toLowerCase().padEnd(24))}</span> ${esc(g.items.join(", "))}`).join("\n") + "</pre>",
       stack: () => CMDS.skills(),
       impact: () => `<pre><span class="t-ok">~$250K/yr</span>  observability costs reduced (self-hosted Grafana OSS on EKS)
 <span class="t-ok">1,200+</span>     Lambda functions with centralized log ingestion (+ 50+ Batch/ECS workloads)
