@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Anton&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=0457718" />
+  <link rel="stylesheet" href="styles.css?v=0458504" />
 </head>
 <body>
 
@@ -29,7 +29,7 @@
     </a>
     <nav class="nav-links" aria-label="Sections">
       <a href="#about" data-sfx>about</a>
-      <a href="#impact" data-sfx>impact</a>
+      <a href="#missions" data-sfx>missions</a>
       <a href="#work" data-sfx>work</a>
       <a href="#stack" data-sfx>stack</a>
       <a href="#terminal" data-sfx>terminal</a>
@@ -204,48 +204,14 @@
     </section>
 
     <!-- ============ IMPACT ============ -->
-    <section id="impact" class="section impact">
+    <section id="missions" class="section missions">
       <div class="section-head reveal">
-        <span class="idx">02</span><h2>Impact</h2>
+        <span class="idx">02</span><h2>Missions</h2>
       </div>
-      <div class="metrics">
-        <article class="metric reveal" data-spark="down">
-          <div class="metric-top"><span class="muted">observability costs</span><span class="tag">reduced / yr</span></div>
-          <div class="metric-val">~$<span class="count" data-to="250">0</span>K</div>
-          <canvas class="spark"></canvas>
-          <p>Self-hosted open-source Grafana on Amazon EKS, replacing Logz.io.</p>
-        </article>
-        <article class="metric reveal" data-spark="up">
-          <div class="metric-top"><span class="muted">lambda functions</span><span class="tag">log ingestion</span></div>
-          <div class="metric-val"><span class="count" data-to="1200">0</span>+</div>
-          <canvas class="spark"></canvas>
-          <p>Centralized log ingestion with Amazon Kinesis, plus 50+ AWS Batch and Amazon ECS workloads.</p>
-        </article>
-        <article class="metric reveal" data-spark="up">
-          <div class="metric-top"><span class="muted">projects</span><span class="tag">migrated</span></div>
-          <div class="metric-val"><span class="count" data-to="2100">0</span>+</div>
-          <canvas class="spark"></canvas>
-          <p>Migrated from GitLab to GitHub, reducing user seat costs, with centralized GitHub Actions workflows.</p>
-        </article>
-        <article class="metric reveal" data-spark="down">
-          <div class="metric-top"><span class="muted">CI/CD runner costs</span><span class="tag">reduced</span></div>
-          <div class="metric-val"><span class="count" data-to="80">0</span>%</div>
-          <canvas class="spark"></canvas>
-          <p>Shifted from GitLab EC2 runners to self-hosted GitHub ARC runners on Amazon EKS.</p>
-        </article>
-        <article class="metric reveal" data-spark="up">
-          <div class="metric-top"><span class="muted">dashboards</span><span class="tag">migrated by AI agent</span></div>
-          <div class="metric-val"><span class="count" data-to="150">0</span>+</div>
-          <canvas class="spark"></canvas>
-          <p>Moved from Logz.io to self-hosted Grafana by a custom Kiro AI agent.</p>
-        </article>
-        <article class="metric reveal" data-spark="up">
-          <div class="metric-top"><span class="muted">alerts</span><span class="tag">migrated by AI agent</span></div>
-          <div class="metric-val"><span class="count" data-to="300">0</span>+</div>
-          <canvas class="spark"></canvas>
-          <p>Migrated by the same Kiro AI agent, significantly reducing manual recreation.</p>
-        </article>
-      </div>
+      <p class="section-intro reveal">Every project is a mission. <span class="muted">Hover or tap a patch to flip it.</span></p>
+      <ul class="patches" id="patches">
+        <!-- Filled from content/missions.md by js/content.js -->
+      </ul>
     </section>
 
     <!-- ============ WORK ============ -->
@@ -320,9 +286,9 @@
     <a href="#top" data-sfx>back to top ↑</a>
   </footer>
 
-  <script src="js/audio.js?v=0457718"></script>
-  <script src="js/content.js?v=0457718"></script>
-  <script src="js/main.js?v=0457718"></script>
-  <script type="module" src="js/flight.js?v=0457718"></script>
+  <script src="js/audio.js?v=0458504"></script>
+  <script src="js/content.js?v=0458504"></script>
+  <script src="js/main.js?v=0458504"></script>
+  <script type="module" src="js/flight.js?v=0458504"></script>
 </body>
 </html>

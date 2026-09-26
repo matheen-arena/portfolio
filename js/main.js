@@ -5,14 +5,15 @@
   // below (reveal animations, timeline, stack graph, terminal) sees the finished page.
   const CONTENT = await window.loadContent();
   document.getElementById("jobs").insertAdjacentHTML("beforeend", CONTENT.renderWorklog(CONTENT.jobs));
+  document.getElementById("patches").insertAdjacentHTML("beforeend", CONTENT.renderMissions(CONTENT.missions));
   // Opened straight from disk (file://), browsers block reading the content files. Say so instead of showing a blank gap.
-  if (!CONTENT.jobs.length || !CONTENT.groups.length) {
+  if (!CONTENT.jobs.length || !CONTENT.groups.length || !CONTENT.missions.length) {
     const note = location.protocol === "file:"
       ? "This section is loaded from <code>content/*.md</code>, which browsers block when the page is opened as a file. Preview it with <code>preview.bat</code> (Windows) or <code>./preview.sh</code> (macOS / Linux), then open <code>http://localhost:8000</code>."
       : "This section couldn't be loaded. Please refresh the page.";
-    ["jobs", "stack-legend"].forEach(id => {
+    ["jobs", "stack-legend", "patches"].forEach(id => {
       const el = document.getElementById(id);
-      if (el && !el.querySelector(".job, button")) el.insertAdjacentHTML("beforeend", `<p class="load-note">${note}</p>`);
+      if (el && !el.querySelector(".job, button, .patch")) el.insertAdjacentHTML("beforeend", `<p class="load-note">${note}</p>`);
     });
   }
 
@@ -114,6 +115,18 @@
     });
   }, { threshold: .15, rootMargin: "0px 0px -40px 0px" });
   $$(".reveal").forEach(el => revealIO.observe(el));
+
+  /* ================= MISSION PATCHES: flip on hover (desktop), tap / Enter (everywhere) ================= */
+  $$(".patch").forEach(p => {
+    const flip = on => { p.classList.toggle("is-flipped", on); p.setAttribute("aria-pressed", on ? "true" : "false"); };
+    // With a mouse, hover does the flipping, so a mouse click shouldn't undo it. Taps and Enter/Space still toggle.
+    p.addEventListener("click", e => { if (finePointer && e.detail > 0) return; flip(!p.classList.contains("is-flipped")); SFX.click(); });
+    p.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); p.click(); } });
+    if (finePointer) {
+      p.addEventListener("pointerenter", () => { flip(true); SFX.hover(); });
+      p.addEventListener("pointerleave", () => flip(false));
+    }
+  });
 
   const navLinks = $$(".nav-links a");
   const navIO = new IntersectionObserver(entries => {
