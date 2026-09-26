@@ -115,6 +115,54 @@
   }, { threshold: .15, rootMargin: "0px 0px -40px 0px" });
   $$(".reveal").forEach(el => revealIO.observe(el));
 
+  /* ================= CONTACT: red wireframe city backdrop ================= */
+  (function contactCity() {
+    const cv = $("#contact-city");
+    if (!cv) return;
+    function draw() {
+      const { ctx, w, h } = fitCanvas(cv, 1.5);
+      let seed = 7; const R = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+      ctx.clearRect(0, 0, w, h);
+      const stroke = (a) => { ctx.strokeStyle = `rgba(255,40,60,${a})`; };
+      // A building in 2-point-ish perspective: front face, side face, roof, window grid.
+      const building = (x, base, bw, bh, depth, a) => {
+        const top = base - bh, sd = depth, lean = depth * .45;
+        stroke(a); ctx.lineWidth = 1; ctx.beginPath();
+        ctx.rect(x, top, bw, bh);
+        ctx.moveTo(x + bw, top); ctx.lineTo(x + bw + sd, top - lean); ctx.lineTo(x + bw + sd, base - lean); ctx.lineTo(x + bw, base);
+        ctx.moveTo(x, top); ctx.lineTo(x + sd, top - lean); ctx.lineTo(x + bw + sd, top - lean);
+        ctx.stroke();
+        stroke(a * .55); ctx.beginPath();
+        const fl = 6 + (R() * 4 | 0), cols = Math.max(2, bw / 9 | 0);
+        for (let y = top + fl; y < base - 2; y += fl) { ctx.moveTo(x + 2, y); ctx.lineTo(x + bw - 2, y); ctx.moveTo(x + bw + 1, y - 1); ctx.lineTo(x + bw + sd - 1, y - lean); }
+        for (let c = 1; c < cols; c++) { const xx = x + c * bw / cols; ctx.moveTo(xx, top + 3); ctx.lineTo(xx, base); }
+        ctx.stroke();
+        if (R() < .5) { stroke(a); ctx.beginPath(); ctx.moveTo(x + bw * .6, top); ctx.lineTo(x + bw * .6, top - 10 - R() * 20); ctx.stroke(); }
+      };
+      // three depth rows: far (faint, small) to near (bright, big)
+      [[.62, .35, .14, 60], [.8, .7, .26, 100], [1.02, 1, .36, 150]].forEach(([baseF, scale, a, maxH]) => {
+        const base = h * baseF;
+        for (let x = -30; x < w + 30;) {
+          const bw = (24 + R() * 50) * scale + 10, bh = (30 + R() * maxH * 2.2) * scale + 20;
+          building(x, base, bw, bh, bw * .35, a * (.7 + R() * .3));
+          x += bw + (R() * 30 - 8) * scale;
+        }
+      });
+      // landmarks: pyramid tower and a lattice mast, like the cockpit skyline
+      const px = w * .38, pb = h * .72; stroke(.45); ctx.lineWidth = 1; ctx.beginPath();
+      ctx.moveTo(px - 26, pb); ctx.lineTo(px, pb - h * .62); ctx.lineTo(px + 26, pb); ctx.moveTo(px, pb - h * .62); ctx.lineTo(px + 8, pb);
+      for (let k = 1; k < 18; k++) { const y = pb - k * h * .034, hw = 26 * (1 - k / 18.3); ctx.moveTo(px - hw, y); ctx.lineTo(px + hw, y); }
+      ctx.stroke();
+      const mx = w * .66, mb = h * .7, mh = h * .66; ctx.beginPath();
+      [-12, 12].forEach(o => { ctx.moveTo(mx + o, mb); ctx.lineTo(mx + o * .25, mb - mh); });
+      for (let k = 0; k < 14; k++) { const t = k / 14, y = mb - t * mh, hw = 12 - 9 * t, y2 = mb - (k + 1) / 14 * mh, hw2 = 12 - 9 * (k + 1) / 14; ctx.moveTo(mx - hw, y); ctx.lineTo(mx + hw2, y2); ctx.moveTo(mx + hw, y); ctx.lineTo(mx - hw2, y2); }
+      [.62, .78].forEach(t => { const y = mb - t * mh; ctx.moveTo(mx - 28, y); ctx.lineTo(mx + 28, y); [-28, 0, 28].forEach(o => { ctx.moveTo(mx + o, y); ctx.lineTo(mx + o, y - 26); }); });
+      ctx.stroke();
+    }
+    draw();
+    addEventListener("resize", debounce(draw, 200));
+  })();
+
   /* ================= WORK LOG CARDS: dithered night-city screens + "Read more" panel ================= */
   (function workCards() {
     // Tiny seeded RNG so each project always gets the same scene.
