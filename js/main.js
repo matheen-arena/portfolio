@@ -771,6 +771,45 @@ stellar-innovations-python-dev-intern    Completed   Bangalore   August 2024 –
     track.addEventListener("pointerdown", e => { if (e.target === track) jumpTo(e.clientY); });
   })();
 
+  /* ================= MINI RAILS (card dialog + terminal) ================= */
+  function miniRail(scroller, host) {
+    if (!scroller || !host) return;
+    const rail = document.createElement("div");
+    rail.className = "mrail"; rail.setAttribute("aria-hidden", "true");
+    rail.innerHTML = '<div class="mrail-track"><i class="mrail-thumb"></i></div>';
+    host.appendChild(rail);
+    const track = rail.firstChild, thumb = track.firstChild;
+    let drag = null;
+    const m = () => ({ max: scroller.scrollHeight - scroller.clientHeight, th: track.clientHeight, h: thumb.offsetHeight || 22 });
+    const paint = () => {
+      const { max, th, h } = m();
+      rail.classList.toggle("on", max > 2);
+      thumb.style.transform = `translateY(${max > 0 ? (scroller.scrollTop / max) * (th - h) : 0}px)`;
+    };
+    const jumpTo = y => {
+      const r = track.getBoundingClientRect(), { max, th, h } = m();
+      scroller.scrollTop = Math.max(0, Math.min(1, (y - r.top - h / 2) / (th - h))) * max;
+    };
+    scroller.addEventListener("scroll", paint, { passive: true });
+    new ResizeObserver(paint).observe(scroller);
+    new MutationObserver(paint).observe(scroller, { childList: true, subtree: true });
+    thumb.addEventListener("pointerdown", e => {
+      e.preventDefault(); e.stopPropagation();
+      const r = thumb.getBoundingClientRect();
+      drag = { off: e.clientY - r.top - r.height / 2 };
+      rail.classList.add("is-drag"); thumb.setPointerCapture(e.pointerId);
+    });
+    thumb.addEventListener("pointermove", e => { if (drag) jumpTo(e.clientY - drag.off); });
+    const end = () => { drag = null; rail.classList.remove("is-drag"); };
+    thumb.addEventListener("pointerup", end);
+    thumb.addEventListener("pointercancel", end);
+    track.addEventListener("pointerdown", e => { if (e.target === track) jumpTo(e.clientY); });
+    paint();
+    return paint;
+  }
+  miniRail($("#pdlg-body"), $(".pdlg-bezel"));
+  miniRail($("#term-body"), $(".term"));
+
   function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 
   requestAnimationFrame(() => document.body.classList.add("is-ready"));
