@@ -313,14 +313,14 @@
     const list = $("#stack-list");
     // Items are ordered so the longest labels sit at the ends of each fan (more room on phones).
     const GROUPS = [
-      { name: "AWS Compute", c: C.orange, items: ["AWS Batch", "Lambda", "EKS", "ECS", "EC2", "ECR", "API Gateway"] },
-      { name: "AWS Data & Network", c: C.orange, items: ["DataSync", "S3", "EFS", "Kinesis", "Firehose", "CloudFront", "ElastiCache", "AWS Network"] },
-      { name: "Governance & Security", c: C.pink, items: ["IAM Identity Center", "Control Tower", "Organizations", "AWS Config", "SCPs", "AWS WAF"] },
-      { name: "Databases & Search", c: C.blue, items: ["RDS", "Aurora", "Elasticsearch", "MongoDB Atlas"] },
+      { name: "AWS", c: C.orange, span: 3, items: [
+        "EKS", "ECS", "EC2", "Lambda", "AWS Batch", "ECR", "API Gateway", "CloudFront",
+        "S3", "EFS", "DataSync", "Kinesis", "Firehose", "ElastiCache", "AWS Network", "AWS WAF",
+        "RDS", "Aurora", "Elasticsearch", "Control Tower", "Organizations", "AWS Config", "IAM Identity Center", "SCPs"] },
       { name: "Observability", c: C.green, items: ["Grafana Metrics", "Grafana OSS", "Grafana Loki", "Alloy", "OpenTelemetry", "Logz.io", "Grafana Mimir", "Grafana Logs", "Grafana Tempo"] },
       { name: "CI/CD & GitOps", c: C.amber, items: ["Argo Cron Workflow", "GitHub Actions", "GitLab", "JFrog", "GitHub", "Jenkins", "CodeCommit", "Argo CD", "ServiceNow", "GitHub ARC", "GitSync"] },
       { name: "IaC & Containers", c: C.purple, items: ["Terraform", "Docker"] },
-      { name: "AI Agents", c: C.bone, items: ["Kiro AI Agent", "GitHub Copilot Agent"] },
+      { name: "AI Agents", c: C.pink, items: ["Kiro AI Agent", "GitHub Copilot Agent"] },
       { name: "Scripting", c: C.bone, items: ["Python", "Shell Scripting"] }
     ];
 
@@ -343,33 +343,49 @@
     });
 
     function build() {
-      // A grid of clusters (3 columns on desktop, 2 on phones). Each hub sits on the left of its
-      // cell and its skills fan out to the right, one per evenly spaced row, so labels never collide.
+      // A grid of clusters (3 columns on desktop, 2 on phones). A cluster with `span` takes a whole
+      // row and lays its skills out in sub-columns. Skills sit one per evenly spaced row so labels never collide.
       const small = canvas.parentElement.clientWidth < 640;
-      const COLS = small ? 2 : 3, CELL_H = small ? 230 : 250, PAD = small ? 8 : 24;
-      canvas.style.height = Math.ceil(GROUPS.length / COLS) * CELL_H + PAD * 2 + "px";
+      const COLS = small ? 2 : 3, CELL_H = small ? 230 : 250, PAD = small ? 8 : 24, GAP = small ? 17 : 19;
+      const perCol = g => g.span ? (small ? 12 : 8) : g.items.length;
+      const cells = []; let col = 0, row = 0;
+      GROUPS.forEach(g => {
+        const span = Math.min(COLS, g.span || 1);
+        if (col + span > COLS) { col = 0; row++; }
+        cells.push({ col, row, span, need: (Math.min(perCol(g), g.items.length) - 1) * GAP + 84 });
+        col += span; if (col >= COLS) { col = 0; row++; }
+      });
+      const rows = col === 0 ? row : row + 1;
+      const rowH = Array.from({ length: rows }, (_, r) => Math.max(CELL_H, ...cells.filter(c => c.row === r).map(c => c.need)));
+      const rowY = rowH.map((_, r) => PAD + rowH.slice(0, r).reduce((a, b) => a + b, 0));
+      canvas.style.height = rowH.reduce((a, b) => a + b, 0) + PAD * 2 + "px";
       ({ ctx, w, h } = fitCanvas(canvas));
       const cw = (w - PAD * 2) / COLS;
       hubs = GROUPS.map((g, i) => {
-        const x0 = PAD + (i % COLS) * cw, y0 = PAD + Math.floor(i / COLS) * CELL_H;
-        const bx = x0 + (small ? 10 : 34), by = y0 + CELL_H / 2 + 10;
-        return { ...g, i, bx, by, x: bx, y: by, lx: x0 + (small ? 8 : 14), ly: y0 + 16, la: "left" };
+        const { col: c, row: r, span } = cells[i];
+        const x0 = PAD + c * cw, y0 = rowY[r], ch = rowH[r];
+        const bx = x0 + (small ? 10 : 34), by = y0 + ch / 2 + 10;
+        return { ...g, i, bx, by, x: bx, y: by, lx: x0 + (small ? 8 : 14), ly: y0 + 16, la: "left", width: span * cw, ch };
       });
       const old = nodes;
       nodes = [];
-      hubs.forEach(hb => hb.items.forEach((label, j) => {
-        const prev = old.find(n => n.label === label);
-        const n = hb.items.length;
-        const span = Math.min(CELL_H - 64, (n - 1) * (small ? 17 : 19));
-        const oy = n === 1 ? 0 : -span / 2 + (j / (n - 1)) * span;
-        const reach = small ? 30 : 70;
-        const ox = reach + (small ? 10 : 30) * Math.cos((oy / (span / 2 || 1)) * 1.1);
-        nodes.push({
-          label, hub: hb, ox, oy,
-          x: prev ? Math.min(w, prev.x) : hb.x, y: prev ? Math.min(h, prev.y) : hb.y,
-          vx: 0, vy: 0, r: j === 0 ? 5.5 : 4, phase: Math.random() * 6
+      hubs.forEach(hb => {
+        const n = hb.items.length, pc = perCol(hb), subCols = Math.ceil(n / pc);
+        const colW = (hb.width - (small ? 30 : 80)) / subCols;
+        hb.items.forEach((label, j) => {
+          const prev = old.find(nd => nd.label === label);
+          const sc = Math.floor(j / pc), k = j % pc, m = Math.min(pc, n - sc * pc);
+          const span = Math.min(hb.ch - 64, (m - 1) * GAP);
+          const oy = m === 1 ? 0 : -span / 2 + (k / (m - 1)) * span;
+          const reach = small ? 30 : 70;
+          const ox = sc * colW + reach + (small ? 10 : 30) * Math.cos((oy / (span / 2 || 1)) * 1.1);
+          nodes.push({
+            label, hub: hb, ox, oy,
+            x: prev ? Math.min(w, prev.x) : hb.x, y: prev ? Math.min(h, prev.y) : hb.y,
+            vx: 0, vy: 0, r: j === 0 ? 5.5 : 4, phase: Math.random() * 6
+          });
         });
-      }));
+      });
       stackSmall = true; // grid drawing mode (left-aligned labels, cell captions)
     }
     build();
