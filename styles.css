@@ -783,3 +783,25 @@ body.is-modal { overflow: hidden; }
 .ovl-term > div:not(.ot-bar) { padding: 1px 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ovl-term span { color: #ff6b78; } .ovl-term b { color: #7cf7c1; font-weight: 500; } .ovl-term u { text-decoration: none; animation: blink 1s steps(1) infinite; }
 @media (prefers-reduced-motion: reduce) { .bg-traffic i, .ovl-term u { animation: none; } }
+
+/* ================= CONTACT: red wireframe city ================= */
+.contact { position: relative; max-width: none; margin: 0; padding-left: max(var(--gutter), calc((100% - 1400px) / 2 + var(--gutter)));
+  padding-right: max(var(--gutter), calc((100% - 1400px) / 2 + var(--gutter))); padding-bottom: clamp(60px, 8vw, 110px); overflow: hidden; isolation: isolate;
+  background: linear-gradient(to bottom, #0a0b0d 0%, #1a0306 30%, #3d0610 70%, #6d0a19 100%); }
+.contact-bg { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.contact-bg canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .9; }
+.contact-bg::after { content: ""; position: absolute; inset: 0;
+  background: repeating-linear-gradient(to bottom, rgba(0,0,0,.28) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse 60% 55% at 50% 38%, rgba(10,2,4,.75), transparent 70%),
+    linear-gradient(to bottom, #0a0b0d 0%, transparent 18%); }
+.contact .section-head { border-top-color: rgba(255,60,80,.25); }
+.contact-title { text-align: center; font-family: "Anton", var(--sans); font-weight: 400; text-transform: uppercase; letter-spacing: .005em;
+  font-size: clamp(38px, 6vw, 88px); line-height: 1; margin: clamp(20px, 4vw, 50px) auto 16px; color: #fff; max-width: 14ch;
+  text-shadow: 0 0 18px rgba(255,255,255,.55), 0 0 42px rgba(255,255,255,.25); }
+.contact-title span { color: #fff; }
+.contact-sub { text-align: center; margin: 0 auto clamp(30px, 4vw, 50px); max-width: 560px; color: #d7b8bd; font-size: clamp(15px, 1.4vw, 18px); }
+.contact-links { max-width: 900px; margin: 0 auto; }
+.contact .big-link { border-top-color: rgba(255,80,100,.22); }
+.contact .big-link:last-child { border-bottom-color: rgba(255,80,100,.22); }
+.contact .big-link .muted { color: #c9a3a9; }
+.contact .big-link:hover { color: #ff4b5c; }
