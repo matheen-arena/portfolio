@@ -247,6 +247,21 @@
     }
     $$(".pcard-canvas").forEach(paint);
 
+    // Card focus: with a mouse, the hovered card lights up; on touch screens, the card nearest the
+    // middle of the screen does. Everything else stays dimmed (see .pcard / .pcard.is-lit in CSS).
+    const cardsEls = $$(".pcard");
+    const light = el => cardsEls.forEach(c => c.classList.toggle("is-lit", c === el));
+    if (finePointer) {
+      cardsEls.forEach(c => { c.addEventListener("pointerenter", () => light(c)); c.addEventListener("pointerleave", () => light(null)); c.addEventListener("focusin", () => light(c)); });
+    } else {
+      let q = false;
+      const pick = () => { q = false; let best = null, bd = 1e9; const mid = innerHeight / 2;
+        cardsEls.forEach(c => { const r = c.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return; const d = Math.abs(r.top + r.height / 2 - mid); if (d < bd) { bd = d; best = c; } });
+        light(best); };
+      addEventListener("scroll", () => { if (!q) { q = true; requestAnimationFrame(pick); } }, { passive: true });
+      pick();
+    }
+
     const dlg = $("#pdlg"), body = $("#pdlg-body");
     if (!dlg) return;
     const open = btn => {
