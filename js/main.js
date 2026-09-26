@@ -333,14 +333,14 @@
       current = next;
       stages.forEach((st, i) => st.classList.toggle("is-on", i === next));
       dots.forEach((d, i) => d.classList.toggle("is-on", i <= next));
-      label.textContent = LABELS[next];
+      if (label) label.textContent = LABELS[next];
       SFX.whoosh();
     }
     addEventListener("scroll", update, { passive: true });
     update();
 
     // Center console jumps to the next stage, then into the page.
-    $(".dash-center", section).addEventListener("click", e => {
+    $(".dash-center", section)?.addEventListener("click", e => {
       e.preventDefault();
       const span = section.offsetHeight - innerHeight;
       const target = current < 2 ? section.offsetTop + span * (current === 0 ? .45 : .82) : $("#about").offsetTop;
@@ -364,11 +364,11 @@
     let lcAcc = 0;
     const sc = $("#dc-scope");
     let scope = null;
-    const fitScope = () => { if (sc.offsetParent) scope = fitCanvas(sc); };
+    const fitScope = () => { if (sc && sc.offsetParent) scope = fitCanvas(sc); };
     fitScope();
     addEventListener("resize", debounce(fitScope, 200));
     whileVisible(section, (dt, t) => {
-      if (scope && sc.offsetParent) {
+      if (scope && sc && sc.offsetParent) {
         const { ctx: g, w: sw, h: sh } = scope, buf = SFX.playing ? SFX.wave() : null;
         g.clearRect(0, 0, sw, sh);
         g.strokeStyle = "rgba(255,80,90,.18)"; g.lineWidth = 1;
