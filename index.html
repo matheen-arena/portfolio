@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Anton&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=0454853" />
+  <link rel="stylesheet" href="styles.css?v=0456482" />
 </head>
 <body>
 
@@ -254,100 +254,8 @@
         <span class="idx">03</span><h2>Work log</h2>
       </div>
 
-      <div class="jobs">
-        <article class="job reveal">
-          <div class="job-meta">
-            <span class="job-when">May 2026 – Present</span>
-            <span class="job-where">Chennai, India</span>
-            <span class="pill pill-live">● current</span>
-          </div>
-          <div class="job-body">
-            <h3>Cloud and Platform Engineer <span class="at">at zeb</span></h3>
-            <p class="job-proj"><span class="muted">Domain: Retail · Project:</span> Grafana OTEL</p>
-            <p class="job-env">AWS · Amazon EKS · Grafana OSS · Grafana Alloy · Grafana Loki · Grafana Mimir · Grafana Alloy Proxy · Terraform</p>
-            <ul class="log">
-              <li data-lvl="OBSERVABILITY">Designed and deployed a centralized <b>OpenTelemetry observability architecture</b> using <b>Grafana Alloy</b>, deploying Alloy Edge instances across existing AWS EKS clusters and an Alloy Proxy in a centralized AWS observability account to consolidate log ingestion from multiple AWS accounts.</li>
-              <li data-lvl="GRAFANA">Deployed and configured <b>Grafana Loki</b> for centralized log storage and querying, and <b>Grafana Mimir</b> for scalable metrics storage and querying.</li>
-              <li data-lvl="COLLABORATION">Collaborated with engineering teams on Grafana and OpenTelemetry adoption, providing technical guidance and mentoring on observability architecture, configuration, and operational best practices.</li>
-            </ul>
-            <p class="job-proj"><span class="muted">Domain: Finance · Project:</span> AWS Enterprise Cloud Modernization</p>
-            <p class="job-env">AWS · AWS Control Tower · AWS Organizations · AWS Config · AWS IAM Identity Center (SSO) · Service Control Policies (SCPs) · Amazon ECS · Amazon Aurora · Amazon ElastiCache for Redis · AWS Lambda · Amazon EFS · AWS WAF · Amazon CloudFront · AWS DataSync · Terraform</p>
-            <ul class="log">
-              <li data-lvl="WAFR">Conducted a <b>Well-Architected Framework Review (WAFR)</b> to assess the existing AWS environment, identify infrastructure and governance gaps, and define remediation requirements in collaboration with business stakeholders.</li>
-              <li data-lvl="SECURITY">Established <b>AWS Control Tower</b> from the ground up, implementing multi-account governance using AWS Config and Service Control Policies (SCPs), and configured <b>AWS IAM Identity Center (SSO)</b> with least-privilege access for <b>15 teams</b> through role-based permission sets.</li>
-              <li data-lvl="AWS">Migrated the sandbox environment from the legacy AWS account to a newly established account, separating Production and Non-Production environments and provisioning the required infrastructure, including ECS, Aurora, ElastiCache for Redis, Lambda, EFS, AWS WAF, and CloudFront, via <b>modular Terraform</b>.</li>
-              <li data-lvl="AWS NETWORKING">Designed the <b>AWS network architecture</b> from the ground up, including VPCs, subnets, route tables, Network ACLs, security groups, and VPC endpoints, and established secure VPC peering across AWS accounts and with <b>MongoDB Atlas</b>.</li>
-              <li data-lvl="DATA">Migrated <b>70 TB of EFS data</b> from the legacy account to the new AWS account using <b>AWS DataSync</b> Enhanced mode with an agent-based approach.</li>
-              <li data-lvl="SCM">Migrated <b>30 AWS CodeCommit repositories</b> to GitHub using automated migration workflows and migrated <b>10 Jenkins jobs</b> to GitHub Actions, improving source control and CI/CD standardization.</li>
-              <li data-lvl="COLLABORATION">Led the engineering activities for the <b>sandbox cutover</b>, coordinating infrastructure migration and validation to minimize the risk of disruption to Production workloads running in the legacy AWS account.</li>
-            </ul>
-            <p class="job-proj"><span class="muted">Domain: Education · Project:</span> University Athletics Cloud Platform</p>
-            <p class="job-env">AWS · ECS · Aurora · CDN · AWS Control Tower · DevSecOps · Blue/Green Deployment · API Gateway · Terraform</p>
-            <ul class="log">
-              <li data-lvl="ENGINEERING">Designed and implemented a production-ready <b>cloud-native AWS platform</b> from the ground up for a university athletics product, modernizing a local environment hosting MySQL databases and two applications: <b>Coach Dashboard</b> and <b>Athlete Portal</b>.</li>
-              <li data-lvl="AWS">Architected and deployed both applications on <b>Amazon ECS</b> using <b>Blue/Green deployments</b>, along with Aurora, Lambda, and a CDN via <b>modular Terraform</b>, enabling controlled releases, reduced deployment risk, and production-ready application delivery.</li>
-              <li data-lvl="AWS NETWORKING">Designed and implemented the <b>AWS network architecture</b> from the ground up, including VPCs, subnets, route tables, Network ACLs, security groups, and VPC endpoints.</li>
-              <li data-lvl="ENGINEERING">Designed and implemented a lightweight, efficient Athlete Portal architecture supporting <b>1,500+ athletes</b>, providing athlete-specific data with role-based access and eliminating the need for a complex backend service.</li>
-              <li data-lvl="ENGINEERING">Designed the Athlete Portal data-access architecture using <b>CDN-based delivery</b> and <b>API Gateway</b> endpoints backed by <b>Amazon Aurora</b>, optimizing data retrieval and application performance.</li>
-              <li data-lvl="SECURITY">Established the complete <b>AWS Control Tower</b> foundation and cloud governance setup using AWS Config and SCPs, creating the baseline AWS environment required for secure and scalable application hosting.</li>
-              <li data-lvl="DEVSECOPS">Designed and implemented the organization's <b>SCM and DevSecOps</b> practices from the ground up, establishing source-control standards, branching strategies, CI/CD practices, deployment workflows, and engineering best practices.</li>
-              <li data-lvl="DEPLOY">Built the platform with a <b>production-first cloud architecture</b>, covering application hosting, database integration, deployment automation, cloud governance, and software delivery practices from development through production.</li>
-            </ul>
-            <p class="job-proj"><span class="muted">Domain: Retail · Project:</span> ETL Data Portal</p>
-            <p class="job-env">AWS · Amazon EKS · Argo Cron Workflows · ETL · CI/CD · Container · Docker · DevSecOps · Terraform</p>
-            <ul class="log">
-              <li data-lvl="ARGO">Architected and deployed <b>Argo Cron Workflows on Amazon EKS</b> to eliminate always-on EC2 instances, enabling on-demand compute for the data engineering team to run Argo Cron ETL jobs and reducing infrastructure costs.</li>
-              <li data-lvl="ENGINEERING">Engineered a cost-optimized AWS architecture to reduce <b>AWS data transfer costs</b> by keeping traffic from AWS to <b>Salesforce</b> within the AWS network, while maintaining customer data security and compliance requirements.</li>
-              <li data-lvl="COLLABORATION">Collaborated with data engineers and stakeholders to gather requirements and design Argo Cron Workflows for scheduled and automated ETL processing.</li>
-              <li data-lvl="CI/CD &amp; DEVSECOPS">Implemented <b>GitHub Actions</b> workflows to securely build and publish Docker images to <b>Amazon ECR</b> with DevSecOps practices and to automate Argo Cron Workflow deployments, eliminating manual deployment steps and reducing click-ops.</li>
-            </ul>
-          </div>
-        </article>
-
-        <article class="job reveal">
-          <div class="job-meta">
-            <span class="job-when">May 2025 – April 2026</span>
-            <span class="job-where">Chennai, India</span>
-          </div>
-          <div class="job-body">
-            <h3>Cloud and DevOps Engineer <span class="at">at Avasoft</span></h3>
-            <p class="job-proj"><span class="muted">Domain: Retail · Project:</span> Logz to Grafana OSS Migration</p>
-            <p class="job-env">AWS · Amazon EKS · Grafana OSS · AWS Elasticsearch · Amazon Kinesis · Logz.io · Kiro AI · GitSync · Terraform</p>
-            <ul class="log">
-              <li data-lvl="OBSERVABILITY &amp; COST">Designed and deployed a self-hosted open-source <b>Grafana observability platform on Amazon EKS</b>, reducing observability costs by approximately <b>$250K annually</b> by migrating from Logz.io.</li>
-              <li data-lvl="ENGINEERING">Centralized log ingestion for <b>1,200+ AWS Lambda functions</b> and <b>50+ AWS Batch and Amazon ECS workloads</b> using Amazon Kinesis, routing logs from Logz.io to Grafana OSS.</li>
-              <li data-lvl="AI AGENTS">Developed a custom <b>Kiro AI agent</b> that automated the migration of 150+ dashboards and 300+ alerts from Logz.io to self-hosted Grafana, significantly reducing manual migration effort.</li>
-              <li data-lvl="GITOPS">Implemented a GitOps-based <b>GitSync</b> to manage version-controlled production Grafana dashboards in a centralized Git repository for multiple domain services.</li>
-            </ul>
-            <p class="job-proj"><span class="muted">Domain: Retail · Project:</span> GitLab to GitHub Migration</p>
-            <p class="job-env">GitLab · GitHub · GitHub Actions · Terraform · AWS · Amazon EKS · GitHub ARC · DevSecOps · CI/CD · ServiceNow</p>
-            <ul class="log">
-              <li data-lvl="SCM">Migrated <b>2,100+ projects</b> from GitLab to GitHub and established standardized multi-environment deployment workflows across Development, QA, UAT, and Production, with approval gates and code quality controls.</li>
-              <li data-lvl="CI/CD &amp; DEVSECOPS">Built centralized <b>GitHub Actions</b> pipelines integrating AWS and <b>ServiceNow</b>, embedding security and quality checks, automated deployment controls, and environment-specific release automation to streamline software delivery.</li>
-              <li data-lvl="AWS">Deployed and managed self-hosted <b>GitHub Actions Runner Controller (ARC)</b> on EKS with event-driven autoscaling, efficiently handling peak build workloads, reducing job wait times, and ensuring reliable CI/CD execution across multiple development teams.</li>
-              <li data-lvl="COST">Reduced CI/CD runner costs by <b>80%</b> by shifting from GitLab EC2 runners to self-hosted GitHub ARC runners on Amazon EKS.</li>
-            </ul>
-          </div>
-        </article>
-
-        <article class="job reveal">
-          <div class="job-meta">
-            <span class="job-when">August 2024 – November 2024</span>
-            <span class="job-where">Bangalore, India</span>
-            <span class="pill">intern</span>
-          </div>
-          <div class="job-body">
-            <h3>Python Developer – Intern <span class="at">at Stellar Innovations</span></h3>
-            <p class="job-proj"><span class="muted">Domain: Healthcare · Project:</span> ETL pipeline development</p>
-            <p class="job-env">Python · AWS S3 · AWS EC2 · MySQL · Linux</p>
-            <ul class="log">
-              <li data-lvl="ETL">Engineered ETL pipelines to extract data from open-source databases and upload it to <b>AWS S3</b>.</li>
-              <li data-lvl="AWS">Orchestrated data processing tasks on <b>AWS EC2</b> using Python scripts in a Linux environment.</li>
-              <li data-lvl="DATA">Integrated and cleaned data from multiple sources in <b>MySQL</b> databases to ensure high data quality.</li>
-              <li data-lvl="COLLABORATION">Collaborated with back-end developers and other stakeholders to provide essential database support.</li>
-            </ul>
-          </div>
-        </article>
+      <div class="jobs" id="jobs">
+        <!-- Filled from content/worklog.md by js/content.js -->
       </div>
     </section>
 
@@ -412,8 +320,9 @@
     <a href="#top" data-sfx>back to top ↑</a>
   </footer>
 
-  <script src="js/audio.js?v=0454853"></script>
-  <script src="js/main.js?v=0454853"></script>
-  <script type="module" src="js/flight.js?v=0454853"></script>
+  <script src="js/audio.js?v=0456482"></script>
+  <script src="js/content.js?v=0456482"></script>
+  <script src="js/main.js?v=0456482"></script>
+  <script type="module" src="js/flight.js?v=0456482"></script>
 </body>
 </html>
