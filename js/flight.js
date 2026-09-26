@@ -190,6 +190,62 @@ if (renderer) {
   cars.forEach((c, i) => carCol.set(c.v > 0 ? [1, .25, .3] : [1, .9, .8], i * 3));
   scene.add(new THREE.Points(carGeo, new THREE.PointsMaterial({ size: 2.5, sizeAttenuation: false, vertexColors: true, transparent: true, opacity: .8 })));
 
+  /* ---------- red alert: walking mechs, searchlights, drones ---------- */
+  const DARK = new THREE.MeshBasicMaterial({ color: 0x07080d });
+  const RED = new THREE.MeshBasicMaterial({ color: 0xff2a3c });
+  const glowTex = (() => { const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d");
+    const r = g.createRadialGradient(32, 32, 0, 32, 32, 32); r.addColorStop(0, "rgba(255,255,255,1)"); r.addColorStop(.25, "rgba(255,60,80,.9)"); r.addColorStop(1, "rgba(255,0,30,0)");
+    g.fillStyle = r; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();
+  const makeGlow = size => { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); sp.scale.setScalar(size); return sp; };
+
+  // A four-legged walker built from boxes; legs swing in pairs as it walks.
+  function makeMech(scale) {
+    const g = new THREE.Group(), legs = [];
+    const body = new THREE.Mesh(new THREE.BoxGeometry(70, 26, 44), DARK); body.position.y = 92; g.add(body);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(28, 14, 20), DARK); head.position.set(44, 96, 0); g.add(head);
+    const gun = new THREE.Mesh(new THREE.BoxGeometry(40, 4, 4), DARK); gun.position.set(62, 88, 12); g.add(gun);
+    const eye = new THREE.Mesh(new THREE.BoxGeometry(4, 4, 12), RED); eye.position.set(58, 97, 0); g.add(eye);
+    const eyeGlow = makeGlow(46); eyeGlow.position.copy(eye.position); g.add(eyeGlow);
+    // red running lights along the hull so the silhouette reads against the city
+    [[-30, 100, 23], [0, 100, 23], [30, 100, 23], [-30, 100, -23], [30, 100, -23], [0, 80, 23]].forEach(([x, y, z]) => { const l = makeGlow(18); l.position.set(x, y, z); g.add(l); });
+    const rim = new THREE.LineSegments(new THREE.EdgesGeometry(body.geometry), new THREE.LineBasicMaterial({ color: 0xff2a3c, transparent: true, opacity: .55 }));
+    rim.position.copy(body.position); g.add(rim);
+    [[-26, -18], [-26, 18], [26, -18], [26, 18]].forEach(([x, z], i) => {
+      const hip = new THREE.Group(); hip.position.set(x, 86, z); g.add(hip);
+      const thigh = new THREE.Mesh(new THREE.BoxGeometry(6, 50, 6), DARK); thigh.position.set(0, -10, z > 0 ? 18 : -18); thigh.rotation.x = z > 0 ? -.7 : .7; hip.add(thigh);
+      const knee = new THREE.Group(); knee.position.set(0, -30, z > 0 ? 34 : -34); hip.add(knee);
+      const shin = new THREE.Mesh(new THREE.BoxGeometry(5, 64, 5), DARK); shin.position.y = -30; knee.add(shin);
+      legs.push({ hip, phase: i === 0 || i === 3 ? 0 : Math.PI });
+    });
+    g.scale.setScalar(scale);
+    return { g, legs, eyeGlow, head };
+  }
+  const mechs = [
+    { m: makeMech(3.2), x: -1200, z: -1050, v: .06, dir: 1 },
+    { m: makeMech(4.2), x: 1500, z: -2000, v: .045, dir: -1 }
+  ];
+  mechs.forEach(o => { o.m.g.rotation.y = o.dir > 0 ? 0 : Math.PI; scene.add(o.m.g); });
+
+  // Red searchlights sweeping up from the city.
+  const beamMat = new THREE.MeshBasicMaterial({ color: 0xff2a3c, transparent: true, opacity: .09, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+  const beamGeo = new THREE.ConeGeometry(70, 900, 24, 1, true); beamGeo.translate(0, -450, 0); beamGeo.rotateX(Math.PI);
+  const beams = [[-520, -1500, 0], [260, -1100, 1.7], [760, -2000, 3.1], [-120, -2500, 4.4]].map(([x, z, ph]) => {
+    const b = new THREE.Mesh(beamGeo, beamMat); b.position.set(x, 30, z); b.userData.ph = ph; scene.add(b); return b; });
+
+  // Drones: small red lights orbiting above the towers.
+  const drones = Array.from({ length: small ? 5 : 9 }, (_, i) => { const d = makeGlow(22); d.userData = { r: 220 + i * 60, h: 260 + (i % 3) * 70, sp: .12 + (i % 4) * .04, ph: i * 1.3, cz: -1200 - (i % 3) * 500 }; scene.add(d); return d; });
+
+  /* ---------- HUD target lock (DOM overlay tracking the nearest mech) ---------- */
+  const hud = document.createElement("div");
+  hud.className = "lock"; hud.setAttribute("aria-hidden", "true");
+  hud.innerHTML = '<i class="lk tl"></i><i class="lk tr"></i><i class="lk bl"></i><i class="lk br"></i><span class="lock-tag">TARGET LOCK · <b>MECH-01</b> · <em>0.0 KM</em></span>';
+  const alertEl = document.createElement("div");
+  alertEl.className = "red-alert"; alertEl.setAttribute("aria-hidden", "true");
+  alertEl.innerHTML = '<i></i>RED ALERT · HOSTILE WALKERS DETECTED<i></i>';
+  const host = section.querySelector(".flight-sticky");
+  host.appendChild(hud); host.appendChild(alertEl);
+  const v3 = new THREE.Vector3();
+
   /* ---------- sizing ---------- */
   function resize() {
     const w = canvas.clientWidth, h = canvas.clientHeight;
@@ -217,7 +273,7 @@ if (renderer) {
   };
 
   /* ---------- loop (only while the hero is on screen) ---------- */
-  let visible = true, raf = 0, last = performance.now(), eased = 0, boost = 0;
+  let visible = true, raf = 0, last = performance.now(), eased = 0, boost = 0, yawS = 0, yawV = 0;
   const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
   function frame(now) {
@@ -229,12 +285,43 @@ if (renderer) {
 
     const p = ease(eased), t = now * .001;
     const drift = reduceMotion ? 0 : 60 - 60 * Math.cos(t * .05);
+    // Left/right: the mouse steers, and a slow autonomous sweep keeps the view moving (all you get on touch).
+    const sweep = reduceMotion ? 0 : Math.sin(t * .16) * .22 + Math.sin(t * .07 + 1) * .12;
+    const yaw = -look.x * .38 + sweep;
+    yawV += (yaw - yawS) * .08; yawS += yawV * .5; yawV *= .6;          // smoothed, with a little overshoot
     camera.position.set(
-      Math.sin(t * .25) * 4 + look.x * 10,
+      Math.sin(t * .25) * 4 + look.x * 90 - sweep * 160,
       420 - p * 110 + Math.sin(t * .5) * 2,
       820 - p * 950 - drift
     );
-    camera.rotation.set(-.3 + p * .08 - look.y * .04, -look.x * .07, Math.sin(t * .25) * .006);
+    camera.rotation.set(-.3 + p * .08 - look.y * .06, yawS, -(yaw - yawS) * .9 - yawS * .12 + Math.sin(t * .25) * .006);
+
+    // walkers
+    mechs.forEach((o, k) => {
+      o.x += o.v * dt * o.dir;
+      if (o.x > 1900) o.x = -1900; if (o.x < -1900) o.x = 1900;
+      o.m.g.position.set(o.x, Math.abs(Math.sin(t * 2.4 + k)) * 6, o.z);
+      o.m.legs.forEach(l => { l.hip.rotation.z = Math.sin(t * 2.4 + k + l.phase) * .35; });
+      o.m.eyeGlow.material.opacity = .6 + .4 * Math.sin(t * 6 + k);
+    });
+    beams.forEach(b => { b.rotation.z = Math.sin(t * .35 + b.userData.ph) * .5; b.rotation.x = Math.cos(t * .27 + b.userData.ph) * .25; });
+    beamMat.opacity = .07 + boost * .06 + .02 * Math.sin(t * 3);
+    drones.forEach(d => { const u = d.userData, a = t * u.sp + u.ph; d.position.set(Math.cos(a) * u.r, u.h + Math.sin(t * 1.3 + u.ph) * 12, u.cz + Math.sin(a) * u.r * .5);
+      d.material.opacity = Math.sin(t * 5 + u.ph) > .2 ? 1 : .25; });
+
+    // target lock follows whichever walker is closest to the centre of the view
+    let best = null, bd = 9;
+    mechs.forEach(o => { o.m.head.getWorldPosition(v3); const d0 = camera.position.distanceTo(v3); v3.project(camera);
+      // only lock on when the walker is on screen and clear of the centred headline text
+      if (v3.z < 1 && Math.abs(v3.x) < .9 && Math.abs(v3.y) < .85 && (Math.abs(v3.x) > .42 || v3.y < -.25)) { const c = Math.abs(v3.x); if (c < bd) { bd = c; best = { x: v3.x, y: v3.y, d: d0, k: mechs.indexOf(o) }; } } });
+    if (best) {
+      const W = canvas.clientWidth, H = canvas.clientHeight, sz = Math.min(170, Math.max(56, 380000 / best.d));
+      hud.style.transform = `translate(${((best.x + 1) / 2 * W - sz / 2).toFixed(1)}px, ${((1 - best.y) / 2 * H - sz / 2).toFixed(1)}px)`;
+      hud.style.width = hud.style.height = sz.toFixed(0) + "px";
+      hud.querySelector("b").textContent = "MECH-0" + (best.k + 1);
+      hud.querySelector("em").textContent = (best.d / 1000).toFixed(1) + " KM";
+      hud.classList.add("on"); hud.classList.toggle("left-side", best.x > .3);
+    } else hud.classList.remove("on");
 
     uniforms.uTime.value = t;
     uniforms.uBoost.value = boost;
