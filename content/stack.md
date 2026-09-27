@@ -11,7 +11,7 @@ color: orange
 - ECS
 - EC2
 
-## AWS Data & Network
+## AWS Data, Integration & Network
 color: green
 - DataSync
 - S3
