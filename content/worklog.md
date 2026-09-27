@@ -41,6 +41,10 @@
 - [DEVSECOPS] Designed and implemented the organization's **SCM and DevSecOps** practices from the ground up, establishing source-control standards, branching strategies, CI/CD practices, deployment workflows, and engineering best practices.
 - [DEPLOY] Built the platform with a **production-first cloud architecture**, covering application hosting, database integration, deployment automation, cloud governance, and software delivery practices from development through production.
 
+## Cloud and DevOps Engineer | Avasoft
+- when: May 2025 – April 2026
+- where: Chennai, India
+
 ### ETL Data Portal
 - domain: Retail
 - stack: AWS, Amazon EKS, Argo Cron Workflows, ETL, CI/CD, Container, Docker, DevSecOps, Terraform
@@ -49,10 +53,6 @@
 - [ENGINEERING] Engineered a cost-optimized AWS architecture to reduce **AWS data transfer costs** by keeping traffic from AWS to **Salesforce** within the AWS network, while maintaining customer data security and compliance requirements.
 - [COLLABORATION] Collaborated with data engineers and stakeholders to gather requirements and design Argo Cron Workflows for scheduled and automated ETL processing.
 - [CI/CD & DEVSECOPS] Implemented **GitHub Actions** workflows to securely build and publish Docker images to **Amazon ECR** with DevSecOps practices and to automate Argo Cron Workflow deployments, eliminating manual deployment steps and reducing click-ops.
-
-## Cloud and DevOps Engineer | Avasoft
-- when: May 2025 – April 2026
-- where: Chennai, India
 
 ### Logz to Grafana OSS Migration
 - domain: Retail
