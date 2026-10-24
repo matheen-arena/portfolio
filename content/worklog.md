@@ -10,11 +10,13 @@
 
 ### Grafana OTEL
 - domain: Retail
-- stack: AWS, Amazon EKS, Grafana OSS, Grafana Alloy, Grafana Loki, Grafana Mimir, Grafana Alloy Proxy, Terraform
+- stack: AWS, Amazon EKS, Grafana OSS, Grafana Alloy, Grafana Alloy Proxy, Grafana Loki, Grafana Mimir, Confluent Kafka, AWS Load Balancer, NGINX Ingress, Terraform
 
-- [OBSERVABILITY] Designed and deployed a centralized **OpenTelemetry observability architecture** using **Grafana Alloy**, deploying Alloy Edge instances across existing workload AWS EKS clusters and an Alloy Proxy in a centralized AWS observability account to consolidate log ingestion from multiple AWS accounts.
-- [GRAFANA] Deployed and configured **Grafana Loki** for centralized log storage and querying, and **Grafana Mimir** for scalable metrics storage and querying.
-- [COLLABORATION] Collaborated with engineering teams on Grafana and OpenTelemetry adoption, providing technical guidance and mentoring on observability architecture, configuration, and operational best practices.
+- [OBSERVABILITY] Designed and deployed a centralized **OpenTelemetry observability architecture** with **Grafana Alloy Proxy** as the aggregation layer and **Alloy Edge** instances across workload EKS clusters, exposing the proxy through **AWS Load Balancer** and **NGINX Ingress** in a central observability account.
+- [OBSERVABILITY] Configured telemetry routing and aggregation from workload EKS clusters to the centralized observability account, establishing a **standardized ingestion path** for logs and metrics across multiple AWS accounts.
+- [OBSERVABILITY] Deployed and configured **Grafana Loki** for centralized log storage, querying, and visualization, enabling engineering teams to troubleshoot workloads across multiple AWS environments.
+- [CONFLUENT KAFKA] Created and configured **Confluent Kafka** topics to migrate **Grafana Mimir** from the classic architecture to the **Ingest Storage architecture**, enabling Kafka-based buffering and scalable metric ingestion and storage.
+- [COLLABORATION] Collaborated with engineering teams on Grafana and OpenTelemetry adoption, providing technical guidance and mentoring on observability architecture, configuration, troubleshooting, and operational best practices.
 
 ### AWS Enterprise Cloud Modernization
 - domain: Finance
