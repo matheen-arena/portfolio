@@ -45,7 +45,9 @@ color: orange
 - Grafana Alloy
 - Logz.io
 - Grafana Mimir
+- Grafana Tempo
 - Grafana GitSync
+- OTEL
 
 ## CI/CD & GitOps
 color: amber
@@ -70,6 +72,7 @@ color: grey
 - Kiro
 - GitHub Copilot
 - Claude Code
+- Codex Agents
 
 ## Scripting
 color: red
