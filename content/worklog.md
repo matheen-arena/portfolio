@@ -17,6 +17,7 @@
 - [OBSERVABILITY] Deployed and configured **Grafana Loki** for centralized log storage, querying, and visualization, enabling engineering teams to troubleshoot workloads across multiple AWS environments.
 - [CONFLUENT KAFKA] Created and configured **Confluent Kafka** topics to migrate **Grafana Mimir** from the classic architecture to the **Ingest Storage architecture**, enabling Kafka-based buffering and scalable metric ingestion and storage.
 - [COLLABORATION] Collaborated with engineering teams on Grafana and OpenTelemetry adoption, providing technical guidance and mentoring on observability architecture, configuration, troubleshooting, and operational best practices.
+- [PRODUCTION SUPPORT] Provided production support and maintained the centralized **Grafana observability platform**, including Grafana Alloy, Loki, and Mimir, across multiple AWS accounts.
 
 ### AWS Enterprise Cloud Modernization
 - domain: Finance
@@ -54,6 +55,7 @@
 - [ENGINEERING] Engineered a cost-optimized AWS architecture to reduce **AWS data transfer costs** by keeping traffic from AWS to **Salesforce** within the AWS network, while maintaining customer data security and compliance requirements.
 - [COLLABORATION] Collaborated with data engineers and stakeholders to gather requirements and design Argo Cron Workflows for scheduled and automated ETL processing.
 - [CI/CD & DEVSECOPS] Implemented **GitHub Actions** workflows to securely build and publish Docker images to **Amazon ECR** with DevSecOps practices and to automate Argo Cron Workflow deployments, eliminating manual deployment steps and reducing click-ops.
+- [PRODUCTION SUPPORT] Provided production support and maintained the **Argo Cron Workflows** platform on Amazon EKS for the data engineering team's scheduled ETL jobs.
 
 ### Logz to Grafana OSS Migration
 - domain: Retail
