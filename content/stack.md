@@ -20,6 +20,7 @@ color: green
 - Firehose
 - CloudFront
 - Opensearch
+- EventBridge
 - AWS VPC
 - API Gateway
 - ECR
