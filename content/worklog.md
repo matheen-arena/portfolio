@@ -10,11 +10,13 @@
 
 ### Grafana OTEL
 - domain: Retail
-- stack: AWS, Amazon EKS, Grafana OSS, Grafana Alloy, Grafana Loki, Grafana Mimir, Grafana Alloy Proxy, Terraform
+- stack: AWS, Amazon EKS, Grafana OSS, Grafana Alloy, Grafana Alloy Proxy, Grafana Loki, Grafana Mimir, Confluent Kafka, AWS Load Balancer, NGINX Ingress, Terraform
 
-- [OBSERVABILITY] Designed and deployed a centralized **OpenTelemetry observability architecture** using **Grafana Alloy**, deploying Alloy Edge instances across existing workload AWS EKS clusters and an Alloy Proxy in a centralized AWS observability account to consolidate log ingestion from multiple AWS accounts.
-- [GRAFANA] Deployed and configured **Grafana Loki** for centralized log storage and querying, and **Grafana Mimir** for scalable metrics storage and querying.
-- [COLLABORATION] Collaborated with engineering teams on Grafana and OpenTelemetry adoption, providing technical guidance and mentoring on observability architecture, configuration, and operational best practices.
+- [OBSERVABILITY] Designed and deployed a centralized **OpenTelemetry observability architecture** using **Grafana Alloy Proxy** as the aggregation layer, with **Alloy Edge** instances deployed across existing workload AWS EKS clusters. Deployed the Alloy Proxy with **AWS Load Balancer** and **NGINX Ingress** in a centralized AWS observability account to consolidate telemetry ingestion from multiple AWS accounts.
+- [OBSERVABILITY] Configured telemetry routing and aggregation across workload EKS clusters and the centralized observability account, establishing a **standardized ingestion path** for logs and metrics.
+- [OBSERVABILITY] Deployed and configured **Grafana Loki** for centralized log storage, querying, and visualization, enabling engineering teams to troubleshoot workloads across multiple AWS environments from a centralized observability platform.
+- [CONFLUENT KAFKA] Worked on the **Grafana Mimir** metric ingestion and storage architecture, creating and configuring Kafka topics in **Confluent** and making the configuration changes required to migrate Mimir from the classic architecture to the **Ingest Storage architecture**, enabling Kafka-based buffering and scalable metric ingestion and storage.
+- [COLLABORATION] Collaborated with engineering teams on Grafana and OpenTelemetry adoption, providing technical guidance and mentoring on observability architecture, configuration, troubleshooting, and operational best practices.
 
 ### AWS Enterprise Cloud Modernization
 - domain: Finance
