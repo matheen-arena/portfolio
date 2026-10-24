@@ -81,7 +81,7 @@ Order matters: things appear on the site in the same order as in the file (top t
 
 ```markdown
 ## <Cluster name>
-color: <orange | blue | green | amber | purple | pink | grey>
+color: <orange | blue | green | amber | purple | pink | grey | cyan | lime | red>
 - <Skill>
 - <Skill>
 ```

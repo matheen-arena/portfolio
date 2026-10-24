@@ -4,7 +4,7 @@
 <!-- Colours: orange, blue, green, amber, purple, pink, grey. -->
 
 ## AWS Compute
-color: orange
+color: cyan
 - AWS Batch
 - Lambda
 - EKS
@@ -75,6 +75,6 @@ color: grey
 - Codex Agents
 
 ## Scripting
-color: red
+color: lime
 - Python
 - Shell Scripting

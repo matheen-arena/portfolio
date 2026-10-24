@@ -180,7 +180,7 @@ ${p.items.map(it => `        <li data-lvl="${esc(it.tag)}">${inline(it.text)}</l
   }
 
   /* ---------- stack.md ---------- */
-  const COLORS = { orange: "#ff5b2e", blue: "#8ab4ff", green: "#7cf7c1", amber: "#f5c542", purple: "#c79bff", pink: "#ff7ab6", grey: "#c9c4ba", gray: "#c9c4ba", bone: "#c9c4ba" };
+  const COLORS = { orange: "#ff5b2e", cyan: "#4fd8ee", lime: "#c4f25a", red: "#ff3b4e", blue: "#8ab4ff", green: "#7cf7c1", amber: "#f5c542", purple: "#c79bff", pink: "#ff7ab6", grey: "#c9c4ba", gray: "#c9c4ba", bone: "#c9c4ba" };
 
   function parseStack(text) {
     const groups = [];
